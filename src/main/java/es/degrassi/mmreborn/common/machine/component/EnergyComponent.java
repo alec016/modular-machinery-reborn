@@ -47,12 +47,14 @@ public class EnergyComponent extends MachineComponent<IEnergyHandler> {
 
           @Override
           public void setCanExtract(boolean b) {
-
+            handler.setCanExtract(b);
+            comp.handler.setCanExtract(b);
           }
 
           @Override
           public void setCanInsert(boolean b) {
-
+            handler.setCanExtract(b);
+            comp.handler.setCanExtract(b);
           }
 
           @Override

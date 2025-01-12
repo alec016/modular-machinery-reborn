@@ -105,8 +105,8 @@ public class RequirementFluid implements IRequirement<FluidComponent> {
   private CraftingResult errorInput(int amount, FluidStack found, int amountFound) {
     return CraftingResult.error(Component.translatable(
         "craftcheck.failure.fluid.input",
-        Component.translatable("%sx %s", amount, required.asFluidStack().getHoverName()),
-        Component.translatable("%sx %s", amountFound, found.getHoverName())
+        amount, required.asFluidStack().getHoverName(),
+        amountFound, found.getHoverName()
     ));
   }
 
