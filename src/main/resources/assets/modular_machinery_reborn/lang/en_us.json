@@ -328,8 +328,8 @@
   "modular_machinery_reborn.gui.structure_placer_button": "Click to try place structure",
   "modular_machinery_reborn.gui.structure_break_button": "Click to break the current structure",
 
-  "mmr.place.non_air": "Tryied to place %s in %s but found no valid structure block",
-  "mmr.place.no_item": "Tryied to place %s in %s but couldn't find the item %s in the player inventory",
+  "mmr.place.non_air": "Tried to place %s in %s but found no valid structure block",
+  "mmr.place.no_item": "Tried to place %s in %s but couldn't find the item %s in the player inventory",
 
   "key.categories.modular_machinery_reborn": "Modular Machinery Reborn",
   "key.modular_machinery_reborn.structure_mode_change": "Structure Creator Mode",
