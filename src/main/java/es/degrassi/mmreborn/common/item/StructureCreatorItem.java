@@ -158,7 +158,10 @@ public class StructureCreatorItem extends Item {
   }
 
   public static StructureCreatorItemMode nextMode(ItemStack stack) {
-    return Objects.requireNonNull(stack.update(DataComponentRegistration.STRUCTURE_CREATOR_MODE, getCurrentMode(stack), StructureCreatorItemMode::next));
+    StructureCreatorItemMode current = getCurrentMode(stack);
+    StructureCreatorItemMode next = current.next();
+    stack.set(DataComponentRegistration.STRUCTURE_CREATOR_MODE, next);
+    return next;
   }
 
   public static boolean isFirst(ItemStack stack) {
