@@ -50,20 +50,19 @@ public class MultiblockRecipe {
         .stream()
         .filter(stacks -> !stacks.isEmpty() && !stacks.stream().allMatch(ItemStack::isEmpty))
         .forEach(stacks -> {
-            var slot = new UnlimitedItemSlot(UnlimitedItemSlot.createInfiniteSlot());
-                    
-            ItemStack displayStack = MultiblockScene.blockTimer.getOrDefault(stacks, stacks.get(0)).copy();
-            if(displayStack.isEmpty())
-            {
-                displayStack = stacks.get(0).copy();
+            var slot = new UnlimitedItemSlot();
+            var first = stacks.getFirst();
+            ItemStack displayStack = MultiblockScene.blockTimer.getOrDefault(stacks, first).copy();
+            if (displayStack.isEmpty()) {
+                displayStack = first.copy();
             }
-            displayStack.setCount(stacks.get(0).getCount());
-
-            requiredItems.put(slot
-                              .setItem(displayStack)
-                              .xeiRecipeIngredient(IngredientIO.INPUT)
-                              .xeiRecipeSlot(),
-                          stacks
+            displayStack.setCount(first.getCount());
+            requiredItems.put(
+                slot
+                    .setItem(displayStack)
+                    .xeiRecipeIngredient(IngredientIO.INPUT)
+                    .xeiRecipeSlot(),
+                stacks
             );
       });
     
