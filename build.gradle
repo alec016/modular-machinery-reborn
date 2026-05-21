@@ -223,7 +223,7 @@ dependencies {
   compileOnly runtimeOnly("com.almostreliable.mods:almostunified-neoforge:${almostunified_version}")
 
   // Athena
-  compileOnly runtimeOnly("earth.terrarium.athena:athena-neoforge-1.21:${athena_version}")
+  compileOnly runtimeOnly("earth.terrarium.athena:athena-neoforge-1.21.1:${athena_version}")
 
   // setup Xei
   switch (use_Xei) {
@@ -236,7 +236,7 @@ dependencies {
   }
 
   // Addons for testing
-//  localRuntime("es.degrassi:modular_machinery_reborn_energistics:${minecraft_version}-2.0.0")
+//  localRuntime("es.degrassi:modular_machinery_reborn_energistics:${minecraft_version}-3.0.0")
   runtimeOnly("es.degrassi:modular_machinery_reborn_ars:${minecraft_version}-3.0.3") { transitive = false }
   runtimeOnly("es.degrassi:modular_machinery_reborn_mekanism:${minecraft_version}-3.0.3") { transitive = false }
   compileOnly runtimeOnly("org.appliedenergistics:appliedenergistics2:19.2.10")

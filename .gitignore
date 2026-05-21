@@ -120,3 +120,11 @@ runs/
 !gradle-wrapper.jar
 
 CHANGELOG*.md
+
+AGENTS.md
+.kiro/
+.opencode/
+graphify-*
+analyze-*
+trace-*
+deep-trace*
