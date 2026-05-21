@@ -50,14 +50,23 @@ public class MultiblockRecipe {
         .stream()
         .filter(stacks -> !stacks.isEmpty() && !stacks.stream().allMatch(ItemStack::isEmpty))
         .forEach(stacks -> {
-          var slot = new ItemSlot();
-          requiredItems.put(slot
-                  .setItem(MultiblockScene.blockTimer.getOrDefault(stacks, ItemStack.EMPTY))
-                  .xeiRecipeIngredient(IngredientIO.INPUT)
-                  .xeiRecipeSlot(),
-              stacks
-          );
-        });
+            var slot = new UnlimitedItemSlot(UnlimitedItemSlot.createInfiniteSlot());
+                    
+            ItemStack displayStack = MultiblockScene.blockTimer.getOrDefault(stacks, stacks.get(0)).copy();
+            if(displayStack.isEmpty())
+            {
+                displayStack = stacks.get(0).copy();
+            }
+            displayStack.setCount(stacks.get(0).getCount());
+
+            requiredItems.put(slot
+                              .setItem(displayStack)
+                              .xeiRecipeIngredient(IngredientIO.INPUT)
+                              .xeiRecipeSlot(),
+                          stacks
+            );
+      });
+    
     var blockLabel = new Label().setText("");
     AtomicReference<BlockPos> selectedPos = new AtomicReference<>(null);
     return ModularUI.of(UI.of(new UIElement()
