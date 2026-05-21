@@ -139,10 +139,6 @@ repositories {
       includeGroup "curse.maven"
     }
   }
-  maven {
-    name = "OctoStudios"
-    url = uri("https://maven.octo-studios.com/releases")
-  }
   maven { // TOP
     url "https://maven.k-4u.nl"
     content {
