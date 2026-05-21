@@ -53,19 +53,9 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, IEnergyH
   public boolean test(EnergyComponent component, ICraftingContext context) {
     IEnergyHandler handler = component.getContainerProvider();
     return switch (mode) {
-      case INPUT -> {
-        handler.setCanExtract(true);
-        int extracted = handler.extractEnergy((int) this.requirement, true);
-        component.getContainerProvider().setCanExtract(false);
-        yield extracted >= this.requirement;
-      }
-      case OUTPUT -> {
-        handler.setCanInsert(true);
-        int received = handler.receiveEnergy((int) this.requirement, true);
-        handler.setCanInsert(false);
-        yield received >= this.requirement;
-      }
-      case NONE -> false;
+      case INPUT -> handler.getCurrentEnergy() >= requirement;
+      case OUTPUT -> handler.getMaxEnergy() >= handler.getCurrentEnergy() + requirement;
+      case NONE -> true;
     };
   }
 
@@ -80,14 +70,16 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, IEnergyH
 
   private CraftingResult processInputs(EnergyComponent component, ICraftingContext context) {
     int amount = (int)context.getIntegerModifiedValue(this.requirement, this);
-    component.getContainerProvider().setCanExtract(true);
-    int canExtract = component.getContainerProvider().extractEnergy(amount, true);
+    var handler = component.getContainerProvider();
+    var tempExtract = handler.canExtract();
+    handler.setCanExtract(true);
+    int canExtract = handler.extractEnergy(amount, true);
     if(canExtract >= amount) {
-      component.getContainerProvider().extractEnergy(amount, false);
-      component.getContainerProvider().setCanExtract(false);
+      handler.extractEnergy(amount, false);
+      handler.setCanExtract(tempExtract);
       return CraftingResult.success();
     }
-    component.getContainerProvider().setCanExtract(false);
+    handler.setCanExtract(tempExtract);
     return CraftingResult.error(Component.translatable(
         "craftcheck.failure.energy.input", requirement, component.getContainerProvider().getCurrentEnergy()
     ));
@@ -95,14 +87,16 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, IEnergyH
 
   private CraftingResult processOutputs(EnergyComponent component, ICraftingContext context) {
     int amount = (int)context.getIntegerModifiedValue(this.requirement, this);
-    component.getContainerProvider().setCanInsert(true);
-    int canReceive = component.getContainerProvider().receiveEnergy(amount, true);
+    var handler = component.getContainerProvider();
+    var tempInsert = handler.canReceive();
+    handler.setCanInsert(true);
+    int canReceive = handler.receiveEnergy(amount, true);
     if(canReceive >= amount) {
-      component.getContainerProvider().receiveEnergy(amount, false);
-      component.getContainerProvider().setCanInsert(false);
+      handler.receiveEnergy(amount, false);
+      handler.setCanInsert(tempInsert);
       return CraftingResult.success();
     }
-    component.getContainerProvider().setCanInsert(false);
+    handler.setCanInsert(tempInsert);
     return CraftingResult.error(Component.translatable(
         "craftcheck.failure.energy.output", requirement, component.getContainerProvider().getRemainingCapacity()
     ));

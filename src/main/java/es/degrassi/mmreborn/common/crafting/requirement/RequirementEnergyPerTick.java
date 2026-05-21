@@ -70,14 +70,16 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, I
 
   private CraftingResult processInputs(EnergyComponent component, ICraftingContext context) {
     int amount = (int)context.getPerTickIntegerModifiedValue(this.requirementPerTick, this);
-    component.getContainerProvider().setCanExtract(true);
-    int canExtract = component.getContainerProvider().extractEnergy(amount, true);
+    var handler = component.getContainerProvider();
+    var tempExtract = handler.canExtract();
+    handler.setCanExtract(true);
+    int canExtract = handler.extractEnergy(amount, true);
     if(canExtract == amount) {
-      component.getContainerProvider().extractEnergy(amount, false);
-      component.getContainerProvider().setCanExtract(false);
+      handler.extractEnergy(amount, false);
+      handler.setCanExtract(tempExtract);
       return CraftingResult.success();
     }
-    component.getContainerProvider().setCanExtract(false);
+    handler.setCanExtract(tempExtract);
     return CraftingResult.error(Component.translatable(
         "craftcheck.failure.energy.input", requirementPerTick, component.getContainerProvider().getCurrentEnergy()
     ));
@@ -85,14 +87,16 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, I
 
   private CraftingResult processOutputs(EnergyComponent component, ICraftingContext context) {
     int amount = (int)context.getPerTickIntegerModifiedValue(this.requirementPerTick, this);
-    component.getContainerProvider().setCanInsert(true);
-    int canReceive = component.getContainerProvider().receiveEnergy(amount, true);
+    var handler = component.getContainerProvider();
+    var tempInsert = handler.canReceive();
+    handler.setCanInsert(true);
+    int canReceive = handler.receiveEnergy(amount, true);
     if(canReceive == amount) {
-      component.getContainerProvider().receiveEnergy(amount, false);
-      component.getContainerProvider().setCanInsert(false);
+      handler.receiveEnergy(amount, false);
+      handler.setCanInsert(tempInsert);
       return CraftingResult.success();
     }
-    component.getContainerProvider().setCanInsert(false);
+    handler.setCanInsert(tempInsert);
     return CraftingResult.error(Component.translatable(
         "craftcheck.failure.energy.output", requirementPerTick, component.getContainerProvider().getRemainingCapacity()
     ));

@@ -60,16 +60,16 @@ public class EnergyComponent extends MachineComponent<IEnergyHandler> {
           @Override
           public int receiveEnergy(int toReceive, boolean simulate) {
             int received1 = handler.receiveEnergy(toReceive, simulate);
-            toReceive -= received1;
-            int received2 = comp.handler.receiveEnergy(toReceive, simulate);
+            if (received1 == toReceive) return toReceive;
+            int received2 = comp.handler.receiveEnergy(toReceive - received1, simulate);
             return received1 + received2;
           }
 
           @Override
           public int extractEnergy(int toExtract, boolean simulate) {
             int extracted1 = handler.extractEnergy(toExtract, simulate);
-            toExtract -= extracted1;
-            int extracted2 = comp.handler.extractEnergy(toExtract, simulate);
+            if (extracted1 == toExtract) return toExtract;
+            int extracted2 = comp.handler.extractEnergy(toExtract - extracted1, simulate);
             return extracted1 + extracted2;
           }
 
