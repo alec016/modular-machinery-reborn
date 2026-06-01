@@ -121,7 +121,7 @@ public class MMREmiClientIntegration {
         RequirementTypeRegistration.FLUID.get(),
         requirement ->
             Arrays.stream(requirement.requirement().getIngredient().ingredient().getStacks())
-                .map(stack -> EmiStack.of(stack.getFluid(), stack.getAmount()))
+                .map(stack -> EmiStack.of(stack.getFluid(), requirement.requirement().getIngredient().amount()))
                 .toList()
 
     );
@@ -129,7 +129,7 @@ public class MMREmiClientIntegration {
         RequirementTypeRegistration.FLUID_PER_TICK.get(),
         requirement ->
             Arrays.stream(requirement.requirement().getIngredient().ingredient().getStacks())
-            .map(stack -> EmiStack.of(stack.getFluid(), stack.getAmount()))
+            .map(stack -> EmiStack.of(stack.getFluid(), requirement.requirement().getIngredient().amount()))
             .toList()
     );
     event.register(
