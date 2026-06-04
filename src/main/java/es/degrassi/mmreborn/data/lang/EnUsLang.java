@@ -495,6 +495,7 @@ final class EnUsLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Press [%s] with item in hand(NO GUI) to change mode");
     add(mm("structure_creator.mode.change"), "Changed mode from %s to %s");
     add(mm("structure_creator.mode.single"), "Single");

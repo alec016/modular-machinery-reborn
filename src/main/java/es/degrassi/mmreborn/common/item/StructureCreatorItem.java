@@ -65,7 +65,10 @@ public class StructureCreatorItem extends Item {
       s = player.getInventory().getItem(slot);
     } else {
       slot = findSlotMatchingItem(player.getInventory(), Items.PAPER.getDefaultInstance());
-      if (slot < 0) return InteractionResult.SUCCESS_NO_ITEM_USED;
+      if (slot < 0) {
+        player.sendSystemMessage(Component.translatable("mmr.no_paper_template"));
+        return InteractionResult.SUCCESS_NO_ITEM_USED;
+      }
       player.getInventory().removeItem(slot, 1);
       s = ItemRegistration.STRUCTURE_TEMPLATE_ITEM.toStack();
       player.addItem(s);

@@ -231,6 +231,7 @@
   "mmr.gui.tooltip.redstone.button.mode.input": "Input",
   "mmr.gui.tooltip.redstone.button.mode.none": "None",
   "mmr.gui.tooltip.redstone.button.mode.output": "Output",
+  "mmr.no_paper_template": "No paper or structure template found in inventory",
   "mmr.north": "North",
   "mmr.place.no_item": "Tentou posicionar %s em %s mas não conseguiu encontrar o item %s no inventário do jogador",
   "mmr.place.non_air": "Tentou posicionar %s em %s mas não encontrou um bloco de estrutura válido",

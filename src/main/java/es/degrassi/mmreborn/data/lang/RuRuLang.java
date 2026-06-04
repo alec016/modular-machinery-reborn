@@ -492,6 +492,7 @@ final class RuRuLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Нажмите [%s] с предметом в руке (не в инвентаре), чтобы сменить режим работы");
     add(mm("structure_creator.mode.change"), "Сменить режим с %s на %s");
     add(mm("structure_creator.mode.single"), "Блочное выделение");

@@ -231,6 +231,7 @@
   "mmr.gui.tooltip.redstone.button.mode.input": "Input",
   "mmr.gui.tooltip.redstone.button.mode.none": "None",
   "mmr.gui.tooltip.redstone.button.mode.output": "Output",
+  "mmr.no_paper_template": "No paper or structure template found in inventory",
   "mmr.north": "North",
   "mmr.place.no_item": "Не удалось разместить блок %s в %s, отсутствует предмет в инвентаре",
   "mmr.place.non_air": "Не удалось разместить блок %s в %s, отсутствует структурный  блок",

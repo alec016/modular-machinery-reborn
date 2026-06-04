@@ -491,6 +491,7 @@ final class PtBrLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Pressione [%s] com o item na mão (SEM GUI) para mudar de modo");
     add(mm("structure_creator.mode.change"), "Modo alterado de %s para %s");
     add(mm("structure_creator.mode.single"), "Único");

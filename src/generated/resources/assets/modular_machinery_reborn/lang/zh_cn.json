@@ -231,6 +231,7 @@
   "mmr.gui.tooltip.redstone.button.mode.input": "Input",
   "mmr.gui.tooltip.redstone.button.mode.none": "None",
   "mmr.gui.tooltip.redstone.button.mode.output": "Output",
+  "mmr.no_paper_template": "No paper or structure template found in inventory",
   "mmr.north": "North",
   "mmr.place.no_item": "尝试放置 %s 在 %s 但是在玩家库存中未找到 %s ",
   "mmr.place.non_air": "尝试放置 %s 在 %s 但是找到了不属于当前结构的方块",

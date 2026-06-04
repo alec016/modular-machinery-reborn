@@ -535,6 +535,7 @@ final class UkUaLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Натисніть [%s] з предметом у руці (поза інтерфейсом), щоб змінити режим");
     add(mm("structure_creator.mode.change"), "Змінено режим з %s на %s");
     add(mm("structure_creator.mode.single"), "Одиничний");

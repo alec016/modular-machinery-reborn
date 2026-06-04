@@ -493,6 +493,7 @@ final class ZhCnLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "当手持时,按下[%s]来切换模式");
     add(mm("structure_creator.mode.change"), "模式从 %s 变更到 %s");
     add(mm("structure_creator.mode.single"), "单个");

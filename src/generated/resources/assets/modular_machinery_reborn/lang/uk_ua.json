@@ -229,6 +229,7 @@
   "mmr.gui.tooltip.redstone.button.mode.input": "Вхід",
   "mmr.gui.tooltip.redstone.button.mode.none": "Немає",
   "mmr.gui.tooltip.redstone.button.mode.output": "Вихід",
+  "mmr.no_paper_template": "No paper or structure template found in inventory",
   "mmr.north": "Північ",
   "mmr.place.no_item": "Спроба встановити %s у %s провалилася: не знайдено предмет %s в інвентарі гравця",
   "mmr.place.non_air": "Спроба встановити %s у %s провалилася: не знайдено відповідного структурного блоку",

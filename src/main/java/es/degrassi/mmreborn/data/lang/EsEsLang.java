@@ -518,6 +518,7 @@ final class EsEsLang extends Lang {
 
   @Override
   protected void addStructureCreator() {
+    add(mmr("no_paper_template"), "No se ha encontrad papel o template de estructura en el inventario");
     add(mm("structure_creator.mode.change.tooltip"), "Presiona [%s] con el item en la mano(NO GUI) para cambiar el modo");
     add(mm("structure_creator.mode.change"), "Cambiado el modo de %s a %s");
     add(mm("structure_creator.mode.single"), "Único");
