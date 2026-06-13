@@ -204,6 +204,7 @@ public class StructureTemplateItem extends Item {
       states = new BlockIngredient[maxY - minY + 1][maxZ - minZ + 1][maxX - minX + 1];
     AABB box = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     Map<BlockState, BlockIngredient> cache = Maps.newHashMap();
+    final boolean forceAir = MMRConfig.get().forceAir.get();
     BlockPos.betweenClosedStream(box).forEach(p -> {
       BlockState state = world.getBlockState(p);
       BlockIngredient partial;
@@ -212,7 +213,11 @@ public class StructureTemplateItem extends Item {
       else if (cache.containsKey(state))
         partial = cache.get(state);
       else {
-        partial = new BlockIngredient(new PartialBlockState(state, Lists.newArrayList(state.getProperties()), null));
+        if (state.isAir() && !forceAir) {
+          partial = BlockIngredient.ANY;
+        } else{
+          partial = new BlockIngredient(new PartialBlockState(state, Lists.newArrayList(state.getProperties()), null));
+        }
         cache.put(state, partial);
       }
       switch (machineFacing) {
