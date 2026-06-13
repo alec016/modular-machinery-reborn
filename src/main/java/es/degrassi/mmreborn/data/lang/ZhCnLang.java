@@ -507,7 +507,7 @@ final class ZhCnLang extends Lang {
     add(mm("structure_creator.amount"), "%s 个方块被选择");
     add(mm("structure_creator.select"), "右键方块来进行添加或者移除。如果被选择的方块拥有GUI界面则需要Shift+右键");
     add(mm("structure_creator.finish"), "Shift+右键任何模块化机械控制器来获取结构");
-    add(mm("structure_creator.message"), "结构已生成。点击以复制 : %s %s %s");
+    add(mm("structure_creator.message"), "结构已生成。点击以复制 : %s %s %s %s");
     add(mm("structure_creator.reset"), "右键空气以清空被选择的方块");
     add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
     add(mm("structure_creator.vein.max"), "Max %s blocks");

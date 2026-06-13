@@ -14,6 +14,7 @@ import es.degrassi.mmreborn.api.PartialBlockState;
 import es.degrassi.mmreborn.api.codec.DefaultCodecs;
 import es.degrassi.mmreborn.api.codec.NamedCodec;
 import es.degrassi.mmreborn.common.block.BlockController;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.registration.DataComponentRegistration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -139,20 +140,25 @@ public class StructureTemplateItem extends Item {
           if (charIndex.get() == 122) charIndex.set(65); //All lowercase are used, so switch to uppercase.
         });
     List<List<String>> pattern = Lists.newArrayList();
+    final boolean forceAir = MMRConfig.get().forceAir.get();
     for (BlockIngredient[][] state : states) {
       List<String> floor = Lists.newArrayList();
       for (BlockIngredient[] partialBlockStates : state) {
         StringBuilder row = new StringBuilder();
         for (BlockIngredient partial : partialBlockStates) {
           char key;
-          if (partial.getAll().stream().anyMatch(s -> s == PartialBlockState.MACHINE || s.getBlockState().getBlock() instanceof BlockController))
-            key = 'm';
-          else if (partial.getAll().stream().anyMatch(s -> s == PartialBlockState.ANY))
+          if (!forceAir && partial.getAll().stream().allMatch(s -> s.getBlockState().isAir())) {
             key = ' ';
-          else if (keys.containsValue(partial))
-            key = keys.inverse().get(partial);
-          else
-            key = '?';
+          } else {
+            if (partial.getAll().stream().anyMatch(s -> s == PartialBlockState.MACHINE || s.getBlockState().getBlock() instanceof BlockController))
+              key = 'm';
+            else if (partial.getAll().stream().anyMatch(s -> s == PartialBlockState.ANY))
+              key = ' ';
+            else if (keys.containsValue(partial))
+              key = keys.inverse().get(partial);
+            else
+              key = '?';
+          }
           row.append(key);
         }
         floor.add(row.reverse().toString());
@@ -166,10 +172,21 @@ public class StructureTemplateItem extends Item {
     both.add("pattern", patternJson);
     both.add("keys", keysJson);
     String ctKubeString = ".structure(\nMMRStructureBuilder.create()\n.pattern(" + patternJson + ")\n.keys(" + keysJson + "))";
-    Component jsonText = Component.literal("[JSON]").withStyle(style -> style.applyFormats(ChatFormatting.YELLOW).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(both.toString()))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, both.toString())));
-    Component prettyJsonText = Component.literal("[PRETTY JSON]").withStyle(style -> style.applyFormats(ChatFormatting.GOLD).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(GSON.toJson(both)))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, GSON.toJson(both))));
-    Component kubeJSText = Component.literal("[KUBEJS]").withStyle(style -> style.applyFormats(ChatFormatting.DARK_PURPLE).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(ctKubeString))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, ctKubeString)));
-    Component message = Component.translatable("modular_machinery_reborn.structure_creator.message", jsonText, prettyJsonText, kubeJSText);
+    String ctKubePrettyString =".structure(\nMMRStructureBuilder.create()\n.pattern(\n" + GSON.toJson(patternJson) + "\n)\n.keys(\n" + GSON.toJson(keysJson) + "\n))";
+    Component jsonText = Component.literal("[JSON]").withStyle(style -> style.applyFormats(ChatFormatting.YELLOW)
+        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(both.toString())))
+        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, both.toString())));
+    Component prettyJsonText = Component.literal("[PRETTY JSON]").withStyle(style -> style.applyFormats(ChatFormatting.GOLD)
+        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(GSON.toJson(both))))
+        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, GSON.toJson(both))));
+    Component kubeJSText = Component.literal("[KUBEJS]").withStyle(style -> style.applyFormats(ChatFormatting.DARK_PURPLE)
+        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(ctKubeString)))
+        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, ctKubeString)));
+    Component kubeJSPrettyText =
+        Component.literal("[PRETTY KUBEJS]").withStyle(style -> style.applyFormats(ChatFormatting.DARK_PURPLE)
+        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(ctKubePrettyString)))
+        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, ctKubePrettyString)));
+    Component message = Component.translatable("modular_machinery_reborn.structure_creator.message", jsonText, prettyJsonText, kubeJSText, kubeJSPrettyText);
     player.sendSystemMessage(message);
   }
 

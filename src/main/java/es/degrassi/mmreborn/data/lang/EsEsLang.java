@@ -532,7 +532,7 @@ final class EsEsLang extends Lang {
     add(mm("structure_creator.amount"), "%s bloques seleccionados");
     add(mm("structure_creator.select"), "Click derecho en un bloque para añadir o removerlo. Si el bloque tiene una GUI shift click para añadir o removerlo.");
     add(mm("structure_creator.finish"), "Shift click en cualquier controlador para obtener la estructura");
-    add(mm("structure_creator.message"), "Estructura generada, click para copiar: %s %s %s");
+    add(mm("structure_creator.message"), "Estructura generada, click para copiar: %s %s %s %s");
     add(mm("structure_creator.reset"), "Click derecho en el aire mientras te agachas para resetear");
     add(mm("structure_creator.vein.select"), "Selecciona cualquier bloque que no sea aire o el controlador.");
     add(mm("structure_creator.vein.max"), "Max %s bloques");

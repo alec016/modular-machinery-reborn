@@ -373,7 +373,7 @@
   "modular_machinery_reborn.jei.ingredient.weather": "Погода: %s",
   "modular_machinery_reborn.structure_creator.amount": "%s выделенных блоков",
   "modular_machinery_reborn.structure_creator.finish": "Shift + ПКМ по любому контроллеру, чтобы получить мульти-структуры",
-  "modular_machinery_reborn.structure_creator.message": "Мульти-структура сгенерирована. Нажмите, чтобы скопировать: %s %s %s",
+  "modular_machinery_reborn.structure_creator.message": "Мульти-структура сгенерирована. Нажмите, чтобы скопировать: %s %s %s %s",
   "modular_machinery_reborn.structure_creator.mode": "Выбранный режим: %s",
   "modular_machinery_reborn.structure_creator.mode.box": "Областное выделение",
   "modular_machinery_reborn.structure_creator.mode.box.first": "Укажите начальный точку",

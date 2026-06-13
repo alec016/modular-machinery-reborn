@@ -373,7 +373,7 @@
   "modular_machinery_reborn.jei.ingredient.weather": "天气时间: %s",
   "modular_machinery_reborn.structure_creator.amount": "%s 个方块被选择",
   "modular_machinery_reborn.structure_creator.finish": "Shift+右键任何模块化机械控制器来获取结构",
-  "modular_machinery_reborn.structure_creator.message": "结构已生成。点击以复制 : %s %s %s",
+  "modular_machinery_reborn.structure_creator.message": "结构已生成。点击以复制 : %s %s %s %s",
   "modular_machinery_reborn.structure_creator.mode": "当前模式: %s",
   "modular_machinery_reborn.structure_creator.mode.box": "范围",
   "modular_machinery_reborn.structure_creator.mode.box.first": "请选择第一个角",

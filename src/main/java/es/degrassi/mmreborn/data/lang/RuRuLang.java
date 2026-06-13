@@ -506,7 +506,7 @@ final class RuRuLang extends Lang {
     add(mm("structure_creator.amount"), "%s выделенных блоков");
     add(mm("structure_creator.select"), "ПКМ по блоку, чтобы добавить или удалить блок из выделения. Если блок имеет интерфейс, зажмите клавишу Shift и добавьте или удалите блок из выделения.");
     add(mm("structure_creator.finish"), "Shift + ПКМ по любому контроллеру, чтобы получить мульти-структуры");
-    add(mm("structure_creator.message"), "Мульти-структура сгенерирована. Нажмите, чтобы скопировать: %s %s %s");
+    add(mm("structure_creator.message"), "Мульти-структура сгенерирована. Нажмите, чтобы скопировать: %s %s %s %s");
     add(mm("structure_creator.reset"), "ПКМ по воздуху, чтобы сбросить выделение");
     add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
     add(mm("structure_creator.vein.max"), "Max %s blocks");

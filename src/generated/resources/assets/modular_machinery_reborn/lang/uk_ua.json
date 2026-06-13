@@ -374,7 +374,7 @@
   "modular_machinery_reborn.requirement.mode.output": "Вихід",
   "modular_machinery_reborn.structure_creator.amount": "Вибрано блоків: %s",
   "modular_machinery_reborn.structure_creator.finish": "Натисніть Shift+ПКМ по будь-якому контролеру, щоб отримати структуру",
-  "modular_machinery_reborn.structure_creator.message": "Структуру згенеровано, натисніть для копіювання: %s %s %s",
+  "modular_machinery_reborn.structure_creator.message": "Структуру згенеровано, натисніть для копіювання: %s %s %s %s",
   "modular_machinery_reborn.structure_creator.mode": "Поточний режим: %s",
   "modular_machinery_reborn.structure_creator.mode.box": "Область",
   "modular_machinery_reborn.structure_creator.mode.box.first": "Виберіть перший кут",

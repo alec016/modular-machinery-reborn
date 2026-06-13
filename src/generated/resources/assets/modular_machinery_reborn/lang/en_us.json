@@ -376,7 +376,7 @@
   "modular_machinery_reborn.requirement.mode.output": "Output",
   "modular_machinery_reborn.structure_creator.amount": "%s blocks selected",
   "modular_machinery_reborn.structure_creator.finish": "Shift click in any machine controller to get the structure",
-  "modular_machinery_reborn.structure_creator.message": "Structure generated, click to copy: %s %s %s",
+  "modular_machinery_reborn.structure_creator.message": "Structure generated, click to copy: %s %s %s %s",
   "modular_machinery_reborn.structure_creator.mode": "Current mode: %s",
   "modular_machinery_reborn.structure_creator.mode.box": "Box",
   "modular_machinery_reborn.structure_creator.mode.box.first": "Select first corner",

@@ -505,7 +505,7 @@ final class PtBrLang extends Lang {
     add(mm("structure_creator.amount"), "%s blocos selecionados");
     add(mm("structure_creator.select"), "Clique com o botão direito em um bloco para adicioná-lo ou removê-lo. Se o bloco tiver uma GUI, clique com Shift para adicioná-lo ou removê-lo.");
     add(mm("structure_creator.finish"), "Clique com Shift em qualquer controlador de máquina para obter a estrutura");
-    add(mm("structure_creator.message"), "Estrutura gerada, clique para copiar: %s %s %s");
+    add(mm("structure_creator.message"), "Estrutura gerada, clique para copiar: %s %s %s %s");
     add(mm("structure_creator.reset"), "Clique com o botão direito no ar enquanto agachado para resetar");
     add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
     add(mm("structure_creator.vein.max"), "Max %s blocks");

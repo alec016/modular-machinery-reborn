@@ -373,7 +373,7 @@
   "modular_machinery_reborn.jei.ingredient.weather": "Tempo climático: %s",
   "modular_machinery_reborn.structure_creator.amount": "%s blocos selecionados",
   "modular_machinery_reborn.structure_creator.finish": "Clique com Shift em qualquer controlador de máquina para obter a estrutura",
-  "modular_machinery_reborn.structure_creator.message": "Estrutura gerada, clique para copiar: %s %s %s",
+  "modular_machinery_reborn.structure_creator.message": "Estrutura gerada, clique para copiar: %s %s %s %s",
   "modular_machinery_reborn.structure_creator.mode": "Modo Atual: %s",
   "modular_machinery_reborn.structure_creator.mode.box": "Caixa",
   "modular_machinery_reborn.structure_creator.mode.box.first": "Selecione o primeiro canto",

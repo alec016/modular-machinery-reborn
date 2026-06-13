@@ -67,6 +67,9 @@ public class StructureCreatorItem extends Item {
     ItemStack stack = context.getItemInHand();
     boolean isClientSide = context.getLevel().isClientSide;
     ItemStack s;
+    if (isClientSide) {
+      return sidedSuccess(true);
+    }
     var slot = findSlotMatchingItem(player.getInventory(), ItemRegistration.STRUCTURE_TEMPLATE_ITEM.toStack());
     if (slot >= 0) {
       s = player.getInventory().getItem(slot);
@@ -89,7 +92,7 @@ public class StructureCreatorItem extends Item {
           StructureTemplateItem.removeSelectedBlock(s, pos);
         }
       }
-      return sidedSuccess(isClientSide);
+      return sidedSuccess(false);
     } else if (mode.isBox()) {
       if (!(state.getBlock() instanceof BlockController)) {
         if (isFirst(stack)) {
@@ -100,12 +103,11 @@ public class StructureCreatorItem extends Item {
           setFirst(stack);
         }
       }
-      return sidedSuccess(isClientSide);
+      return sidedSuccess(false);
     } else if (mode.isVein()) {
       if (!(state.isAir() || state.getBlock() instanceof BlockController)) {
-        if (!isClientSide) {
-          applyVeinSelection(context.getLevel(), pos, s);
-        }
+        applyVeinSelection(context.getLevel(), pos, s);
+        return sidedSuccess(false);
       }
     }
 

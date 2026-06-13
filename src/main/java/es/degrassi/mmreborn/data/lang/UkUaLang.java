@@ -549,7 +549,7 @@ final class UkUaLang extends Lang {
     add(mm("structure_creator.amount"), "Вибрано блоків: %s");
     add(mm("structure_creator.select"), "ПКМ по блоку, щоб додати/видалити його. Якщо блок має інтерфейс, використовуйте Shift+ПКМ.");
     add(mm("structure_creator.finish"), "Натисніть Shift+ПКМ по будь-якому контролеру, щоб отримати структуру");
-    add(mm("structure_creator.message"), "Структуру згенеровано, натисніть для копіювання: %s %s %s");
+    add(mm("structure_creator.message"), "Структуру згенеровано, натисніть для копіювання: %s %s %s %s");
     add(mm("structure_creator.reset"), "ПКМ у повітря під час присідання, щоб скинути вибір");
     add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
     add(mm("structure_creator.vein.max"), "Max %s blocks");

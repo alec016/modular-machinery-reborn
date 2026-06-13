@@ -509,7 +509,7 @@ final class EnUsLang extends Lang {
     add(mm("structure_creator.amount"), "%s blocks selected");
     add(mm("structure_creator.select"), "Right click a block to add or remove it. If block has GUI shift click to add or remove it.");
     add(mm("structure_creator.finish"), "Shift click in any machine controller to get the structure");
-    add(mm("structure_creator.message"), "Structure generated, click to copy: %s %s %s");
+    add(mm("structure_creator.message"), "Structure generated, click to copy: %s %s %s %s");
     add(mm("structure_creator.reset"), "Right click in the air while crouching to reset");
     add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
     add(mm("structure_creator.vein.max"), "Max %s blocks");
