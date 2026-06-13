@@ -5,10 +5,12 @@
 package es.degrassi.mmreborn.common.item;
 
 import es.degrassi.mmreborn.common.block.BlockController;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.registration.DataComponentRegistration;
 import es.degrassi.mmreborn.common.registration.ItemRegistration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,9 +23,14 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class StructureCreatorItem extends Item {
   private final StructureCreatorItemMode mode;
@@ -94,8 +101,13 @@ public class StructureCreatorItem extends Item {
         }
       }
       return sidedSuccess(isClientSide);
+    } else if (mode.isVein()) {
+      if (!(state.isAir() || state.getBlock() instanceof BlockController)) {
+        if (!isClientSide) {
+          applyVeinSelection(context.getLevel(), pos, s);
+        }
+      }
     }
-
 
     return super.useOn(context);
   }
@@ -111,6 +123,9 @@ public class StructureCreatorItem extends Item {
       }
     } else if (mode.isSingle()) {
       tooltip.add(Component.translatable("modular_machinery_reborn.structure_creator.select").withStyle(ChatFormatting.GREEN));
+    } else if (mode.isVein()) {
+      tooltip.add(Component.translatable("modular_machinery_reborn.structure_creator.vein.select").withStyle(ChatFormatting.GRAY));
+      tooltip.add(Component.translatable("modular_machinery_reborn.structure_creator.vein.max", MMRConfig.get().maxVeinNumber.get()).withStyle(ChatFormatting.DARK_AQUA));
     }
     tooltip.add(Component.empty());
     tooltip.add(Component.translatable("modular_machinery_reborn.structure_creator.reset").withStyle(ChatFormatting.GOLD));
@@ -124,6 +139,44 @@ public class StructureCreatorItem extends Item {
       return InteractionResultHolder.success(stack);
     }
     return super.use(level, player, hand);
+  }
+
+  protected void applyVeinSelection(Level level, BlockPos startPos, ItemStack template) {
+    Queue<BlockPos> queue = new LinkedList<>();
+    Set<BlockPos> visited = new HashSet<>();
+
+    queue.add(startPos);
+    visited.add(startPos);
+
+    int addedCount = 0;
+    final int LIMIT = MMRConfig.get().maxVeinNumber.get();
+
+    final Block type = level.getBlockState(startPos).getBlock();
+
+    while(!queue.isEmpty() && addedCount < LIMIT) {
+      BlockPos current = queue.poll();
+      BlockState currentState = level.getBlockState(current);
+
+      if(!currentState.isAir() && !(currentState.getBlock() instanceof BlockController)) {
+        if(!StructureTemplateItem.contains(template, current) && currentState.is(type)) {
+          StructureTemplateItem.addSelectedBlock(template, current);
+          addedCount++;
+        }
+
+        for(Direction dir : Direction.values()) {
+          BlockPos neighbor = current.relative(dir);
+
+          if(!visited.contains(neighbor)) {
+            BlockState neighborState = level.getBlockState(neighbor);
+
+            if(!neighborState.isAir() && !(neighborState.getBlock() instanceof BlockController)) {
+              visited.add(neighbor);
+              queue.add(neighbor);
+            }
+          }
+        }
+      }
+    }
   }
 
   public static boolean isFirst(ItemStack stack) {

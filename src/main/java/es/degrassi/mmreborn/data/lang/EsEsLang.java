@@ -176,6 +176,7 @@ final class EsEsLang extends Lang {
   @Override
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "Creador de estructura (Single)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Creador de estructura (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "Creador de estructura (Box)");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Structure Template (Incomplete)");
     addItem(ItemRegistration.BLUEPRINT, "Machine Blueprint");
@@ -523,6 +524,7 @@ final class EsEsLang extends Lang {
     add(mm("structure_creator.mode.change"), "Cambiado el modo de %s a %s");
     add(mm("structure_creator.mode.single"), "Único");
     add(mm("structure_creator.mode.box"), "Caja");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Selecciona primera esquina");
     add(mm("structure_creator.mode.box.second"), "Selecciona segunda esquina");
     add(mm("structure_creator.mode"), "Modo Actual: %s");
@@ -532,5 +534,7 @@ final class EsEsLang extends Lang {
     add(mm("structure_creator.finish"), "Shift click en cualquier controlador para obtener la estructura");
     add(mm("structure_creator.message"), "Estructura generada, click para copiar: %s %s %s");
     add(mm("structure_creator.reset"), "Click derecho en el aire mientras te agachas para resetear");
+    add(mm("structure_creator.vein.select"), "Selecciona cualquier bloque que no sea aire o el controlador.");
+    add(mm("structure_creator.vein.max"), "Max %s bloques");
   }
 }

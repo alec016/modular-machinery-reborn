@@ -180,6 +180,7 @@ final class EnUsLang extends Lang {
   @Override
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "Structure Creator (Single)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Structure Creator (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "Structure Creator (Box)");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Structure Template (Incomplete)");
     addItem(ItemRegistration.BLUEPRINT, "Machine Blueprint");
@@ -500,6 +501,7 @@ final class EnUsLang extends Lang {
     add(mm("structure_creator.mode.change"), "Changed mode from %s to %s");
     add(mm("structure_creator.mode.single"), "Single");
     add(mm("structure_creator.mode.box"), "Box");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Select first corner");
     add(mm("structure_creator.mode.box.second"), "Select seconds corner");
     add(mm("structure_creator.mode"), "Current mode: %s");
@@ -509,6 +511,8 @@ final class EnUsLang extends Lang {
     add(mm("structure_creator.finish"), "Shift click in any machine controller to get the structure");
     add(mm("structure_creator.message"), "Structure generated, click to copy: %s %s %s");
     add(mm("structure_creator.reset"), "Right click in the air while crouching to reset");
+    add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
+    add(mm("structure_creator.vein.max"), "Max %s blocks");
   }
 
   @Override

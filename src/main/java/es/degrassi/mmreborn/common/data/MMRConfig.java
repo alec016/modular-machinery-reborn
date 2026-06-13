@@ -31,10 +31,13 @@ public class MMRConfig {
   public final ConfigValue<Integer> dynamicTooltipTicks;
   public final ConfigValue<Integer> maxParallel;
 
+  // Structures config
   public final ConfigValue<Boolean> shouldReplace;
   public final ConfigValue<Boolean> sendReplaceMessage;
   public final ConfigValue<Boolean> sendMissingBlockMessage;
   public final ConfigValue<Boolean> sendErrorMessage;
+  public final ConfigValue<Integer> maxVeinNumber;
+  public final ConfigValue<Boolean> forceAir;
 
   public final ConfigValue<Integer> structureRenderTime;
   public final ConfigValue<Integer> blockTagCycleTime;
@@ -99,6 +102,12 @@ public class MMRConfig {
       this.sendErrorMessage = builder
           .comment("Defines if should sent a message to the player for each error on place block. Default: true")
           .define("errorMessage", true);
+      this.forceAir = builder
+          .comment("Determines if structure tools should force air as block or change it to ANY state. Default: true")
+          .define("force_air", true);
+      this.maxVeinNumber = builder
+          .comment("Defines the max value that can be chained in vein mode in structure tool. Use at your own risk. Default: 64")
+          .defineInRange("max_vein_number", 64, 1, Integer.MAX_VALUE);
       builder.pop();
     }
     // RENDERING

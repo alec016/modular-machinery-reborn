@@ -1,6 +1,5 @@
 package es.degrassi.mmreborn.common.item;
 
-import com.mojang.serialization.Codec;
 import es.degrassi.mmreborn.api.codec.NamedCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -11,24 +10,10 @@ import net.minecraft.util.StringRepresentable;
 import java.util.Locale;
 
 public enum StructureCreatorItemMode implements StringRepresentable {
-  SINGLE, BOX;
+  SINGLE, BOX, VEIN;
 
-  public static final Codec<StructureCreatorItemMode> CODEC = NamedCodec.enumCodec(StructureCreatorItemMode.class).codec();
-  public static final StreamCodec<RegistryFriendlyByteBuf, StructureCreatorItemMode> STREAM_CODEC = new StreamCodec<>() {
-    @Override
-    public StructureCreatorItemMode decode(RegistryFriendlyByteBuf buffer) {
-      return buffer.readEnum(StructureCreatorItemMode.class);
-    }
-
-    @Override
-    public void encode(RegistryFriendlyByteBuf buffer, StructureCreatorItemMode value) {
-      buffer.writeEnum(value);
-    }
-  };
-
-  public StructureCreatorItemMode next() {
-    return isSingle() ? BOX : SINGLE;
-  }
+  public static final NamedCodec<StructureCreatorItemMode> CODEC = NamedCodec.enumCodec(StructureCreatorItemMode.class);
+  public static final StreamCodec<RegistryFriendlyByteBuf, StructureCreatorItemMode> STREAM_CODEC = CODEC.streamCodec();
 
   public boolean isSingle() {
     return this == SINGLE;
@@ -36,6 +21,10 @@ public enum StructureCreatorItemMode implements StringRepresentable {
 
   public boolean isBox() {
     return this == BOX;
+  }
+
+  public boolean isVein() {
+    return this == VEIN;
   }
 
   public MutableComponent component() {

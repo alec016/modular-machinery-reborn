@@ -30,6 +30,7 @@ public class MMRBlockStateProvider extends BaseMMRBlockStateProvider {
     itemModels().basicItem(ItemRegistration.BLUEPRINT.asItem());
     itemModels().basicItem(ItemRegistration.WRENCH.asItem());
     basicItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE.asItem(), mcLoc("item/stick"));
+    basicItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN.asItem(), mcLoc("item/stick"));
     basicItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX.asItem(), mcLoc("item/stick"));
     basicItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM.asItem(), modLoc("item/template"));
 

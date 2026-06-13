@@ -56,6 +56,8 @@ public class ItemRegistration {
   public static final DeferredItem<WrenchItem> WRENCH = ITEMS.register(rootLC("wrench"), WrenchItem::new);
   public static final DeferredItem<StructureCreatorItem> STRUCTURE_CREATOR_ITEM_SINGLE = ITEMS.register(rootLC("structure_creator_single"),
       () -> new StructureCreatorItem(StructureCreatorItemMode.SINGLE, new Item.Properties()));
+  public static final DeferredItem<StructureCreatorItem> STRUCTURE_CREATOR_ITEM_VEIN = ITEMS.register(rootLC("structure_creator_vein"),
+      () -> new StructureCreatorItem(StructureCreatorItemMode.VEIN, new Item.Properties()));
   public static final DeferredItem<StructureCreatorItem> STRUCTURE_CREATOR_ITEM_BOX = ITEMS.register(rootLC("structure_creator_box"),
       () -> new StructureCreatorItem(StructureCreatorItemMode.BOX, new Item.Properties().component(DataComponentRegistration.STRUCTURE_CREATOR_BOX_CURRENT, true)));
   public static final DeferredItem<StructureTemplateItem> STRUCTURE_TEMPLATE_ITEM = ITEMS.register(rootLC("structure_template_item"), StructureTemplateItem::new);

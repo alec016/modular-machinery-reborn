@@ -178,6 +178,7 @@ final class RuRuLang extends Lang {
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "Создатель мульти-структуры (Single)");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "Создатель мульти-структуры (Box)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Structure Creator (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Structure Template (Incomplete)");
     addItem(ItemRegistration.BLUEPRINT, "Мульти-структуры чертеж");
     addItem(ItemRegistration.MODULARIUM, "Модулариум");
@@ -497,6 +498,7 @@ final class RuRuLang extends Lang {
     add(mm("structure_creator.mode.change"), "Сменить режим с %s на %s");
     add(mm("structure_creator.mode.single"), "Блочное выделение");
     add(mm("structure_creator.mode.box"), "Областное выделение");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Укажите начальный точку");
     add(mm("structure_creator.mode.box.second"), "Укажите конечную точку");
     add(mm("structure_creator.mode"), "Выбранный режим: %s");
@@ -506,6 +508,8 @@ final class RuRuLang extends Lang {
     add(mm("structure_creator.finish"), "Shift + ПКМ по любому контроллеру, чтобы получить мульти-структуры");
     add(mm("structure_creator.message"), "Мульти-структура сгенерирована. Нажмите, чтобы скопировать: %s %s %s");
     add(mm("structure_creator.reset"), "ПКМ по воздуху, чтобы сбросить выделение");
+    add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
+    add(mm("structure_creator.vein.max"), "Max %s blocks");
   }
 
   @Override

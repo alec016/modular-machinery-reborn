@@ -58,7 +58,7 @@ public class DataComponentRegistration {
   public static final Supplier<DataComponentType<StructureCreatorItemMode>> STRUCTURE_CREATOR_MODE =
       DATA_COMPONENTS.register(
           rootLC("structure_creator_mode"), () -> DataComponentType.<StructureCreatorItemMode>builder()
-              .persistent(StructureCreatorItemMode.CODEC)
+              .persistent(StructureCreatorItemMode.CODEC.codec())
               .networkSynchronized(StructureCreatorItemMode.STREAM_CODEC)
               .build()
       );

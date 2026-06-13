@@ -177,6 +177,7 @@ final class PtBrLang extends Lang {
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "Criador de Estrutura (Single)");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "Criador de Estrutura (Box)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Structure Creator (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Structure Template (Incomplete)");
     addItem(ItemRegistration.BLUEPRINT, "Projeto de Máquina");
     addItem(ItemRegistration.MODULARIUM, "Barra de Modularium");
@@ -496,6 +497,7 @@ final class PtBrLang extends Lang {
     add(mm("structure_creator.mode.change"), "Modo alterado de %s para %s");
     add(mm("structure_creator.mode.single"), "Único");
     add(mm("structure_creator.mode.box"), "Caixa");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Selecione o primeiro canto");
     add(mm("structure_creator.mode.box.second"), "Selecione o segundo canto");
     add(mm("structure_creator.mode"), "Modo Atual: %s");
@@ -505,6 +507,8 @@ final class PtBrLang extends Lang {
     add(mm("structure_creator.finish"), "Clique com Shift em qualquer controlador de máquina para obter a estrutura");
     add(mm("structure_creator.message"), "Estrutura gerada, clique para copiar: %s %s %s");
     add(mm("structure_creator.reset"), "Clique com o botão direito no ar enquanto agachado para resetar");
+    add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
+    add(mm("structure_creator.vein.max"), "Max %s blocks");
   }
 
   @Override

@@ -221,6 +221,7 @@ final class UkUaLang extends Lang {
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "Творець структур (Одиничний)");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "Творець структур (Область)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Structure Creator (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Шаблон структури (Незавершений)");
     addItem(ItemRegistration.BLUEPRINT, "Креслення машини");
     addItem(ItemRegistration.MODULARIUM, "Модуляріум");
@@ -540,6 +541,7 @@ final class UkUaLang extends Lang {
     add(mm("structure_creator.mode.change"), "Змінено режим з %s на %s");
     add(mm("structure_creator.mode.single"), "Одиничний");
     add(mm("structure_creator.mode.box"), "Область");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Виберіть перший кут");
     add(mm("structure_creator.mode.box.second"), "Виберіть другий кут");
     add(mm("structure_creator.mode"), "Поточний режим: %s");
@@ -549,6 +551,8 @@ final class UkUaLang extends Lang {
     add(mm("structure_creator.finish"), "Натисніть Shift+ПКМ по будь-якому контролеру, щоб отримати структуру");
     add(mm("structure_creator.message"), "Структуру згенеровано, натисніть для копіювання: %s %s %s");
     add(mm("structure_creator.reset"), "ПКМ у повітря під час присідання, щоб скинути вибір");
+    add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
+    add(mm("structure_creator.vein.max"), "Max %s blocks");
   }
 
   @Override

@@ -179,6 +179,7 @@ final class ZhCnLang extends Lang {
   protected void addItems() {
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE, "结构创建器 (Single)");
     addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX, "结构创建器 (Box)");
+    addItem(ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN, "Structure Creator (Proximity (Vein))");
     addItem(ItemRegistration.STRUCTURE_TEMPLATE_ITEM, "Structure Template (Incomplete)");
     addItem(ItemRegistration.BLUEPRINT, "机械蓝图");
     addItem(ItemRegistration.MODULARIUM, "模块化合金");
@@ -498,6 +499,7 @@ final class ZhCnLang extends Lang {
     add(mm("structure_creator.mode.change"), "模式从 %s 变更到 %s");
     add(mm("structure_creator.mode.single"), "单个");
     add(mm("structure_creator.mode.box"), "范围");
+    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "请选择第一个角");
     add(mm("structure_creator.mode.box.second"), "请选择第二个角");
     add(mm("structure_creator.mode"), "当前模式: %s");
@@ -507,6 +509,8 @@ final class ZhCnLang extends Lang {
     add(mm("structure_creator.finish"), "Shift+右键任何模块化机械控制器来获取结构");
     add(mm("structure_creator.message"), "结构已生成。点击以复制 : %s %s %s");
     add(mm("structure_creator.reset"), "右键空气以清空被选择的方块");
+    add(mm("structure_creator.vein.select"), "Select any block that is not air or the controller.");
+    add(mm("structure_creator.vein.max"), "Max %s blocks");
   }
 
   @Override

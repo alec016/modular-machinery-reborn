@@ -26,6 +26,7 @@ public class StructureCreatorRenderer {
       if (
           item == ItemRegistration.STRUCTURE_CREATOR_ITEM_SINGLE.get() ||
           item == ItemRegistration.STRUCTURE_CREATOR_ITEM_BOX.get() ||
+          item == ItemRegistration.STRUCTURE_CREATOR_ITEM_VEIN.get() ||
           item == ItemRegistration.STRUCTURE_TEMPLATE_ITEM.get()
       ) {
         var templateItem = item == ItemRegistration.STRUCTURE_TEMPLATE_ITEM.get() ? player.getMainHandItem() : null;
