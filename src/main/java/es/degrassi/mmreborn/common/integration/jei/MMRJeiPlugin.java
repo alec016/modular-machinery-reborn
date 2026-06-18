@@ -6,6 +6,7 @@ import es.degrassi.mmreborn.ModularMachineryReborn;
 import es.degrassi.mmreborn.api.client.machine.TooltipUse;
 import es.degrassi.mmreborn.api.codec.NamedCodec;
 import es.degrassi.mmreborn.api.integration.almostunified.RecipeIndicator;
+import es.degrassi.mmreborn.client.container.FilterSlotComponent;
 import es.degrassi.mmreborn.client.screen.BaseScreen;
 import es.degrassi.mmreborn.client.screen.ControllerScreen;
 import es.degrassi.mmreborn.client.screen.widget.tabs.ITabGroupScreen;
@@ -29,10 +30,12 @@ import es.degrassi.mmreborn.common.util.Mods;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IJeiHelpers;
+import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.IFocusFactory;
@@ -60,6 +63,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +170,34 @@ public class MMRJeiPlugin implements IModPlugin {
         screen.popups().forEach(popup -> extraAreas.add(new Rect2i(popup.x, popup.y, popup.xSize, popup.ySize)));
         return extraAreas;
       }
+    });
+
+    registration.addGhostIngredientHandler(BaseScreen.class, new IGhostIngredientHandler<>() {
+      @Override
+      public <I> List<Target<I>> getTargetsTyped(BaseScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
+        if (ingredient.getIngredient() instanceof ItemStack stack) {
+          return screen.getMenu().slots.stream()
+              .filter(slot -> slot instanceof FilterSlotComponent<?,?>)
+              .map(slot -> {
+                FilterSlotComponent<?,?> filterSlot = (FilterSlotComponent<?,?>) slot;
+                return new Target<I>() {
+                  @Override
+                  public Rect2i getArea() {
+                    return new Rect2i(screen.getGuiLeft() + filterSlot.x, screen.getGuiTop() + filterSlot.y, 16, 16);
+                  }
+
+                  @Override
+                  public void accept(I ingredient) {
+                    filterSlot.setFromClient(stack);
+                  }
+                };
+              }).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+      }
+
+      @Override
+      public void onComplete() {}
     });
   }
 

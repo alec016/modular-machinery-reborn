@@ -3,6 +3,7 @@ package es.degrassi.mmreborn.common.integration.emi;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
@@ -10,11 +11,16 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.EmiRecipeDecorator;
 import dev.emi.emi.api.stack.Comparison;
+import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.ItemEmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.WidgetHolder;
+import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
+import dev.emi.emi.runtime.EmiDrawContext;
 import es.degrassi.mmreborn.ModularMachineryReborn;
 import es.degrassi.mmreborn.api.integration.almostunified.RecipeIndicator;
+import es.degrassi.mmreborn.client.container.FilterSlotComponent;
 import es.degrassi.mmreborn.client.screen.BaseScreen;
 import es.degrassi.mmreborn.client.screen.ControllerScreen;
 import es.degrassi.mmreborn.client.screen.widget.tabs.ITabGroupScreen;
@@ -29,15 +35,27 @@ import es.degrassi.mmreborn.common.machine.DynamicMachine;
 import es.degrassi.mmreborn.common.registration.DataComponentRegistration;
 import es.degrassi.mmreborn.common.registration.ItemRegistration;
 import es.degrassi.mmreborn.common.registration.RecipeRegistration;
+import es.degrassi.mmreborn.common.util.MMRLogger;
 import es.degrassi.mmreborn.common.util.Mods;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.apache.commons.compress.utils.Lists;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @EmiEntrypoint
 public class MMREmiPlugin implements EmiPlugin {
@@ -81,6 +99,7 @@ public class MMREmiPlugin implements EmiPlugin {
           .forEach(recipe -> registry.addDeferredRecipes(x -> x.accept(new MMREmiRecipe(category, recipe))));
       registry.addRecipeDecorator(category, new IndicatorDecorator());
       //registry.addRecipeHandler(ContainerRegistration.CONTROLLER.get(), new MMREmiRecipeHandler(machine));
+      registry.addGenericDragDropHandler(new MMREmiDragDropHandler());
       if (Mods.isLDLibLoaded()) {
         MMRMultiblockCategory multiblockCategory = new MMRMultiblockCategory(machine, stack);
         registry.addCategory(multiblockCategory);
