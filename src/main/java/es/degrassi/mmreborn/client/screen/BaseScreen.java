@@ -2,7 +2,9 @@ package es.degrassi.mmreborn.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import es.degrassi.mmreborn.ModularMachineryReborn;
+import es.degrassi.mmreborn.api.handler.FilterRendererRegistry;
 import es.degrassi.mmreborn.client.container.ContainerBase;
+import es.degrassi.mmreborn.client.container.FilterSlotComponent;
 import es.degrassi.mmreborn.client.screen.widget.GuiElement;
 import es.degrassi.mmreborn.client.screen.widget.IGuiWrapper;
 import es.degrassi.mmreborn.client.screen.widget.tabs.TabGroupWidget;
@@ -10,12 +12,14 @@ import es.degrassi.mmreborn.common.entity.base.ColorableMachineComponentEntity;
 import es.degrassi.mmreborn.common.util.TextureSizeHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -161,6 +165,30 @@ public abstract class BaseScreen<T extends ContainerBase<E>, E extends Colorable
         BaseScreen.SLOT_SIZE,
         TextureSizeHelper.getWidth(BaseScreen.BASE_SLOT), TextureSizeHelper.getHeight(BaseScreen.BASE_SLOT));
     super.renderSlot(guiGraphics, slot);
+
+  }
+
+  @Override
+  protected void renderSlotContents(GuiGraphics guiGraphics, ItemStack itemstack, Slot slot, @Nullable String countString) {
+    if (slot instanceof FilterSlotComponent<?, ?> fs) {
+      if (FilterRendererRegistry.hasRenderer(fs.toFilterRender())) {
+        FilterRendererRegistry.render(fs.toFilterRender(), guiGraphics, slot.x, slot.y);
+        return;
+      }
+    }
+    super.renderSlotContents(guiGraphics, itemstack, slot, countString);
+    if (slot.isFake() && slot instanceof FilterSlotComponent<?, ?> && hoveredSlot != slot) {
+      guiGraphics.pose().pushPose();
+      guiGraphics.pose().translate(0,0, 255);
+      guiGraphics.fill(
+          slot.x,
+          slot.y,
+          slot.x + 16,
+          slot.y + 16,
+          FastColor.ARGB32.color(255/2, 255, 255, 255)
+      );
+      guiGraphics.pose().popPose();
+    }
   }
 
   @Override
@@ -170,6 +198,12 @@ public abstract class BaseScreen<T extends ContainerBase<E>, E extends Colorable
 
   @Override
   protected void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+    if (hoveredSlot instanceof FilterSlotComponent<?, ?> fs) {
+      var comp = fs.getFilter();
+      if (comp == null) return;
+      guiGraphics.renderTooltip(Minecraft.getInstance().font, comp, x, y);
+      return;
+    }
     super.renderTooltip(guiGraphics, x, y);
 
     for (var element : children()) {

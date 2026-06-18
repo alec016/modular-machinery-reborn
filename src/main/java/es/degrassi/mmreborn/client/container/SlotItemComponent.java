@@ -4,6 +4,7 @@ import es.degrassi.mmreborn.common.manager.handler.slot.ItemSlot;
 import lombok.Getter;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -45,6 +46,28 @@ public class SlotItemComponent extends Slot {
   @Override
   public void setChanged() {
     this.component.setChanged();
+  }
+
+  @Override
+  public int getMaxStackSize(ItemStack stack) {
+    return component.getCapacity();
+  }
+
+  @Override
+  public ItemStack safeInsert(ItemStack stack, int increment) {
+    if(!stack.isEmpty() && this.mayPlace(stack)) {
+      ItemStack itemstack = this.getItem();
+      int i = Math.min(Math.min(increment, stack.getCount()), this.getMaxStackSize(stack) - itemstack.getCount());
+      if(itemstack.isEmpty()) {
+        this.setByPlayer(stack.split(i));
+      } else if(ItemStack.isSameItemSameComponents(itemstack, stack)) {
+        stack.shrink(i);
+        //itemstack.grow(i); DO NOT MODIFY THE STORED STACK DIRECTLY
+        //this.setByPlayer(itemstack); Instead set a modified copy of the stack so upgrades are refreshed.
+        this.setByPlayer(itemstack.copyWithCount(itemstack.getCount() + i));
+      }
+    }
+    return stack;
   }
 
   @Override

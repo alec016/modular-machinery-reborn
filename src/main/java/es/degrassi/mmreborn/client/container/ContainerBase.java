@@ -60,7 +60,7 @@ public abstract class ContainerBase<T extends ColorableMachineComponentEntity> e
    */
   protected Slot addSlot(Slot slot) {
     slot = super.addSlot(slot);
-    if (slot instanceof SlotItemComponent sic) {
+    if (slot instanceof SlotItemComponent sic && !(sic instanceof FilterSlotComponent<?, ?>)) {
       this.inputSlotComponents.add(sic);
     }
     return slot;
@@ -160,6 +160,11 @@ public abstract class ContainerBase<T extends ColorableMachineComponentEntity> e
     } else {
       if (!(slot instanceof SlotItemComponent slotComponent))
         return ItemStack.EMPTY;
+      if (slotComponent instanceof FilterSlotComponent<?, ?> fs) {
+        fs.remove(Integer.MAX_VALUE);
+        fs.setChanged();
+        return ItemStack.EMPTY;
+      }
 
       ItemStack removed = slotComponent.getItem();
       if(!moveItemStackTo(removed, 0, this.firstComponentSlotIndex - 1, false))

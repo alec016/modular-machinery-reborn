@@ -73,6 +73,9 @@ public class ColorableMachineComponentEntity extends BlockEntitySynchronized imp
   @Override
   protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider pRegistries) {
     super.loadAdditional(nbt, pRegistries);
+    if (this instanceof FiltereableEntity<?, ?> entity) {
+      entity.deserializeFilter(nbt.getCompound(FiltereableEntity.FILTER_KEY), pRegistries);
+    }
     if (nbt.contains("casingColor")) {
       definedColor = nbt.getInt("casingColor");
       return;
@@ -83,6 +86,9 @@ public class ColorableMachineComponentEntity extends BlockEntitySynchronized imp
   @Override
   protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider pRegistries) {
     super.saveAdditional(nbt, pRegistries);
+    if (this instanceof FiltereableEntity<?, ?> entity) {
+      nbt.put(FiltereableEntity.FILTER_KEY, entity.serializeFilter(pRegistries));
+    }
     nbt.putInt("casingColor", this.definedColor);
   }
 
