@@ -9,6 +9,8 @@ import es.degrassi.experiencelib.api.capability.ExperienceLibCapabilities;
 import es.degrassi.mmreborn.api.client.machine.TooltipUse;
 import es.degrassi.mmreborn.api.crafting.IProcessor;
 import es.degrassi.mmreborn.api.crafting.requirement.IRequirement;
+import es.degrassi.mmreborn.api.handler.FilterConverterRegistry;
+import es.degrassi.mmreborn.api.handler.RegisterFilterConversionEvent;
 import es.degrassi.mmreborn.api.network.DataType;
 import es.degrassi.mmreborn.api.network.IData;
 import es.degrassi.mmreborn.client.util.EnergyDisplayUtil;
@@ -25,6 +27,9 @@ import es.degrassi.mmreborn.common.block.prop.ParallelHatchSize;
 import es.degrassi.mmreborn.common.command.MMRCommand;
 import es.degrassi.mmreborn.common.crafting.ComponentType;
 import es.degrassi.mmreborn.common.crafting.modifier.RecipeModifierTargetEvent;
+import es.degrassi.mmreborn.common.crafting.requirement.RequirementType;
+import es.degrassi.mmreborn.common.data.Config;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.data.config.DurabilityHatchConfig;
 import es.degrassi.mmreborn.common.data.config.EffectDispenserConfig;
 import es.degrassi.mmreborn.common.data.config.EnergyHatchConfig;
@@ -34,19 +39,15 @@ import es.degrassi.mmreborn.common.data.config.FuelTankConfig;
 import es.degrassi.mmreborn.common.data.config.ItemBusConfig;
 import es.degrassi.mmreborn.common.data.config.ParallelHatchConfig;
 import es.degrassi.mmreborn.common.entity.MachineControllerEntity;
-import es.degrassi.mmreborn.common.manager.crafting.MachineProcessorCore;
-import es.degrassi.mmreborn.common.network.server.SSyncMachinePacket;
-import es.degrassi.mmreborn.common.network.server.SSyncTooltipsPacket;
-import es.degrassi.mmreborn.common.util.EmptyRequirementType;
-import es.degrassi.mmreborn.common.crafting.requirement.RequirementType;
-import es.degrassi.mmreborn.common.data.Config;
-import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.integration.theoneprobe.TOPInfoProvider;
 import es.degrassi.mmreborn.common.machine.DynamicMachine;
 import es.degrassi.mmreborn.common.machine.MachineHatchType;
 import es.degrassi.mmreborn.common.machine.MachineJsonReloadListener;
+import es.degrassi.mmreborn.common.manager.crafting.MachineProcessorCore;
 import es.degrassi.mmreborn.common.manager.crafting.ProcessorType;
 import es.degrassi.mmreborn.common.network.server.SLootTablesPacket;
+import es.degrassi.mmreborn.common.network.server.SSyncMachinePacket;
+import es.degrassi.mmreborn.common.network.server.SSyncTooltipsPacket;
 import es.degrassi.mmreborn.common.registration.ComponentRegistration;
 import es.degrassi.mmreborn.common.registration.DataRegistration;
 import es.degrassi.mmreborn.common.registration.EmptyRequirementTypeRegistration;
@@ -55,15 +56,19 @@ import es.degrassi.mmreborn.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmreborn.common.registration.ProcessorTypeRegistration;
 import es.degrassi.mmreborn.common.registration.Registration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
+import es.degrassi.mmreborn.common.util.EmptyRequirementType;
 import es.degrassi.mmreborn.common.util.LootTableHelper;
 import es.degrassi.mmreborn.common.util.MMRLogger;
 import es.degrassi.mmreborn.common.util.MiscUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.ModContainer;
@@ -82,6 +87,7 @@ import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
@@ -117,6 +123,7 @@ public class ModularMachineryReborn {
     MOD_BUS.addListener(this::registerCapabilities);
     MOD_BUS.addListener(this::reloadConfig);
     MOD_BUS.addListener(this::addToBlacklist);
+    MOD_BUS.addListener(this::addFilters);
 
     final IEventBus GAME_BUS = NeoForge.EVENT_BUS;
     GAME_BUS.addListener(this::serverStarting);
@@ -207,6 +214,18 @@ public class ModularMachineryReborn {
     EnergyDisplayUtil.loadFromConfig();
 
     RecipeModifierTargetEvent.init();
+    FilterConverterRegistry.init();
+  }
+
+  private void addFilters(final RegisterFilterConversionEvent event) {
+    BuiltInRegistries.FLUID.forEach(fluid -> {
+      if (!fluid.isSource(fluid.defaultFluidState())) return;
+      if (fluid.isSame(Fluids.EMPTY)) {
+        event.register(Items.BUCKET, FluidStack.EMPTY);
+        return;
+      }
+      event.register(fluid.getBucket(), new FluidStack(fluid, 1));
+    });
   }
 
   private void addToBlacklist(RecipeModifierTargetEvent.Blacklist event) {

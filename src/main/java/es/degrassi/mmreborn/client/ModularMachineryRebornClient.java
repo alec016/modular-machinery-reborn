@@ -3,6 +3,8 @@ package es.degrassi.mmreborn.client;
 import com.google.common.collect.Lists;
 import es.degrassi.mmreborn.ModularMachineryReborn;
 import es.degrassi.mmreborn.api.IWrenchable;
+import es.degrassi.mmreborn.api.handler.FilterRendererRegistry;
+import es.degrassi.mmreborn.api.handler.RegisterFilterRendererEvent;
 import es.degrassi.mmreborn.client.entity.renderer.ControllerRenderer;
 import es.degrassi.mmreborn.client.entity.renderer.IWrenchableRenderer;
 import es.degrassi.mmreborn.client.entity.renderer.StructureCheckerRenderer;
@@ -23,9 +25,11 @@ import es.degrassi.mmreborn.client.screen.ItemBusScreen;
 import es.degrassi.mmreborn.client.screen.ItemDurabilityScreen;
 import es.degrassi.mmreborn.client.screen.ParallelHatchScreen;
 import es.degrassi.mmreborn.client.screen.RedstonePortScreen;
+import es.degrassi.mmreborn.client.util.FluidRenderer;
 import es.degrassi.mmreborn.common.block.BlockDynamicColor;
 import es.degrassi.mmreborn.common.data.Config;
 import es.degrassi.mmreborn.common.data.MMRConfig;
+import es.degrassi.mmreborn.common.entity.DurabilityHatchEntity;
 import es.degrassi.mmreborn.common.entity.FuelTankEntity;
 import es.degrassi.mmreborn.common.entity.MachineControllerEntity;
 import es.degrassi.mmreborn.common.entity.ParallelHatchEntity;
@@ -34,7 +38,6 @@ import es.degrassi.mmreborn.common.entity.base.ColorableMachineEntity;
 import es.degrassi.mmreborn.common.entity.base.EnergyHatchEntity;
 import es.degrassi.mmreborn.common.entity.base.ExperienceHatchEntity;
 import es.degrassi.mmreborn.common.entity.base.FluidTankEntity;
-import es.degrassi.mmreborn.common.entity.DurabilityHatchEntity;
 import es.degrassi.mmreborn.common.entity.base.TileItemBus;
 import es.degrassi.mmreborn.common.item.ItemDynamicColor;
 import es.degrassi.mmreborn.common.registration.BlockRegistration;
@@ -49,6 +52,7 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
@@ -71,6 +75,7 @@ import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 
@@ -233,6 +238,23 @@ public class ModularMachineryRebornClient {
     } else if (Mods.isJEILoaded()) {
       new MMRJeiClientIntegration(bus);
     }
+    FilterRendererRegistry.init();
+  }
+
+  @SubscribeEvent
+  public void registerFilterRender(final RegisterFilterRendererEvent event) {
+    BuiltInRegistries.FLUID.forEach(fluid -> {
+      if (!fluid.isSource(fluid.defaultFluidState())) return;
+      event.register(fluid, (guiGraphics, x, y) -> {
+        FluidRenderer.renderFluid(
+            guiGraphics.pose(),
+            x, y,
+            16, 16,
+            new FluidStack(fluid, 1000),
+            1000
+        );
+      });
+    });
   }
 
   public void registerBlockModel(Block block) {

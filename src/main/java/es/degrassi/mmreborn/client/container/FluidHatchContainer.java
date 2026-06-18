@@ -10,7 +10,6 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,7 +18,7 @@ public class FluidHatchContainer extends ContainerBase<FluidTankEntity> {
   public static void open(ServerPlayer player, FluidTankEntity machine) {
     player.openMenu(new MenuProvider() {
       @Override
-      public @NotNull Component getDisplayName() {
+      public Component getDisplayName() {
         return Component.translatable("modular_machinery_reborn.gui.title.fluid_hatch");
       }
 
@@ -41,10 +40,18 @@ public class FluidHatchContainer extends ContainerBase<FluidTankEntity> {
   @Override
   public void init() {
     super.init();
+    var index = new AtomicInteger(this.getFirstComponentSlotIndex());
     addSyncedSlot(new SlotItemComponent(
         getEntity().getCapabilityInventory().getInventory().get(0),
-        new AtomicInteger(this.getFirstComponentSlotIndex()).getAndIncrement(),
+        index.getAndIncrement(),
         35 + 8,
+        10 + 61/2 - 8
+    ));
+    addSyncedSlot(new FilterSlotComponent<>(
+        getEntity(),
+        getEntity().getFilterInventory().getInventory().get(0),
+        index.getAndIncrement(),
+        35 + 8 + 20,
         10 + 61/2 - 8
     ));
   }

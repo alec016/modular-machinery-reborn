@@ -37,6 +37,10 @@ public class FluidHandler extends AbstractHandler<HybridTank, FluidStack> implem
     super(inSlots, outSlots, capacity, accessibleFrom);
   }
 
+  public void setFilter(Predicate<FluidStack> filter) {
+    this.getInventory().forEach(tank -> tank.setFilter(filter));
+  }
+
   @Override
   public void removeFromInputs(FluidStack fluidStack, int amount) {
     AtomicInteger toRemove = new AtomicInteger(amount);

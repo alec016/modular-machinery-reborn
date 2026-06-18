@@ -6,6 +6,7 @@ import es.degrassi.mmreborn.api.capability.config.IOSideConfig;
 import es.degrassi.mmreborn.api.capability.config.IOSideMode;
 import es.degrassi.mmreborn.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmreborn.api.controller.ControllerAccessible;
+import es.degrassi.mmreborn.api.handler.FilterConverterRegistry;
 import es.degrassi.mmreborn.api.network.ISyncable;
 import es.degrassi.mmreborn.api.network.ISyncableStuff;
 import es.degrassi.mmreborn.api.network.syncable.IOSideConfigSyncable;
@@ -18,6 +19,8 @@ import es.degrassi.mmreborn.common.machine.MachineHatchType;
 import es.degrassi.mmreborn.common.machine.component.FluidComponent;
 import es.degrassi.mmreborn.common.manager.handler.FluidHandler;
 import es.degrassi.mmreborn.common.manager.handler.ItemHandler;
+import es.degrassi.mmreborn.common.network.server.SUpdateFilterInvPacket;
+import es.degrassi.mmreborn.common.network.server.SUpdateFluidFilterPacket;
 import es.degrassi.mmreborn.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmreborn.common.network.server.component.SUpdateFluidComponentPacket;
 import es.degrassi.mmreborn.common.registration.MachineHatchTypeRegistration;
@@ -29,6 +32,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.BucketItem;
@@ -37,6 +41,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -56,7 +61,7 @@ import java.util.function.Consumer;
 @Setter
 public abstract class FluidTankEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<FluidComponent>, ControllerAccessible,
     TextureableMachineEntity, CapabilityInventoryEntity<IFluidHandlerItem>, ITickEntity, IServerTickEntity,
-    ISyncableStuff, IAutoEntity<IFluidHandler>, ISideConfigComponent<IOSideMode> {
+    ISyncableStuff, IAutoEntity<IFluidHandler>, ISideConfigComponent<IOSideMode>, FiltereableEntity<FluidStack, Fluid> {
   private FluidHandler tank;
   private IOType ioType;
   private FluidHatchSize hatchSize;
@@ -70,6 +75,8 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
 
   @Getter
   private final ItemHandler capabilityInventory;
+  @Getter
+  private final ItemHandler filterInventory;
 
   private final long tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
   private long lastCheckTick;
@@ -77,6 +84,9 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
 
   @Getter
   private final IOSideConfig config;
+
+  @Nullable
+  private FluidStack filter = null;
 
   protected FluidTankEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, FluidHatchSize size,
                            IOType ioType) {
@@ -87,6 +97,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fluid" + ioType.getSerializedName() + "hatch_" + size.getSerializedName());
     this.overlayTexture = defaultOverlayTexture;
     this.capabilityInventory = createCapabilityInventory();
+    this.filterInventory = createFilterInventory();
 
     this.config = IOSideConfig.Template.DEFAULT_ALL_DISABLED.build(this);
     this.config.setCallback(this::configChanged);
@@ -104,6 +115,78 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
         }
       });
     });
+    if (filterInventory.getItem(0).isEmpty()) {
+      setFilter(null);
+      filterInventory.setItem(0, Items.BUCKET.getDefaultInstance());
+    }
+
+    filterInventory.setListener((slot, stack) -> {
+      if (!getLevel().isClientSide()) {
+        if (stack.isEmpty()) {
+          setFilter(FluidStack.EMPTY);
+          return;
+        }
+        var fluidCap = stack.getCapability(getCapability());
+        if (fluidCap != null) {
+          var fluidCandidate = fluidCap.getFluidInTank(0).copyWithAmount(1);
+          if (fluidCandidate.isEmpty()) {
+            setFilter(FluidStack.EMPTY);
+            filterInventory.setItem(0, Items.BUCKET.getDefaultInstance());
+            PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), Items.BUCKET.getDefaultInstance()));
+            return;
+          }
+          if (FilterConverterRegistry.isConvertible(fluidCandidate)) {
+            stack = FilterConverterRegistry.convertBack(fluidCandidate).getDefaultInstance();
+            filterInventory.setItem(slot, stack);
+            PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), stack));
+            this.setFilter(fluidCandidate);
+            return;
+          }
+        }
+        var hasConverter = FilterConverterRegistry.hasConverter(stack);
+        var value = FilterConverterRegistry.convert(stack);
+        if (hasConverter && value instanceof FluidStack fs) {
+          setFilter(fs);
+        }
+      }
+    });
+  }
+
+  public FluidStack getFilter() {
+    return Optional.ofNullable(this.filter).orElse(FluidStack.EMPTY);
+  }
+
+  @Override
+  public void setFilter(@Nullable FluidStack filter) {
+    this.filter = filter == null || filter.isEmpty() ? null : filter;
+    this.tank.setFilter(s -> this.filter == null || this.filter == FluidStack.EMPTY || FluidStack.isSameFluidSameComponents(this.filter, s));
+    setChanged();
+    if (getLevel() != null && !getLevel().isClientSide())
+      PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()),
+        new SUpdateFluidFilterPacket(getBlockPos(), Optional.ofNullable(filter).orElse(FluidStack.EMPTY)));
+  }
+
+  @Override
+  public CompoundTag serializeFilter(HolderLookup.Provider provider) {
+    return (CompoundTag) getFilter().saveOptional(provider);
+  }
+
+  @Override
+  public void deserializeFilter(CompoundTag tag, HolderLookup.Provider provider) {
+    var possibleFilter = FluidStack.parseOptional(provider, tag);
+    setFilter(possibleFilter);
+  }
+
+  @Override
+  @Nullable
+  public Component getFilterComponent() {
+    if (getFilter().getFluidType().isAir()) return null;
+    return getFilter().getHoverName();
+  }
+
+  @Override
+  public Fluid toFilterRender() {
+    return getFilter().getFluid();
   }
 
   @Override
@@ -188,6 +271,10 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
     newTank.readNBT(tankTag, provider);
     this.tank = newTank;
     this.capabilityInventory.deserialize(compound.getCompound("capInventory"), provider);
+    this.filterInventory.deserialize(compound.getCompound("filterInventory"), provider);
+    if (filterInventory.getItem(0).isEmpty()) {
+      filterInventory.setItem(0, Items.BUCKET.getDefaultInstance());
+    }
     if (compound.contains("controllerPos")) {
       controllerPos = BlockPos.of(compound.getLong("controllerPos"));
     }
@@ -223,6 +310,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
     compound.putString("size", this.hatchSize.getSerializedName());
     compound.put("tank", this.tank.writeNBT(provider));
     compound.put("capInventory", this.capabilityInventory.writeNBT(provider));
+    compound.put("filterInventory", this.filterInventory.writeNBT(provider));
     if (controllerPos != null)
       compound.putLong("controllerPos", controllerPos.asLong());
     if (baseTexture != null)
