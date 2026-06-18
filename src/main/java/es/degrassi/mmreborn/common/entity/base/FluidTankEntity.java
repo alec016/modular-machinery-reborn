@@ -160,7 +160,6 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   public void setFilter(@Nullable FluidStack filter) {
     this.filter = filter == null || filter.isEmpty() ? null : filter;
     this.tank.setFilter(s -> this.filter == null || this.filter == FluidStack.EMPTY || FluidStack.isSameFluidSameComponents(this.filter, s));
-    setChanged();
     if (getLevel() != null && !getLevel().isClientSide())
       PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()),
         new SUpdateFluidFilterPacket(getBlockPos(), Optional.ofNullable(filter).orElse(FluidStack.EMPTY)));

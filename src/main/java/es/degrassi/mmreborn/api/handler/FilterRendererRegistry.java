@@ -1,6 +1,5 @@
 package es.degrassi.mmreborn.api.handler;
 
-import es.degrassi.mmreborn.common.util.MMRLogger;
 import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.fml.ModLoader;
 
@@ -15,8 +14,6 @@ public class FilterRendererRegistry {
     RegisterFilterRendererEvent event = new RegisterFilterRendererEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
     renderers = event.getRenderers();
-    MMRLogger.INSTANCE.debug("Registered {} filter renderers",
-        renderers.keySet().stream().map(Object::toString).toList().toString());
   }
 
   public static <T> boolean hasRenderer(T item) {
