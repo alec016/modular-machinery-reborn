@@ -268,7 +268,24 @@ public class ComponentManager implements INBTSerializable<CompoundTag>, ISyncabl
       } else if (requirement.getType().equals(RequirementTypeRegistration.FUNCTION.get())) {
         return (Optional<C>) fC.get(controller.getBlockPos());
       }
-      return getComponent(requirement.getComponentType(), requirement.getMode());
+      try {
+        var components = fCV.get(requirement.getComponentType())
+            .get(requirement.getMode())
+            .parallelStream()
+            .filter(Objects::nonNull)
+            .map(c -> (C) c)
+            .filter(c -> requirement.test(c, context))
+            .sorted()
+            .toList();
+        if (components.isEmpty()) return Optional.empty();
+        var merged = components.getFirst();
+        for (var next : components.subList(1, components.size()))
+          if (merged.canMerge(next))
+            merged = merged.merge(next);
+        return Optional.of(merged);
+      } catch (ExecutionException ignored) {
+        throw new ComponentNotFoundException(controller.getFoundMachine(), requirement.getComponentType());
+      }
     } catch(Exception e) {
       return Optional.empty();
     }
@@ -302,7 +319,7 @@ public class ComponentManager implements INBTSerializable<CompoundTag>, ISyncabl
           .toList();
       if (components.isEmpty()) return Optional.empty();
       var merged = components.getFirst();
-      for (var next : components)
+      for (var next : components.subList(1, components.size()))
         if (merged.canMerge(next))
           merged = merged.merge(next);
       return Optional.of(merged);
@@ -317,10 +334,14 @@ public class ComponentManager implements INBTSerializable<CompoundTag>, ISyncabl
     CompoundTag componentsByType = new CompoundTag();
     fCV.asMap().forEach((type, map) -> {
       CompoundTag listByMode = new CompoundTag();
-      map.forEach((mode, list) -> listByMode.put(
-          mode.getSerializedName(),
-          getComponent(type, mode).map(component -> component.asTag(provider)).orElse(new CompoundTag())
-      ));
+      map.forEach((mode, list) -> {
+        ListTag components = new ListTag();
+        list.forEach(component -> components.add(component.asTag(provider)));
+        listByMode.put(
+            mode.getSerializedName(),
+            components
+        );
+      });
       componentsByType.put(type.getId().toString(), listByMode);
     });
     nbt.put("components", componentsByType);
