@@ -230,6 +230,7 @@ dependencies {
       runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
       break
   }
+  runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
   // Addons for testing
 //  localRuntime("es.degrassi:modular_machinery_reborn_energistics:${minecraft_version}-3.0.0")
