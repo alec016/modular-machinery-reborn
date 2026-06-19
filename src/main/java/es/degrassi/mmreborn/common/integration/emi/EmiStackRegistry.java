@@ -19,7 +19,7 @@ public class EmiStackRegistry {
   public static void init() {
     RegisterEmiRequirementToStackEvent event = new RegisterEmiRequirementToStackEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    stacks = event.getStacks();
+    stacks = event.getMap();
   }
 
   public static boolean hasEmiStack(RequirementType<?, ?, ?> type) {

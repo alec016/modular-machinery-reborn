@@ -18,7 +18,7 @@ public class JeiComponentRegistry {
   public static void init() {
     RegisterJeiComponentEvent event = new RegisterJeiComponentEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    components = event.getComponents();
+    components = event.getMap();
   }
 
   public static boolean hasJeiComponent(RequirementType<?, ?, ?> requirement) {

@@ -1,5 +1,6 @@
 package es.degrassi.mmreborn.api.handler;
 
+import lombok.Getter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -12,12 +13,13 @@ import java.util.Optional;
 public class FilterConverterRegistry {
   private FilterConverterRegistry() {}
 
+  @Getter
   private static Map<Item, FilterConverterFactory<?>> converters;
 
   public static void init() {
     RegisterFilterConversionEvent event = new RegisterFilterConversionEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    converters = event.getConverters();
+    converters = event.getMap();
   }
 
   public static boolean hasConverter(Item itemStack) {

@@ -13,7 +13,7 @@ public class FilterRendererRegistry {
   public static void init() {
     RegisterFilterRendererEvent event = new RegisterFilterRendererEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    renderers = event.getRenderers();
+    renderers = event.getMap();
   }
 
   public static <T> boolean hasRenderer(T item) {

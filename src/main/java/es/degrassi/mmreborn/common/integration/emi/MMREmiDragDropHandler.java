@@ -3,9 +3,10 @@ package es.degrassi.mmreborn.common.integration.emi;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.ItemEmiStack;
+import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.runtime.EmiFavorite;
+import es.degrassi.mmreborn.api.integration.emi.EmiFilterDragDropFactory;
 import es.degrassi.mmreborn.client.container.FilterSlotComponent;
 import es.degrassi.mmreborn.client.screen.BaseScreen;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,14 +30,19 @@ public class MMREmiDragDropHandler implements EmiDragDropHandler<Screen> {
         })
         .findFirst()
         .map(slot -> {
+          FilterSlotComponent<?,?> fs = (FilterSlotComponent<?,?>) slot;
           var s = stack;
           if (s instanceof EmiFavorite fe) {
             s = fe.getStack();
           }
-          if (s instanceof ItemEmiStack e) {
-            ((FilterSlotComponent<?,?>) slot).setFromClient(e.getItemStack());
+
+          if (!(s instanceof EmiStack emiStack)) return false;
+
+          if (EmiFilterDragDropRegistry.canDrop(emiStack.getClass())) {
+            EmiFilterDragDropRegistry.drop(fs, emiStack);
             return true;
           }
+
           return false;
         }).orElse(false);
   }

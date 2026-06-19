@@ -15,7 +15,7 @@ public class EmiEmptyRequirementRegistry {
   public static void init() {
     RegisterEmiEmptyRequirementEvent event = new RegisterEmiEmptyRequirementEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    consumers = event.getConsumers();
+    consumers = event.getMap();
   }
 
   public static boolean hasEmiConsumer(EmptyRequirementType type) {

@@ -15,7 +15,7 @@ public class JeiEmptyRequirementRegistry {
   public static void init() {
     RegisterJeiEmptyRequirementEvent event = new RegisterJeiEmptyRequirementEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    consumers = event.getConsumers();
+    consumers = event.getMap();
   }
 
   public static boolean hasJeiConsumer(EmptyRequirementType type) {

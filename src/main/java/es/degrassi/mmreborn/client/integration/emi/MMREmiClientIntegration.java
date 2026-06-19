@@ -4,12 +4,14 @@ import com.google.common.collect.Lists;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.FluidEmiStack;
+import dev.emi.emi.api.stack.ItemEmiStack;
 import es.degrassi.experiencelib.api.capability.IExperienceHandler;
 import es.degrassi.experiencelib.api.xei.emi.ExperienceEmiStack;
 import es.degrassi.mmreborn.api.TagUtil;
 import es.degrassi.mmreborn.api.crafting.requirement.RecipeRequirement;
 import es.degrassi.mmreborn.api.integration.emi.RegisterEmiComponentEvent;
 import es.degrassi.mmreborn.api.integration.emi.RegisterEmiEmptyRequirementEvent;
+import es.degrassi.mmreborn.api.integration.emi.RegisterEmiFilterDragDropEvent;
 import es.degrassi.mmreborn.api.integration.emi.RegisterEmiRequirementToIngredientEvent;
 import es.degrassi.mmreborn.api.integration.emi.RegisterEmiRequirementToStackEvent;
 import es.degrassi.mmreborn.common.crafting.requirement.RequirementDurability;
@@ -31,6 +33,7 @@ import es.degrassi.mmreborn.common.crafting.requirement.emi.EmiItemComponent;
 import es.degrassi.mmreborn.common.crafting.requirement.emi.EmiLootTableComponent;
 import es.degrassi.mmreborn.common.integration.emi.EmiComponentRegistry;
 import es.degrassi.mmreborn.common.integration.emi.EmiEmptyRequirementRegistry;
+import es.degrassi.mmreborn.common.integration.emi.EmiFilterDragDropRegistry;
 import es.degrassi.mmreborn.common.integration.emi.EmiIngredientRegistry;
 import es.degrassi.mmreborn.common.integration.emi.EmiStackRegistry;
 import es.degrassi.mmreborn.common.machine.component.DurabilityComponent;
@@ -39,15 +42,20 @@ import es.degrassi.mmreborn.common.machine.component.FluidComponent;
 import es.degrassi.mmreborn.common.machine.component.ItemComponent;
 import es.degrassi.mmreborn.common.manager.handler.FluidHandler;
 import es.degrassi.mmreborn.common.manager.handler.ItemHandler;
+import es.degrassi.mmreborn.common.network.client.CSetFilterSlotFluidPacket;
 import es.degrassi.mmreborn.common.registration.EmptyRequirementTypeRegistration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmreborn.common.util.LootTableHelper;
+import es.degrassi.mmreborn.common.util.MMRLogger;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +67,15 @@ public class MMREmiClientIntegration {
     EmiStackRegistry.init();
     EmiIngredientRegistry.init();
     EmiEmptyRequirementRegistry.init();
+    EmiFilterDragDropRegistry.init();
+  }
+
+  @SubscribeEvent
+  public void registerEmiFilterDragDrop(final RegisterEmiFilterDragDropEvent event) {
+    event.register(ItemEmiStack.class, (fs, stack) -> fs.setFromClient(stack.getItemStack()));
+    event.register(FluidEmiStack.class, (fs, stack) ->
+        fs.setGenericFromClient((pos) ->
+            new CSetFilterSlotFluidPacket(new FluidStack((Fluid) stack.getKey(), 1), pos)));
   }
 
   @SubscribeEvent

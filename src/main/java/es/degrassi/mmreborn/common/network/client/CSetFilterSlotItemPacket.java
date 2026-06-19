@@ -1,9 +1,7 @@
 package es.degrassi.mmreborn.common.network.client;
 
 import es.degrassi.mmreborn.ModularMachineryReborn;
-import es.degrassi.mmreborn.api.handler.FilterConverterRegistry;
 import es.degrassi.mmreborn.common.entity.base.FiltereableEntity;
-import es.degrassi.mmreborn.common.util.MMRLogger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,10 +12,10 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record CSetFilterSlotItemPacket(ItemStack stack, BlockPos pos) implements CustomPacketPayload {
 
-  public static final Type<CSetFilterSlotItemPacket> TYPE = new Type<>(ModularMachineryReborn.rl("set_filter_slot"));
+  public static final Type<CSetFilterSlotItemPacket> TYPE = new Type<>(ModularMachineryReborn.rl("set_item_filter_slot"));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, CSetFilterSlotItemPacket> CODEC = StreamCodec.composite(
-      ItemStack.STREAM_CODEC,
+      ItemStack.OPTIONAL_STREAM_CODEC,
       CSetFilterSlotItemPacket::stack,
       BlockPos.STREAM_CODEC,
       CSetFilterSlotItemPacket::pos,

@@ -9,6 +9,7 @@ import es.degrassi.mmreborn.common.network.client.CExperienceButtonClickedPacket
 import es.degrassi.mmreborn.common.network.client.CPlaceStructurePacket;
 import es.degrassi.mmreborn.common.network.client.CRedstoneButtonModeClickedPacket;
 import es.degrassi.mmreborn.common.network.client.CSetFilterSlotItemPacket;
+import es.degrassi.mmreborn.common.network.client.CSetFilterSlotFluidPacket;
 import es.degrassi.mmreborn.common.network.client.emi.FillRecipeC2SPacket;
 import es.degrassi.mmreborn.common.network.server.SAddControllerRenderer;
 import es.degrassi.mmreborn.common.network.server.SLootTablesPacket;
@@ -79,6 +80,7 @@ public class PacketManager {
     registrar.playToServer(CChangeIOSideConfigPacket.TYPE, CChangeIOSideConfigPacket.CODEC, CChangeIOSideConfigPacket::handle);
     registrar.playToServer(CDynamicTooltipEventCallPacket.TYPE, CDynamicTooltipEventCallPacket.CODEC, CDynamicTooltipEventCallPacket::handle);
     registrar.playToServer(CSetFilterSlotItemPacket.TYPE, CSetFilterSlotItemPacket.CODEC, CSetFilterSlotItemPacket::handle);
+    registrar.playToServer(CSetFilterSlotFluidPacket.TYPE, CSetFilterSlotFluidPacket.CODEC, CSetFilterSlotFluidPacket::handle);
 
     // EMI packet
     if (Mods.isJEIorEMILoaded()) {

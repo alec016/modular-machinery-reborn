@@ -4,13 +4,16 @@ import es.degrassi.mmreborn.common.entity.base.FiltereableEntity;
 import es.degrassi.mmreborn.common.manager.handler.slot.ItemSlot;
 import es.degrassi.mmreborn.common.network.client.CSetFilterSlotItemPacket;
 import lombok.Getter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class FilterSlotComponent<T, E> extends SlotItemComponent {
   @Getter
@@ -18,6 +21,10 @@ public class FilterSlotComponent<T, E> extends SlotItemComponent {
   public FilterSlotComponent(FiltereableEntity<T, E> entity, ItemSlot container, int slot, int x, int y) {
     super(container, slot, x, y);
     this.entity = entity;
+  }
+
+  public void setGenericFromClient(Function<BlockPos, CustomPacketPayload> constructor) {
+    PacketDistributor.sendToServer(constructor.apply(entity.getBlockPos()));
   }
 
   //Call from the client only, will ask the server to place the item in the slot to avoid desync issues.

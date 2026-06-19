@@ -18,7 +18,7 @@ public class EmiComponentRegistry {
   public static void init() {
     RegisterEmiComponentEvent event = new RegisterEmiComponentEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    components = event.getComponents();
+    components = event.getMap();
   }
 
   public static boolean hasEmiComponent(RequirementType<?, ?, ?> type) {

@@ -18,7 +18,7 @@ public class EmiIngredientRegistry {
   public static void init() {
     RegisterEmiRequirementToIngredientEvent event = new RegisterEmiRequirementToIngredientEvent();
     ModLoader.postEventWrapContainerInModOrder(event);
-    stacks = event.getStacks();
+    stacks = event.getMap();
   }
 
   public static boolean hasEmiIngredient(RequirementType<?, ?, ?> type) {
