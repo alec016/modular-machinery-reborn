@@ -8,7 +8,8 @@
     "NbtAccounterMixin"
   ],
   "client": [
-    "ModelBakeryMixin"
+    "ModelBakeryMixin",
+    "emi.Ae2AbstractRecipeHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
