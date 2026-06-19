@@ -136,7 +136,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
             return;
           }
           if (FilterConverterRegistry.isConvertible(fluidCandidate)) {
-            stack = FilterConverterRegistry.convertBack(fluidCandidate).getDefaultInstance();
+            stack = FilterConverterRegistry.convertBack(fluidCandidate);
             filterInventory.setItem(slot, stack);
             PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), stack));
             this.setFilter(fluidCandidate);

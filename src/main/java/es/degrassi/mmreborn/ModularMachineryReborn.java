@@ -221,10 +221,10 @@ public class ModularMachineryReborn {
     BuiltInRegistries.FLUID.forEach(fluid -> {
       if (!fluid.isSource(fluid.defaultFluidState())) return;
       if (fluid.isSame(Fluids.EMPTY)) {
-        event.register(Items.BUCKET, FluidStack.EMPTY);
+        event.register(Items.BUCKET.getDefaultInstance(), FluidStack.EMPTY);
         return;
       }
-      event.register(fluid.getBucket(), new FluidStack(fluid, 1));
+      event.register(fluid.getBucket().getDefaultInstance(), new FluidStack(fluid, 1));
     });
   }
 

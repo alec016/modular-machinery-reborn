@@ -3,18 +3,16 @@ package es.degrassi.mmreborn.api.handler;
 import lombok.Getter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.neoforged.fml.ModLoader;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 public class FilterConverterRegistry {
   private FilterConverterRegistry() {}
 
   @Getter
-  private static Map<Item, FilterConverterFactory<?>> converters;
+  private static Map<ItemStack, FilterConverterFactory<?>> converters;
 
   public static void init() {
     RegisterFilterConversionEvent event = new RegisterFilterConversionEvent();
@@ -23,11 +21,13 @@ public class FilterConverterRegistry {
   }
 
   public static boolean hasConverter(Item itemStack) {
-    return converters.containsKey(itemStack);
+    return hasConverter(itemStack.getDefaultInstance());
   }
 
   public static boolean hasConverter(ItemStack itemStack) {
-    return hasConverter(itemStack.getItem());
+    return converters.keySet()
+        .parallelStream()
+        .anyMatch(stack -> ItemStack.isSameItemSameComponents(stack, itemStack));
   }
 
   public static <T> boolean isConvertible(T value) {
@@ -36,23 +36,29 @@ public class FilterConverterRegistry {
         .anyMatch(f -> f.get() == value);
   }
 
-  public static <T> Item convertBack(T value) {
+  public static <T> ItemStack convertBack(T value) {
     return converters.entrySet()
-        .stream()
+        .parallelStream()
         .filter(entry -> entry.getValue().get() == value)
         .findFirst()
         .map(Map.Entry::getKey)
-        .orElse(Items.AIR);
+        .orElse(ItemStack.EMPTY);
   }
 
   @SuppressWarnings("unchecked")
   @Nullable
-  public static <T> T convert(Item from) {
-    return (T) Optional.ofNullable(converters.get(from)).map(FilterConverterFactory::get).orElse(null);
+  public static <T> T convert(ItemStack from) {
+    return (T) converters.entrySet()
+        .parallelStream()
+        .filter(entry -> ItemStack.isSameItemSameComponents(from, entry.getKey()))
+        .findFirst()
+        .map(Map.Entry::getValue)
+        .map(FilterConverterFactory::get)
+        .orElse(null);
   }
 
   @Nullable
-  public static <T> T convert(ItemStack from) {
-    return convert(from.getItem());
+  public static <T> T convert(Item from) {
+    return convert(from.getDefaultInstance());
   }
 }
