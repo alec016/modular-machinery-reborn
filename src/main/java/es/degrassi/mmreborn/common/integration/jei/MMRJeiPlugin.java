@@ -174,12 +174,14 @@ public class MMRJeiPlugin implements IModPlugin {
 
     registration.addGhostIngredientHandler(BaseScreen.class, new IGhostIngredientHandler<>() {
       @Override
+      @SuppressWarnings("unchecked")
       public <I> List<Target<I>> getTargetsTyped(BaseScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
-        if (ingredient.getIngredient() instanceof ItemStack stack) {
+        var stack = ingredient;
+        if (JeiFilterDragDropRegistry.canDrop(stack)) {
           return screen.getMenu().slots.stream()
               .filter(slot -> slot instanceof FilterSlotComponent<?,?>)
               .map(slot -> {
-                FilterSlotComponent<?,?> filterSlot = (FilterSlotComponent<?,?>) slot;
+                FilterSlotComponent<I,?> filterSlot = (FilterSlotComponent<I,?>) slot;
                 return new Target<I>() {
                   @Override
                   public Rect2i getArea() {
@@ -188,7 +190,7 @@ public class MMRJeiPlugin implements IModPlugin {
 
                   @Override
                   public void accept(I ingredient) {
-                    filterSlot.setFromClient(stack);
+                    JeiFilterDragDropRegistry.drop(filterSlot, stack);
                   }
                 };
               }).collect(Collectors.toList());

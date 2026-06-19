@@ -2,6 +2,7 @@ package es.degrassi.mmreborn.client.integration.jei;
 
 import es.degrassi.mmreborn.api.integration.jei.RegisterJeiComponentEvent;
 import es.degrassi.mmreborn.api.integration.jei.RegisterJeiEmptyRequirementEvent;
+import es.degrassi.mmreborn.api.integration.jei.RegisterJeiFilterDragDropEvent;
 import es.degrassi.mmreborn.common.crafting.requirement.jei.JeiDurabilityComponent;
 import es.degrassi.mmreborn.common.crafting.requirement.jei.JeiDurabilityPerTickComponent;
 import es.degrassi.mmreborn.common.crafting.requirement.jei.JeiEmptyComponent;
@@ -16,10 +17,14 @@ import es.degrassi.mmreborn.common.crafting.requirement.jei.JeiItemComponent;
 import es.degrassi.mmreborn.common.crafting.requirement.jei.JeiLootTableComponent;
 import es.degrassi.mmreborn.common.integration.jei.JeiComponentRegistry;
 import es.degrassi.mmreborn.common.integration.jei.JeiEmptyRequirementRegistry;
+import es.degrassi.mmreborn.common.integration.jei.JeiFilterDragDropRegistry;
 import es.degrassi.mmreborn.common.integration.jei.MMRJeiPlugin;
 import es.degrassi.mmreborn.common.integration.jei.ingredient.CustomIngredientTypes;
+import es.degrassi.mmreborn.common.network.client.CSetFilterSlotFluidPacket;
 import es.degrassi.mmreborn.common.registration.EmptyRequirementTypeRegistration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -28,6 +33,20 @@ public class MMRJeiClientIntegration {
     bus.register(this);
     JeiComponentRegistry.init();
     JeiEmptyRequirementRegistry.init();
+    JeiFilterDragDropRegistry.init();
+  }
+
+  @SubscribeEvent
+  public void registerFilterDragDrop(final RegisterJeiFilterDragDropEvent event) {
+    event.register(
+        VanillaTypes.ITEM_STACK,
+        (fs, stack) -> fs.setFromClient(stack.getIngredient())
+    );
+    event.register(
+        NeoForgeTypes.FLUID_STACK,
+        (fs, stack) ->
+            fs.setGenericFromClient(pos -> new CSetFilterSlotFluidPacket(stack.getIngredient().copyWithAmount(1), pos))
+    );
   }
 
   @SubscribeEvent

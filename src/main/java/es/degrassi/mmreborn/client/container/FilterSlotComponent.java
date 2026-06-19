@@ -1,5 +1,9 @@
 package es.degrassi.mmreborn.client.container;
 
+import es.degrassi.mmreborn.api.integration.emi.RegisterEmiFilterDragDropEvent;
+import es.degrassi.mmreborn.api.integration.jei.RegisterJeiFilterDragDropEvent;
+import es.degrassi.mmreborn.client.integration.emi.MMREmiClientIntegration;
+import es.degrassi.mmreborn.client.integration.jei.MMRJeiClientIntegration;
 import es.degrassi.mmreborn.common.entity.base.FiltereableEntity;
 import es.degrassi.mmreborn.common.manager.handler.slot.ItemSlot;
 import es.degrassi.mmreborn.common.network.client.CSetFilterSlotItemPacket;
@@ -23,6 +27,11 @@ public class FilterSlotComponent<T, E> extends SlotItemComponent {
     this.entity = entity;
   }
 
+  /**
+   * @see MMRJeiClientIntegration#registerFilterDragDrop(RegisterJeiFilterDragDropEvent) for JEI implementation example
+   * @see MMREmiClientIntegration#registerEmiFilterDragDrop(RegisterEmiFilterDragDropEvent) for EMI implementation example
+   * @param constructor Packet that will be sent once applied
+   */
   public void setGenericFromClient(Function<BlockPos, CustomPacketPayload> constructor) {
     PacketDistributor.sendToServer(constructor.apply(entity.getBlockPos()));
   }

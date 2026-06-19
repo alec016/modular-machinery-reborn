@@ -6,7 +6,6 @@ import es.degrassi.mmreborn.api.integration.emi.RegisterEmiFilterDragDropEvent;
 import es.degrassi.mmreborn.client.container.FilterSlotComponent;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.ModLoader;
 
 import java.util.Map;
