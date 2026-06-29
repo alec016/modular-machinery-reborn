@@ -42,7 +42,7 @@ public record CSetFilterSlotFluidPacket(FluidStack stack, BlockPos pos) implemen
                   entry.getValue().get().getClass().equals(fluid.getClass())
                       && FluidStack.isSameFluidSameComponents(((FluidStack) entry.getValue().get()), fluid)
               )
-              .findFirst()
+              .findAny()
               .map(Map.Entry::getKey)
               .ifPresent(item -> machine.getFilterInventory().setItem(0, item));
         }

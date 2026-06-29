@@ -1,7 +1,6 @@
 package es.degrassi.mmreborn.common.crafting.requirement;
 
 import com.google.gson.JsonObject;
-import es.degrassi.mmreborn.ModularMachineryReborn;
 import es.degrassi.mmreborn.api.capability.IFuelHandler;
 import es.degrassi.mmreborn.api.codec.NamedCodec;
 import es.degrassi.mmreborn.api.codec.NamedMapCodec;
@@ -10,18 +9,13 @@ import es.degrassi.mmreborn.api.crafting.ICraftingContext;
 import es.degrassi.mmreborn.api.crafting.requirement.IRequirement;
 import es.degrassi.mmreborn.api.crafting.requirement.IRequirementList;
 import es.degrassi.mmreborn.common.crafting.ComponentType;
-import es.degrassi.mmreborn.common.crafting.helper.Direction;
 import es.degrassi.mmreborn.common.crafting.helper.FuelData;
-import es.degrassi.mmreborn.common.crafting.helper.ProgressData;
 import es.degrassi.mmreborn.common.machine.IOType;
-import es.degrassi.mmreborn.common.machine.component.ExperienceComponent;
 import es.degrassi.mmreborn.common.machine.component.FuelComponent;
 import es.degrassi.mmreborn.common.registration.ComponentRegistration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
-import es.degrassi.mmreborn.common.util.MMRLogger;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 
 public class RequirementFuel implements IRequirement<FuelComponent, IFuelHandler> {
   public static final NamedMapCodec<RequirementFuel> CODEC = NamedCodec.record(instance -> instance.group(
@@ -81,7 +75,7 @@ public class RequirementFuel implements IRequirement<FuelComponent, IFuelHandler
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.fuel");
   }
 

@@ -42,7 +42,7 @@ public class MachineRecipe implements Comparable<MachineRecipe>, Recipe<RecipeIn
       RecipeRequirement.CODEC.listOf().optionalFieldOf("jeiRequirements", List.of()).forGetter(MachineRecipeBuilder::getJeiRequirements),
       NamedCodec.INT.optionalFieldOf("priority", 0).forGetter(MachineRecipeBuilder::getPrio),
       NamedCodec.BOOL.optionalFieldOf("hidden", false).forGetter(MachineRecipeBuilder::isHidden),
-      NamedCodec.BOOL.optionalFieldOf("voidFailure", true).forGetter(MachineRecipeBuilder::isVoidF),
+      NamedCodec.BOOL.optionalFieldOf("voidFailure", false).forGetter(MachineRecipeBuilder::isVoidF),
       NamedCodec.INT.optionalFieldOf("width", 256).forGetter(MachineRecipeBuilder::getWidth),
       NamedCodec.INT.optionalFieldOf("height", 256).forGetter(MachineRecipeBuilder::getHeight),
       NamedCodec.BOOL.optionalFieldOf("renderProgress", true).forGetter(MachineRecipeBuilder::isShouldRenderProgress),

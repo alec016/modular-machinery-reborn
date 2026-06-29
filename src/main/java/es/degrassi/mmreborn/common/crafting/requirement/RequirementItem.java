@@ -26,7 +26,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -117,7 +116,7 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
     if (getMode() == IOType.INPUT) {
       return Arrays.stream(this.ingredient.getItems()).mapToInt(component::getItemAmount).sum() >= amount;
     } else if(getMode() == IOType.OUTPUT) {
-      if (this.ingredient.getItems().length > 0)
+      if (this.ingredient.getItems().length == 1)
         return component.getSpaceForItem(this.ingredient.getItems()[0]) >= amount;
       else throw new IllegalStateException("Can't use output empty item");
     } else {
@@ -145,7 +144,7 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
 
   private CraftingResult processOutput(ItemComponent component, ICraftingContext context) {
     int amount = (int) context.getIntegerModifiedValue(this.ingredient.count(), this);
-    if (this.ingredient.getItems().length > 0) {
+    if (this.ingredient.getItems().length == 1) {
       ItemStack item = this.ingredient.getItems()[0];
       int canInsert = component.getSpaceForItem(item);
       if (canInsert >= amount) {
@@ -164,7 +163,7 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable(String.format("component.missing.item.%s", ioType.name().toLowerCase()));
   }
 

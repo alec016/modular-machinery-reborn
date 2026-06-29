@@ -19,7 +19,6 @@ import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class RequirementExperiencePerTick implements IRequirement<ExperienceComponent, IExperienceHandler> {
@@ -112,7 +111,7 @@ public class RequirementExperiencePerTick implements IRequirement<ExperienceComp
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable(String.format("component.missing.experience.%s", ioType.name().toLowerCase()));
   }
 

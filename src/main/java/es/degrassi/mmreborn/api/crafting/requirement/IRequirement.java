@@ -8,6 +8,7 @@ import es.degrassi.mmreborn.api.crafting.ComponentNotFoundException;
 import es.degrassi.mmreborn.api.crafting.ICraftingContext;
 import es.degrassi.mmreborn.api.crafting.IProcessor;
 import es.degrassi.mmreborn.common.crafting.ComponentType;
+import es.degrassi.mmreborn.common.crafting.MachineRecipe;
 import es.degrassi.mmreborn.common.crafting.requirement.PositionedRequirement;
 import es.degrassi.mmreborn.common.crafting.requirement.RequirementType;
 import es.degrassi.mmreborn.common.machine.IOType;
@@ -20,7 +21,7 @@ import javax.annotation.Nonnull;
 public interface IRequirement<C extends MachineComponent<T>, T> {
 
   /**
-   * A dispatch codec, used by the {@link es.degrassi.mmreborn.common.crafting.MachineRecipe} main codec to parse all requirements from json using the "type"
+   * A dispatch codec, used by the {@link MachineRecipe} main codec to parse all requirements from json using the "type"
    * property of the requirement.
    */
   NamedMapCodec<IRequirement<?, ?>> CODEC = RegistrarCodec.REQUIREMENT_NEW.dispatch(IRequirement::getType, RequirementType::getCodec, "Requirement");

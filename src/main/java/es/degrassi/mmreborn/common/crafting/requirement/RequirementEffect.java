@@ -93,7 +93,7 @@ public class RequirementEffect implements IRequirement<EffectComponent, EffectHa
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.effect");
   }
 

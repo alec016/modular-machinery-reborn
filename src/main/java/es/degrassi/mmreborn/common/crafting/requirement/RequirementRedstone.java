@@ -15,7 +15,6 @@ import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class RequirementRedstone implements IRequirement<RedstoneComponent, Integer> {
@@ -45,7 +44,6 @@ public class RequirementRedstone implements IRequirement<RedstoneComponent, Inte
   @Override
   public boolean test(RedstoneComponent component, ICraftingContext context) {
     if (getMode().isInput()) {
-      assert component.getContainerProvider() != null;
       return component.getContainerProvider() >= this.amount;
     }
     return true;
@@ -66,7 +64,6 @@ public class RequirementRedstone implements IRequirement<RedstoneComponent, Inte
   }
 
   private CraftingResult process(RedstoneComponent component, ICraftingContext context) {
-    assert component.getContainerProvider() != null;
     return component.getContainerProvider() >= this.amount
         ? CraftingResult.success()
         : CraftingResult.error(Component.translatable("craftcheck.failure.redstone", this.amount, component.getContainerProvider()));
@@ -78,7 +75,7 @@ public class RequirementRedstone implements IRequirement<RedstoneComponent, Inte
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.redstone");
   }
 

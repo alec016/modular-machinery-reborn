@@ -16,7 +16,6 @@ import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmreborn.common.util.IntRange;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 
 public class RequirementHeight implements IRequirement<HeightComponent, IntRange> {
   public static final NamedCodec<RequirementHeight> CODEC = NamedCodec.record(instance -> instance.group(
@@ -73,7 +72,7 @@ public class RequirementHeight implements IRequirement<HeightComponent, IntRange
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.height");
   }
 

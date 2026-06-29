@@ -46,8 +46,6 @@ import es.degrassi.mmreborn.common.network.client.CSetFilterSlotFluidPacket;
 import es.degrassi.mmreborn.common.registration.EmptyRequirementTypeRegistration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmreborn.common.util.LootTableHelper;
-import es.degrassi.mmreborn.common.util.MMRLogger;
-import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

@@ -15,7 +15,6 @@ import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmreborn.common.util.IEnergyHandler;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 
 public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, IEnergyHandler> {
   public static final NamedMapCodec<RequirementEnergyPerTick> CODEC = NamedCodec.record(instance -> instance.group(
@@ -80,9 +79,7 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, I
       return CraftingResult.success();
     }
     handler.setCanExtract(tempExtract);
-    return CraftingResult.error(Component.translatable(
-        "craftcheck.failure.energy.input", requirementPerTick, component.getContainerProvider().getCurrentEnergy()
-    ));
+    return CraftingResult.error(Component.translatable("craftcheck.failure.energy.input", requirementPerTick, canExtract));
   }
 
   private CraftingResult processOutputs(EnergyComponent component, ICraftingContext context) {
@@ -111,7 +108,7 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, I
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable(String.format("component.missing.energy.%s", ioType.name().toLowerCase()));
   }
 

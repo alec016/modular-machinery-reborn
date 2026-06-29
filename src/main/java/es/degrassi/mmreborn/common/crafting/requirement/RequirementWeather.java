@@ -19,7 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
@@ -87,7 +86,7 @@ public class RequirementWeather implements IRequirement<WeatherComponent, Weathe
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.weather");
   }
 

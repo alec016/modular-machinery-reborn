@@ -64,7 +64,7 @@ public class RequirementDuration implements IRequirement<DurationComponent, Void
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.duration");
   }
 

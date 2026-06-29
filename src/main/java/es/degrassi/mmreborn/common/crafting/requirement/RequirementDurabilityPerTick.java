@@ -12,15 +12,14 @@ import es.degrassi.mmreborn.api.crafting.requirement.IRequirementList;
 import es.degrassi.mmreborn.common.crafting.ComponentType;
 import es.degrassi.mmreborn.common.machine.IOType;
 import es.degrassi.mmreborn.common.machine.component.DurabilityComponent;
+import es.degrassi.mmreborn.common.manager.handler.ItemHandler;
 import es.degrassi.mmreborn.common.registration.ComponentRegistration;
 import es.degrassi.mmreborn.common.registration.RequirementTypeRegistration;
-import es.degrassi.mmreborn.common.manager.handler.ItemHandler;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -135,7 +134,7 @@ public class RequirementDurabilityPerTick implements IRequirement<DurabilityComp
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable(String.format("component.missing.durability.%s", ioType.name().toLowerCase()));
   }
 

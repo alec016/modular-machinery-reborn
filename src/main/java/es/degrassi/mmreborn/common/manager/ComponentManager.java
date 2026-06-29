@@ -274,7 +274,7 @@ public class ComponentManager implements INBTSerializable<CompoundTag>, ISyncabl
             .parallelStream()
             .filter(Objects::nonNull)
             .map(c -> (C) c)
-            .filter(c -> requirement.test(c, context))
+            .filter(c -> requirement.isComponentValid(c, context) && requirement.test(c, context))
             .sorted()
             .toList();
         if (components.isEmpty()) return Optional.empty();

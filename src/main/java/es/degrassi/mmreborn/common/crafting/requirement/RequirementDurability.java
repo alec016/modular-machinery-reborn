@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -135,7 +134,7 @@ public class RequirementDurability implements IRequirement<DurabilityComponent, 
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable(String.format("component.missing.durability.%s", ioType.name().toLowerCase()));
   }
 

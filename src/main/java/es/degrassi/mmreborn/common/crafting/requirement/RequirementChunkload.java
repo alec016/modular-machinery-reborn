@@ -18,7 +18,6 @@ import es.degrassi.mmreborn.common.util.Chunkloader;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import org.jetbrains.annotations.NotNull;
 
 public class RequirementChunkload implements IRequirement<ChunkloadComponent, Chunkloader> {
   public static final NamedCodec<RequirementChunkload> CODEC = NamedCodec.record(instance -> instance.group(
@@ -77,7 +76,7 @@ public class RequirementChunkload implements IRequirement<ChunkloadComponent, Ch
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.chunkload");
   }
 

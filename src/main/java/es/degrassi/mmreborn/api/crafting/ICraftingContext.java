@@ -6,6 +6,7 @@ import es.degrassi.mmreborn.common.crafting.modifier.RecipeModifier;
 import es.degrassi.mmreborn.common.crafting.requirement.RequirementType;
 import es.degrassi.mmreborn.common.entity.MachineControllerEntity;
 import es.degrassi.mmreborn.common.machine.MachineComponent;
+import es.degrassi.mmreborn.common.manager.crafting.MachineProcessorCore;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public interface ICraftingContext {
   MachineControllerEntity getMachineTile();
 
   /**
-   * @return The int ID of the {@link es.degrassi.mmreborn.common.manager.crafting.MachineProcessorCore} processing the recipe.
+   * @return The int ID of the {@link MachineProcessorCore} processing the recipe.
    */
   int getCurrentCore();
 
@@ -61,7 +62,7 @@ public interface ICraftingContext {
   /**
    * Used to apply all currently active machine upgrades to an {@link IRequirement} value.
    * @param value The value to modify (example an amount of item, energy etc...).
-   * @param requirement The requirement the value depends, because machine upgrades can target a specific {@link es.degrassi.mmreborn.common.crafting.requirement.RequirementType}.
+   * @param requirement The requirement the value depends, because machine upgrades can target a specific {@link RequirementType}.
    * @return The modified value, or the same value if no upgrades could be applied.
    */
   <C extends MachineComponent<T>, T> float getModifiedValue(float value, IRequirement<C, T> requirement);
@@ -74,7 +75,7 @@ public interface ICraftingContext {
   /**
    * Use this method only for requirements that will be executed every tick of the crafting process.
    * @param value The value to modify (example an amount of item, energy etc...).
-   * @param requirement The requirement the value depends, because machine upgrades can target a specific {@link es.degrassi.mmreborn.common.crafting.requirement.RequirementType}.
+   * @param requirement The requirement the value depends, because machine upgrades can target a specific {@link RequirementType}.
    * @return The modified value, or the same value if no upgrades could be applied.
    */
   <C extends MachineComponent<T>, T> float getPerTickModifiedValue(float value, IRequirement<C, T> requirement);

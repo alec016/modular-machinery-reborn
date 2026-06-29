@@ -80,9 +80,7 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, IEnergyH
       return CraftingResult.success();
     }
     handler.setCanExtract(tempExtract);
-    return CraftingResult.error(Component.translatable(
-        "craftcheck.failure.energy.input", requirement, component.getContainerProvider().getCurrentEnergy()
-    ));
+    return CraftingResult.error(Component.translatable("craftcheck.failure.energy.input", requirement, canExtract));
   }
 
   private CraftingResult processOutputs(EnergyComponent component, ICraftingContext context) {

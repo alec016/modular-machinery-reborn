@@ -16,7 +16,6 @@ import es.degrassi.mmreborn.common.util.IntRange;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.NotNull;
 
 public class RequirementTime implements IRequirement<TimeComponent, IntRange> {
   public static final NamedCodec<RequirementTime> CODEC = NamedCodec.record(instance -> instance.group(
@@ -78,7 +77,7 @@ public class RequirementTime implements IRequirement<TimeComponent, IntRange> {
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.time");
   }
 

@@ -57,7 +57,7 @@ public class RequirementEmpty implements IRequirement<EmptyComponent, Void> {
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.empty();
   }
 

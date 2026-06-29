@@ -17,7 +17,6 @@ import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 @AllArgsConstructor
@@ -74,7 +73,7 @@ public class RequirementCommand implements IRequirement<CommandComponent, Void> 
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return Component.translatable("component.missing.command");
   }
 
