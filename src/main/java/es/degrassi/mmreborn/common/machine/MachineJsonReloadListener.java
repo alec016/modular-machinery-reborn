@@ -64,6 +64,9 @@ public class MachineJsonReloadListener extends CustomJsonReloadListener {
         machine.setRegistryName(id);
         ModularMachineryReborn.MACHINES.put(machine.getRegistryName(), machine);
         MMRLogger.INSTANCE.info("Successfully parsed machine json: {}", machine.getRegistryName());
+        if (MMRConfig.get().logDebugStructure.get()) {
+          MMRLogger.INSTANCE.debug("Machine: {}", machine.asJson().toString());
+        }
       } else if(result.error().isPresent())
         MMRLogger.INSTANCE.error("Error while parsing machine json: {}, skipping...\n{}", id, result.error().get().message());
     });

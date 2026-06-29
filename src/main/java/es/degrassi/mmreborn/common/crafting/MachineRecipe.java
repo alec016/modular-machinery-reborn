@@ -12,6 +12,7 @@ import es.degrassi.mmreborn.api.crafting.requirement.RecipeRequirement;
 import es.degrassi.mmreborn.common.crafting.helper.ProgressData;
 import es.degrassi.mmreborn.common.crafting.requirement.PositionedSizedRequirement;
 import es.degrassi.mmreborn.common.crafting.requirement.RequirementEnergyPerTick;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.machine.DynamicMachine;
 import es.degrassi.mmreborn.common.registration.RecipeRegistration;
 import es.degrassi.mmreborn.common.util.MMRLogger;
@@ -296,7 +297,9 @@ public class MachineRecipe implements Comparable<MachineRecipe>, Recipe<RecipeIn
         if (!recipe.modified)
           recipe.setModified(modified);
         recipe.hide(hidden);
-        MMRLogger.INSTANCE.debug("Finished building recipe {}", recipe);
+        if (MMRConfig.get().logDebugRecipe.get()) {
+          MMRLogger.INSTANCE.debug("Finished building recipe {}", recipe);
+        }
         return recipe;
       } catch (Exception ex) {
         MMRLogger.INSTANCE.error("Error while building recipe for machine: {}", machine, ex);

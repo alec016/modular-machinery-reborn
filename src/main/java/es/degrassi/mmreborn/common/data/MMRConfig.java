@@ -23,6 +23,8 @@ public class MMRConfig {
   public final ConfigValue<LoggingLevel> debugLevel;
   public final ConfigValue<Boolean> logMissingOptional;
   public final ConfigValue<Boolean> logFirstEitherError;
+  public final ConfigValue<Boolean> logDebugStructure;
+  public final ConfigValue<Boolean> logDebugRecipe;
 
   public final ConfigValue<String> general_casing_color;
   public final ConfigValue<String> chance_color;
@@ -53,14 +55,20 @@ public class MMRConfig {
     {
       builder.push("Logs");
       this.logMissingOptional = builder
-          .comment("If true, all missing optional properties\nand their default values will be logged\nwhen parsing custom machines jsons.")
+          .comment("If true, all missing optional properties\nand their default values will be logged\nwhen parsing custom multiblock jsons.")
           .define("log_missing_optional", false);
       this.logFirstEitherError = builder
           .comment("When parsing custom machines json files,\nsome properties can be read with 2 serializers.\nSet this to true to log when the first serializer throw an error,\neven if the second succeed.")
           .define("log_first_either_error", false);
       this.debugLevel = builder
-          .comment("Configure what logs will be printed in the custommachinery.log file.\nOnly logs with level higher or equal than selected will be printed.\nFATAL > ERROR > WARN > INFO > DEBUG > ALL")
+          .comment("Configure what logs will be printed in the modular_machinery_reborn/mmr.log file.\nOnly logs with level higher or equal than selected will be printed.\nFATAL > ERROR > WARN > INFO > DEBUG > ALL")
           .defineEnum("debug_level", LoggingLevel.INFO);
+      this.logDebugStructure = builder
+          .comment("If true and debugLevel is DEBUG or ALL, this will log the full parsed structure in the modular_machinery_reborn/mmr.log file")
+          .define("log_debug_structure", false);
+      this.logDebugRecipe = builder
+          .comment("If true and debugLevel is DEBUG or ALL, this will log the full parsed recipe in the modular_machinery_reborn/mmr.log file")
+          .define("logDebugRecipe", true);
       builder.pop();
     }
     //GENERAL

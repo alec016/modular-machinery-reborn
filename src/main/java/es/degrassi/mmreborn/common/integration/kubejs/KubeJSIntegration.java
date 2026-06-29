@@ -7,6 +7,7 @@ import dev.latvian.mods.kubejs.script.data.KubeFileResourcePack;
 import dev.latvian.mods.kubejs.script.data.VirtualDataPack;
 import es.degrassi.mmreborn.api.crafting.CraftingResult;
 import es.degrassi.mmreborn.api.crafting.ICraftingContext;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.integration.kubejs.events.DynamicTooltipKubeEvent;
 import es.degrassi.mmreborn.common.integration.kubejs.events.FunctionKubeEvent;
 import es.degrassi.mmreborn.common.integration.kubejs.events.MachineKubeEvent;
@@ -48,7 +49,9 @@ public class KubeJSIntegration {
         MMRLogger.INSTANCE.info("Parsing machine {} in js script", machineId.get().toString());
         DynamicMachine machine = builder.build();
         MMRLogger.INSTANCE.info("Successfully parsed machine from script: {}", machineId.get().toString());
-        MMRLogger.INSTANCE.debug("Machine: {}", machine.asJson().toString());
+        if (MMRConfig.get().logDebugStructure.get()) {
+          MMRLogger.INSTANCE.debug("Machine: {}", machine.asJson().toString());
+        }
         machines.put(machine.getRegistryName(), machine);
       });
     } catch (Exception e) {
