@@ -36,9 +36,9 @@ public class FuelDrawable implements IDrawableAnimated {
         0,
         TextureSizeHelper.getWidth(fillTexture),
         TextureSizeHelper.getHeight(fillTexture),
-        1,
         0,
-        1,
+        0,
+        0,
         0,
         TextureSizeHelper.getWidth(fillTexture),
         TextureSizeHelper.getHeight(fillTexture)
@@ -57,7 +57,7 @@ public class FuelDrawable implements IDrawableAnimated {
         TextureSizeHelper.getHeight(emptyTexture)
     );
     IDrawable animatedFill = new DrawableAnimated(recipeArrowFilled, ticksPerCycle, startDirection, false);
-    IDrawable drawableCombined = new DrawableCombined(recipeArrow, animatedFill);
+    IDrawable drawableCombined = new DrawableCombined(recipeArrow, new OffsetDrawable(animatedFill, 1, 1));
     return new OffsetDrawable(drawableCombined, 0, 0);
   }
 
