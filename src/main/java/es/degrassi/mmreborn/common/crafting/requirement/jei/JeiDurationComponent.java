@@ -19,7 +19,6 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -59,12 +58,12 @@ implements IDirectionalRequirement {
   }
 
   @Override
-  public void render(GuiGraphics guiGraphics, @NotNull Integer ingredient) {
+  public void render(GuiGraphics guiGraphics, Integer ingredient) {
     progress.draw(guiGraphics, 0, 0);
   }
 
   @Override
-  public @NotNull List<Component> getTooltip(@NotNull Integer ingredient, @NotNull TooltipFlag tooltipFlag) {
+  public List<Component> getTooltip(Integer ingredient, TooltipFlag tooltipFlag) {
    List<Component> tooltip = super.getTooltip(ingredient, tooltipFlag);
    tooltip.add(Component.translatable(
        "modular_machinery_reborn.jei.ingredient.duration",

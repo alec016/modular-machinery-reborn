@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.TooltipFlag;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -40,12 +39,12 @@ public abstract class JeiComponent<X, R extends RecipeRequirement<?, ?, ?>> impl
   }
 
   @Override
-  public void render(GuiGraphics guiGraphics, @NotNull X ingredient) {
+  public void render(GuiGraphics guiGraphics,X ingredient) {
     guiGraphics.blit(texture(), -1, -1, 0, uOffset, vOffset, getWidth(), getHeight(), TextureSizeHelper.getWidth(texture()), TextureSizeHelper.getHeight(texture()));
   }
 
   @Override
-  public @NotNull List<Component> getTooltip(@NotNull X ingredient, @NotNull TooltipFlag tooltipFlag) {
+  public List<Component> getTooltip(X ingredient, TooltipFlag tooltipFlag) {
     return new LinkedList<>();
   }
 

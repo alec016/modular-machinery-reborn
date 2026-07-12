@@ -1,18 +1,17 @@
 package es.degrassi.mmreborn.common.crafting.requirement.emi;
 
 import dev.emi.emi.api.recipe.EmiRecipe;
-import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.bom.BoM;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.input.EmiBind;
 import dev.emi.emi.runtime.EmiHistory;
-import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.RecipeScreen;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 public interface RecipeHolder extends StackHolder {
-  EmiRecipe getRecipe();
+  @Nullable EmiRecipe getRecipe();
   void recipeContext(EmiRecipe recipe);
 
   default boolean canResolve() {

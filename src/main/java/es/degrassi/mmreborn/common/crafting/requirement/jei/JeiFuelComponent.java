@@ -66,12 +66,12 @@ public class JeiFuelComponent extends JeiComponent<Long, RecipeRequirement<FuelC
   }
 
   @Override
-  public void render(@NotNull GuiGraphics guiGraphics, @NotNull Long ingredient) {
+  public void render(GuiGraphics guiGraphics, Long ingredient) {
     progress.draw(guiGraphics, 0, 0);
   }
 
   @Override
-  public @NotNull List<Component> getTooltip(@NotNull Long ingredient, @NotNull TooltipFlag tooltipFlag) {
+  public List<Component> getTooltip(Long ingredient, TooltipFlag tooltipFlag) {
     List<Component> tooltip = super.getTooltip(ingredient, tooltipFlag);
     tooltip.add(
         Component.translatable(

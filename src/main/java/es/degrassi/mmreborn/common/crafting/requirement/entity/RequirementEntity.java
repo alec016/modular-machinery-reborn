@@ -47,7 +47,7 @@ public abstract class RequirementEntity implements IRequirement<EntityComponent,
   }
 
   @Override
-  public @NotNull Component getMissingComponentErrorMessage(IOType ioType) {
+  public Component getMissingComponentErrorMessage(IOType ioType) {
     return action.missingComponent();
   }
 

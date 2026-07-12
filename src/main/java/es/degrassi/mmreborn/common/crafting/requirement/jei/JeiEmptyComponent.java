@@ -42,7 +42,7 @@ public class JeiEmptyComponent extends JeiComponent<Void, RecipeRequirement<Empt
   }
 
   @Override
-  public void render(GuiGraphics guiGraphics, @NotNull Void ingredient) {
+  public void render(GuiGraphics guiGraphics, Void ingredient) {
     width += 2;
     height += 2;
     super.render(guiGraphics, ingredient);

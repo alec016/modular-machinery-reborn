@@ -45,7 +45,7 @@ public class JeiEnergyPerTickComponent extends JeiComponent<Long, RecipeRequirem
   }
 
   @Override
-  public void render(@NotNull GuiGraphics guiGraphics, @NotNull Long ingredient) {
+  public void render(GuiGraphics guiGraphics, Long ingredient) {
     width += 2;
     height += 2;
     super.render(guiGraphics, ingredient);
@@ -54,7 +54,7 @@ public class JeiEnergyPerTickComponent extends JeiComponent<Long, RecipeRequirem
   }
 
   @Override
-  public @NotNull List<Component> getTooltip(@NotNull Long ingredient, @NotNull TooltipFlag tooltipFlag) {
+  public List<Component> getTooltip(Long ingredient, TooltipFlag tooltipFlag) {
     List<Component> tooltip = super.getTooltip(ingredient, tooltipFlag);
     String mode = requirement.requirement().getMode().isInput() ? "input" : "output";
     tooltip.add(
