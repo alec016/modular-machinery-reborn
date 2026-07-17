@@ -46,7 +46,7 @@ public class DataType<D extends IData<T>, T> {
      * A constructor for {@link DataType}.
      * Use {@link DataType#create(Class, BiFunction, BiFunction)} instead.
      */
-    private DataType(Class<T> type, BiFunction<Supplier<T>, Consumer<T>, ISyncable<D, T>> builder, BiFunction<Short, RegistryFriendlyByteBuf, D> reader) {
+    DataType(Class<T> type, BiFunction<Supplier<T>, Consumer<T>, ISyncable<D, T>> builder, BiFunction<Short, RegistryFriendlyByteBuf, D> reader) {
         this.type = type;
         this.builder = builder;
         this.reader = reader;

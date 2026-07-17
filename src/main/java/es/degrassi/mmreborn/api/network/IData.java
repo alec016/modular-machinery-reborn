@@ -41,12 +41,26 @@ public interface IData<T> {
      * Utility method used by the container syncing packet to construct the IData on client side, from the PacketBuffer send by the server.
      * Don't touch this.
      */
-    static IData<?> readData(RegistryFriendlyByteBuf buffer) {
+    @SuppressWarnings("unchecked")
+    static <T extends Enum<T>> IData<?> readData(RegistryFriendlyByteBuf buffer) {
         ResourceLocation typeId = buffer.readResourceLocation();
-        DataType<? extends IData<?>, ?> type = ModularMachineryReborn.dataRegistrar().get(typeId);
+        var type = ModularMachineryReborn.dataRegistrar().get(typeId);
         if(type == null)
             throw new IllegalStateException("Attempting to read invalid IData : " + typeId + " is not a valid registered DataType !");
         short id = buffer.readShort();
+        if (type instanceof EnumDataType<?>) {
+            EnumDataType<T> enumType = (EnumDataType<T>) type;
+            var className = buffer.readUtf();
+            try {
+                var c = Class.forName(className);
+                if (!c.isEnum()) {
+                    return null;
+                }
+                return enumType.readData(id, (Class<T>) c, buffer);
+            } catch(ClassNotFoundException | ClassCastException e) {
+                return null;
+            }
+        }
         return type.readData(id, buffer);
     }
 }

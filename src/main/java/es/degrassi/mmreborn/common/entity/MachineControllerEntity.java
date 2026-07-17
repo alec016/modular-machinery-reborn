@@ -11,11 +11,12 @@ import es.degrassi.mmreborn.api.controller.MMRWorldSavedData;
 import es.degrassi.mmreborn.api.crafting.ComponentNotFoundException;
 import es.degrassi.mmreborn.api.network.ISyncable;
 import es.degrassi.mmreborn.api.network.ISyncableStuff;
+import es.degrassi.mmreborn.api.network.syncable.ComponentSyncable;
 import es.degrassi.mmreborn.api.network.syncable.CorePopupSyncable;
+import es.degrassi.mmreborn.api.network.syncable.EnumSyncable;
 import es.degrassi.mmreborn.api.network.syncable.IntegerSyncable;
 import es.degrassi.mmreborn.api.network.syncable.NbtSyncable;
 import es.degrassi.mmreborn.api.network.syncable.ResourceLocationSyncable;
-import es.degrassi.mmreborn.api.network.syncable.StringSyncable;
 import es.degrassi.mmreborn.client.integration.athena.model.controller.ControllerBakedModel;
 import es.degrassi.mmreborn.client.integration.athena.model.controller.ControllerData;
 import es.degrassi.mmreborn.common.crafting.helper.CraftingStatus;
@@ -368,8 +369,8 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     container.accept(ResourceLocationSyncable.create(() -> id, s -> id = s));
     container.accept(IntegerSyncable.create(() -> lastFocus, i -> lastFocus = i));
     container.accept(NbtSyncable.create(() -> craftingStatus.serializeNBT(registries), s -> craftingStatus = CraftingStatus.deserialize(s, registries)));
-    container.accept(StringSyncable.create(() -> getStatus().toString(), status -> setStatus(MachineStatus.value(status))));
-    container.accept(StringSyncable.create(() -> Component.Serializer.toJson(this.errorMessage, registries), errorMessage -> this.errorMessage = Component.Serializer.fromJson(errorMessage, registries)));
+    container.accept(EnumSyncable.create(this::getStatus, this::setStatus));
+    container.accept(ComponentSyncable.create(() -> this.errorMessage, err -> this.errorMessage = err));
     container.accept(CorePopupSyncable.create(() -> {
       int maxCores = getProcessor().getMaxCores();
       Map<String, List<CompoundTag>> pages = new HashMap<>();
@@ -484,7 +485,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     errorInfo.clear();
   }
 
-  public class ComponentList implements ISyncableStuff {
+  public static class ComponentList implements ISyncableStuff {
     private final Set<Component> components;
     private Component unified;
     protected ComponentList() {
@@ -496,14 +497,13 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
       var component = components
           .stream()
           .collect(Component::empty, MutableComponent::append, MutableComponent::append);
-      var registries = getLevel().registryAccess();
       if (components.isEmpty()) {
         component = null;
       }
-      MutableComponent finalComponent = component;
-      container.accept(StringSyncable.create(
-          () -> finalComponent == null ? "" : Component.Serializer.toJson(finalComponent, registries),
-          c -> unified = c.isEmpty() ? null : Component.Serializer.fromJson(c, registries)
+      var finalComponent = Optional.ofNullable(component).orElse(Component.empty());
+      container.accept(ComponentSyncable.create(
+          () -> finalComponent,
+          c -> unified = Objects.equals(c, Component.empty()) ? null : c
       ));
     }
 

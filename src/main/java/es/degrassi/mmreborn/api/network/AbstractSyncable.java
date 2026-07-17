@@ -3,7 +3,7 @@ package es.degrassi.mmreborn.api.network;
 /**
  * Default implementation of ISyncable.
  */
-public abstract class AbstractSyncable<D extends IData<?>, T> implements ISyncable<D, T> {
+public abstract class AbstractSyncable<D extends IData<T>, T> implements ISyncable<D, T> {
 
     public T lastKnownValue;
 
