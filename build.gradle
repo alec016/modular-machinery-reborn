@@ -3,7 +3,7 @@ plugins {
   id 'idea'
   id 'maven-publish'
   id 'net.neoforged.moddev' version '2.0.105'
-  id "es.degrassi.unified-publishing-with-mmr-bot" version "1.4.5"
+  id "es.degrassi.unified-publishing-with-mmr-bot" version "2.0.0-build-12"
   id "io.freefair.lombok" version "9.2.0"
 }
 
@@ -368,10 +368,12 @@ unifiedPublishingWithMMRBot {
     modid = mod_id
     modVersion = "ModularMachineyReborn-${minecraft_version}-${mod_version}"
     apiKey = System.getenv("MMRBOT")
+    environments = ['Client', 'Server']
 
     var CURSE_API_KEY = System.getenv("CURSEFORGE")
     if (CURSE_API_KEY != null) {
       curseforge {
+        // gameVersionNames = ["Client", "Server"] this will be required in newer updates in curseforge
         token = CURSE_API_KEY
         id = "1083840"
         relations {

@@ -202,6 +202,7 @@
   "mmr.gui.element.experience.tooltip.input": "需要: %s / %s",
   "mmr.gui.element.experience.tooltip.output": "产出: %s / %s",
   "mmr.gui.missing_structure": "Not Available until structure formed",
+  "mmr.gui.paused": "Not available while multiblock is Paused",
   "mmr.gui.popup.cancel": "取消",
   "mmr.gui.popup.confirm": "确认",
   "mmr.gui.structure.break": "你确定要破坏当前的结构吗？",

@@ -58,13 +58,17 @@ public class CoreGridPopupScreen extends PopupScreen<ControllerContainer> {
       );
     }
 
-    if (!getMenu().getEntity().getStatus().isMissingStructure()) {
+    var status = getMenu().getEntity().getStatus();
+    if (status.isPaused()) {
+      var text = Component.translatable("mmr.gui.paused");
+      row.addChild(new StringWidget(font.width(text), font.lineHeight, text, font), cols);
+    } else if (!status.isMissingStructure()) {
       for (MachineProcessorCore core : getMenu().getPage()) {
         row.addChild(createCoreButton(core));
       }
     } else {
       var text = Component.translatable("mmr.gui.missing_structure");
-      row.addChild(new StringWidget(font.width(text), font.lineHeight, text, font));
+      row.addChild(new StringWidget(font.width(text), font.lineHeight, text, font), cols);
     }
 
     layout.arrangeElements();

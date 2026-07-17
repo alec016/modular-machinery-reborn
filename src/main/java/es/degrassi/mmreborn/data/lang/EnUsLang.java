@@ -491,7 +491,8 @@ final class EnUsLang extends Lang {
     add(mmr(tooltip("effect.interdimensional")), "Giving effect interdimensionally");
     add(mmr(tooltip("redstone.emit")), "Emitting %s");
     add(mmr(tooltip("redstone.receive")), "Receiving %s");
-    add(mmr(gui("missing_structure")), "Not Available until structure formed");
+    add(mmr(gui("missing_structure")), "Not available until structure formed");
+    add(mmr(gui("paused")), "Not available while multiblock is Paused");
   }
 
   @Override

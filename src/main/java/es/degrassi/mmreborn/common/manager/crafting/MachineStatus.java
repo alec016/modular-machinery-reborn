@@ -48,7 +48,11 @@ public enum MachineStatus implements StringRepresentable {
   }
 
   public boolean isCrafting() {
-    return !isMissingStructure() && !isIdle();
+    return this == RUNNING;
+  }
+
+  public boolean isPaused() {
+    return this == PAUSED;
   }
 
   public static MachineStatus value(String string) {

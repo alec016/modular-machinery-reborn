@@ -202,6 +202,7 @@
   "mmr.gui.element.experience.tooltip.input": "Require: %s / %s",
   "mmr.gui.element.experience.tooltip.output": "Produce: %s / %s",
   "mmr.gui.missing_structure": "No disponible hasta que la estructura no esté formada",
+  "mmr.gui.paused": "No disponible mientras el multibloque está pausado",
   "mmr.gui.popup.cancel": "Cancel",
   "mmr.gui.popup.confirm": "Confirm",
   "mmr.gui.structure.break": "Are you sure you want to break the current structure?",

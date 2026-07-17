@@ -488,6 +488,7 @@ final class EsEsLang extends Lang {
     add(mmr(tooltip("redstone.emit")), "Emitting %s");
     add(mmr(tooltip("redstone.receive")), "Receiving %s");
     add(mmr(gui("missing_structure")), "No disponible hasta que la estructura no esté formada");
+    add(mmr(gui("paused")), "No disponible mientras el multibloque está pausado");
   }
 
   @Override
