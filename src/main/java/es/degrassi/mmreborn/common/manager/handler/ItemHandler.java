@@ -63,6 +63,14 @@ public class ItemHandler extends AbstractHandler<ItemSlot, ItemStack> implements
     setChanged(slot, stack);
   }
 
+  public void setStackInSlotNoUpdate(int slot, ItemStack stack) {
+    getInventory().stream().filter(s -> s.getSlot() == slot)
+        .findFirst()
+        .ifPresent(s -> {
+          s.setItemStackNoUpdate(stack);
+        });
+  }
+
   @Override
   public int getSlotLimit(int slot) {
     return getSlotLimit();
@@ -141,6 +149,10 @@ public class ItemHandler extends AbstractHandler<ItemSlot, ItemStack> implements
   @Override
   public void setItem(int slot, ItemStack stack) {
     setStackInSlot(slot, stack);
+  }
+
+  public void setItemNoUpdate(int slot, ItemStack stack) {
+    setStackInSlotNoUpdate(slot, stack);
   }
 
   @Override

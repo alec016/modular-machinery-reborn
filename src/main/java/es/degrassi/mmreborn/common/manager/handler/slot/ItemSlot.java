@@ -128,6 +128,10 @@ public class ItemSlot extends AbstractSlot<ItemStack, Integer> implements IItemH
     setChanged();
   }
 
+  public void setItemStackNoUpdate(ItemStack stack) {
+    this.value = stack;
+  }
+
   public boolean isEmpty() {
     return this.value == null || this.value.isEmpty();
   }

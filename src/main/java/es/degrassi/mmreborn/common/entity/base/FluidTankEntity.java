@@ -131,13 +131,13 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
           var fluidCandidate = fluidCap.getFluidInTank(0).copyWithAmount(1);
           if (fluidCandidate.isEmpty()) {
             setFilter(FluidStack.EMPTY);
-            filterInventory.setItem(0, Items.BUCKET.getDefaultInstance());
+            filterInventory.setItemNoUpdate(0, Items.BUCKET.getDefaultInstance());
             PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), Items.BUCKET.getDefaultInstance()));
             return;
           }
           if (FilterConverterRegistry.isConvertible(fluidCandidate)) {
             stack = FilterConverterRegistry.convertBack(fluidCandidate);
-            filterInventory.setItem(slot, stack);
+            filterInventory.setItemNoUpdate(slot, stack);
             PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), new ChunkPos(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), stack));
             this.setFilter(fluidCandidate);
             return;
