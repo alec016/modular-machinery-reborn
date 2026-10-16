@@ -1,0 +1,18 @@
+{
+  "wrench_fail": {
+    "sounds": [
+      {
+        "name": "modular_machinery_reborn:wrench_fail",
+        "volume": 1.0
+      }
+    ]
+  },
+  "wrench_success": {
+    "sounds": [
+      {
+        "name": "modular_machinery_reborn:wrench_success",
+        "volume": 1.0
+      }
+    ]
+  }
+}

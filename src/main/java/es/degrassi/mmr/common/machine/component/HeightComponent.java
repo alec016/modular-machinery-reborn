@@ -1,0 +1,31 @@
+package es.degrassi.mmr.common.machine.component;
+
+import es.degrassi.mmr.common.crafting.ComponentType;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.machine.MachineComponent;
+import es.degrassi.mmr.common.registration.ComponentRegistration;
+import es.degrassi.mmr.common.util.IntRange;
+import org.jetbrains.annotations.Nullable;
+
+public class HeightComponent extends MachineComponent<IntRange> {
+
+  public HeightComponent() {
+    super(IOType.INPUT);
+  }
+
+  @Override
+  public ComponentType<IntRange> getComponentType() {
+    return ComponentRegistration.COMPONENT_HEIGHT.get();
+  }
+
+  @Override
+  public @Nullable IntRange getContainerProvider() {
+    return null;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <C extends MachineComponent<IntRange>> C merge(C c) {
+    return (C) this;
+  }
+}

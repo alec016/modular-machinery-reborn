@@ -1,0 +1,117 @@
+package es.degrassi.mmr.api.crafting.requirement;
+
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
+import es.degrassi.experiencelib.api.codec.NamedCodec;
+import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.codec.DefaultCodecs;
+import es.degrassi.mmr.api.crafting.requirement.IDisplayInfo.TooltipPredicate;
+import es.degrassi.mmr.common.util.TextComponentUtils;
+import lombok.Getter;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
+public class DisplayInfoTemplate {
+
+  private static final Identifier DEFAULT_TEXTURE = ModularMachineryReborn.rl("textures/gui/create_icon.png");
+
+  public static final NamedCodec<Pair<Component, TooltipPredicate>> TOOLTIPS = NamedCodec.either(NamedCodec.pair(TextComponentUtils.CODEC.fieldOf("text"), TooltipPredicate.CODEC.fieldOf("predicate")), TextComponentUtils.CODEC)
+      .xmap(either -> either.map(Function.identity(), component -> Pair.of(component, TooltipPredicate.ALWAYS)), Either::left, "Tooltips");
+
+  public static final NamedCodec<DisplayInfoTemplate> CODEC = NamedCodec.record(displayInfoTemplateInstance ->
+      displayInfoTemplateInstance.group(
+          TOOLTIPS.listOf().optionalFieldOf("tooltips", Collections.emptyList()).forGetter(template -> template.tooltips),
+          DefaultCodecs.ITEM_OR_STACK.optionalFieldOf("item").forGetter(template -> Optional.ofNullable(template.stack)),
+          DefaultCodecs.IDENTIFIER.optionalFieldOf("icon", DEFAULT_TEXTURE).forGetter(template -> template.icon),
+          NamedCodec.intRange(1, 128).optionalFieldOf("width", 10).forGetter(template -> template.width),
+          NamedCodec.intRange(1, 128).optionalFieldOf("height", 10).forGetter(template -> template.height),
+          NamedCodec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("u", 0).forGetter(template -> template.u),
+          NamedCodec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("v", 0).forGetter(template -> template.v),
+          DefaultCodecs.IDENTIFIER.optionalFieldOf("atlas").forGetter(template -> Optional.ofNullable(template.atlas)),
+          DefaultCodecs.IDENTIFIER.optionalFieldOf("sprite").forGetter(template -> Optional.ofNullable(template.sprite))
+      ).apply(displayInfoTemplateInstance, (tooltips, stack, icon, width, height, u, v, atlas, sprite) -> {
+            DisplayInfoTemplate template = new DisplayInfoTemplate();
+            tooltips.forEach(template::tooltip);
+            stack.ifPresent(template::item);
+            template.texture(icon, width, height, u, v);
+            atlas.ifPresent(a -> sprite.ifPresent(s -> template.sprite(a, s)));
+            return template;
+          }
+      ), "Display info template"
+  );
+
+  public static final DisplayInfoTemplate EMPTY = new DisplayInfoTemplate();
+
+  @Getter
+  private final List<Pair<Component, TooltipPredicate>> tooltips = new ArrayList<>();
+  @Nullable
+  private ItemStack stack;
+  private Identifier icon = DEFAULT_TEXTURE;
+  private int width = 10;
+  private int height = 10;
+  private int u = 0;
+  private int v = 0;
+  @Nullable
+  private Identifier atlas;
+  @Nullable
+  private Identifier sprite;
+
+  private DisplayInfoTemplate tooltip(Pair<Component, TooltipPredicate> pair) {
+    this.tooltips.add(pair);
+    return this;
+  }
+
+  public DisplayInfoTemplate tooltip(Component component, TooltipPredicate predicate) {
+    return this.tooltip(Pair.of(component, predicate));
+  }
+
+  public DisplayInfoTemplate tooltip(Component component) {
+    return this.tooltip(component, TooltipPredicate.ALWAYS);
+  }
+
+  public DisplayInfoTemplate item(ItemStack stack) {
+    this.stack = stack;
+    return this;
+  }
+
+  public DisplayInfoTemplate texture(Identifier icon) {
+    return this.texture(icon, 16, 16);
+  }
+
+  public DisplayInfoTemplate texture(Identifier icon, int width, int height) {
+    return this.texture(icon, width, height, 0, 0);
+  }
+
+  public DisplayInfoTemplate texture(Identifier icon, int width, int height, int u, int v) {
+    this.icon = icon;
+    this.width = width;
+    this.height = height;
+    this.u = u;
+    this.v = v;
+    return this;
+  }
+
+  public DisplayInfoTemplate sprite(Identifier atlas, Identifier sprite) {
+    this.atlas = atlas;
+    this.sprite = sprite;
+    return this;
+  }
+
+  public void build(IDisplayInfo info) {
+    this.tooltips.forEach(pair -> info.addTooltip(pair.getFirst(), pair.getSecond()));
+    if(this.stack != null)
+      info.setItemIcon(this.stack);
+    else if(this.atlas != null && this.sprite != null)
+      info.setSpriteIcon(this.atlas, this.sprite);
+    else
+      info.setTextureIcon(this.icon, this.width, this.height, this.u, this.v);
+  }
+}
