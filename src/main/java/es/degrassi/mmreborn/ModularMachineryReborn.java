@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
 import es.degrassi.experiencelib.api.capability.ExperienceLibCapabilities;
 import es.degrassi.mmreborn.api.client.machine.TooltipUse;
 import es.degrassi.mmreborn.api.crafting.IProcessor;
@@ -150,36 +149,34 @@ public class ModularMachineryReborn {
   }
 
   private static void addConfigLoaders() {
-    ConfigLoaded.add(
-        Pair.of(EnergyHatchSize.class, (EnergyHatchSize size) -> {
-          size.maxEnergy = EnergyHatchConfig.get().energySize(size);
-          size.maxEnergy = MiscUtils.clamp(size.maxEnergy, 1, Long.MAX_VALUE);
-          size.transferLimit = EnergyHatchConfig.get().energyLimit(size);
-          size.transferLimit = MiscUtils.clamp(size.transferLimit, 1, Long.MAX_VALUE);
-        }),
-        Pair.of(FluidHatchSize.class, (FluidHatchSize size) -> size.size = FluidHatchConfig.get().fluidSize(size)),
-        Pair.of(ItemBusSize.class, (ItemBusSize size) -> {
-          size.slots = ItemBusConfig.get().itemSize(size);
-          size.cols = ItemBusConfig.get().itemCols(size);
-          size.stackSize = ItemBusConfig.get().stackSize(size);
-        }),
-        Pair.of(ItemDurabilityHatchSize.class, (ItemDurabilityHatchSize size) -> {
-          size.slots = DurabilityHatchConfig.get().durabilitySize(size);
-          size.cols = DurabilityHatchConfig.get().durabilityCols(size);
-          size.stackSize = DurabilityHatchConfig.get().stackSize(size);
-        }),
-        Pair.of(ExperienceHatchSize.class, (ExperienceHatchSize size) -> size.capacity = ExperienceHatchConfig.get().experienceSize(size)),
-        Pair.of(ParallelHatchSize.class, (ParallelHatchSize size) -> size.max = ParallelHatchConfig.get().maxParallel(size)),
-        Pair.of(FuelTankSize.class, (FuelTankSize size) -> {
-          size.burnTimeCapacity = FuelTankConfig.get().fuelCapacity(size);
-          size.stackSize = FuelTankConfig.get().stackSize(size);
-        }),
-        Pair.of(EffectDispenserSize.class, (EffectDispenserSize size) -> {
-          size.radius = EffectDispenserConfig.get().radius(size);
-          size.interdimensional = EffectDispenserConfig.get().interdimensional(size);
-          size.showParticles = EffectDispenserConfig.get().showParticles(size);
-        })
-    );
+    ConfigLoaded.add(EnergyHatchSize.class, size -> {
+      size.maxEnergy = EnergyHatchConfig.get().energySize(size);
+      size.maxEnergy = MiscUtils.clamp(size.maxEnergy, 1, Long.MAX_VALUE);
+      size.transferLimit = EnergyHatchConfig.get().energyLimit(size);
+      size.transferLimit = MiscUtils.clamp(size.transferLimit, 1, Long.MAX_VALUE);
+    });
+    ConfigLoaded.add(FluidHatchSize.class, size -> size.size = FluidHatchConfig.get().fluidSize(size));
+    ConfigLoaded.add(ItemBusSize.class, size -> {
+      size.slots = ItemBusConfig.get().itemSize(size);
+      size.cols = ItemBusConfig.get().itemCols(size);
+      size.stackSize = ItemBusConfig.get().stackSize(size);
+    });
+    ConfigLoaded.add(ItemDurabilityHatchSize.class, size -> {
+      size.slots = DurabilityHatchConfig.get().durabilitySize(size);
+      size.cols = DurabilityHatchConfig.get().durabilityCols(size);
+      size.stackSize = DurabilityHatchConfig.get().stackSize(size);
+    });
+    ConfigLoaded.add(ExperienceHatchSize.class, size -> size.capacity = ExperienceHatchConfig.get().experienceSize(size));
+    ConfigLoaded.add(ParallelHatchSize.class, size -> size.max = ParallelHatchConfig.get().maxParallel(size));
+    ConfigLoaded.add(FuelTankSize.class, size -> {
+      size.burnTimeCapacity = FuelTankConfig.get().fuelCapacity(size);
+      size.stackSize = FuelTankConfig.get().stackSize(size);
+    });
+    ConfigLoaded.add(EffectDispenserSize.class, size -> {
+      size.radius = EffectDispenserConfig.get().radius(size);
+      size.interdimensional = EffectDispenserConfig.get().interdimensional(size);
+      size.showParticles = EffectDispenserConfig.get().showParticles(size);
+    });
   }
 
   private void sendIMCMessages(final InterModEnqueueEvent event) {

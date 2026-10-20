@@ -1,5 +1,7 @@
 package es.degrassi.mmreborn.common.util;
 
+import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import es.degrassi.mmreborn.common.entity.EffectDispenserEntity;
 import es.degrassi.mmreborn.common.entity.FuelTankEntity;
 import es.degrassi.mmreborn.common.entity.MachineControllerEntity;
@@ -13,9 +15,6 @@ import es.degrassi.mmreborn.common.manager.handler.FluidHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -65,11 +64,11 @@ public class RedstoneHelper {
               .map(dir -> Pair.of(dir, entity.getBlockPos().relative(dir)))
               .filter(pair ->
                   Arrays.stream(Direction.values())
-                    .map(pair.getRight()::relative)
+                    .map(pair.getSecond()::relative)
                     .map(pos -> entity.getLevel().getBlockEntity(pos))
                     .noneMatch(o -> o instanceof RedstonePortEntity)
               )
-              .mapToInt(pair -> entity.getLevel().getSignal(pair.getRight(), pair.getLeft()))
+              .mapToInt(pair -> entity.getLevel().getSignal(pair.getSecond(), pair.getFirst()))
               .max()
               .orElse(0);
       case FluidTankEntity entity -> entity.getLevel().getBestNeighborSignal(entity.getBlockPos());
@@ -82,15 +81,15 @@ public class RedstoneHelper {
           .map(dir -> Pair.of(dir, entity.getBlockPos().relative(dir)))
           .map(pair -> {
             var filtered = Lists.newArrayList(Arrays.stream(Direction.values())
-                .map(pair.getRight()::relative)
+                .map(pair.getSecond()::relative)
                 .filter(pos -> !(entity.getLevel().getBlockEntity(pos) instanceof ColorableMachineEntity))
                 .iterator());
-            filtered.add(pair.getRight());
-            return Pair.of(pair.getLeft(), Lists.newArrayList(filtered.iterator()));
+            filtered.add(pair.getSecond());
+            return Pair.of(pair.getFirst(), Lists.newArrayList(filtered.iterator()));
           })
           .mapToInt(pair ->
-            pair.getRight().stream()
-                .mapToInt(pos -> entity.getLevel().getSignal(pos, pair.getLeft()))
+            pair.getSecond().stream()
+                .mapToInt(pos -> entity.getLevel().getSignal(pos, pair.getFirst()))
                 .max()
                 .orElse(0)
           )

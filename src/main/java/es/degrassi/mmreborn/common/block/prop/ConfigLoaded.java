@@ -1,9 +1,7 @@
 package es.degrassi.mmreborn.common.block.prop;
 
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.util.Pair;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public interface ConfigLoaded {
@@ -11,12 +9,6 @@ public interface ConfigLoaded {
 
   static <T extends Enum<T> & ConfigLoaded> void add(Class<T> clazz, ValueSetter<T> consumer) {
     setters.put(clazz, consumer);
-  }
-
-  @SafeVarargs
-  static void add(Pair<Class<? extends Enum<?>>, ValueSetter<?>>... consumers) {
-    Arrays.asList(consumers)
-        .forEach(consumer -> setters.put(consumer.getFirst(), consumer.getSecond()));
   }
 
   static void load() {
@@ -30,6 +22,7 @@ public interface ConfigLoaded {
     }
   }
 
+  @FunctionalInterface
   interface ValueSetter<T extends Enum<T> & ConfigLoaded> {
     void set(T value);
   }
