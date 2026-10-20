@@ -7,6 +7,7 @@ import es.degrassi.mmr.common.entity.EnergyOutputHatchEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -19,21 +20,21 @@ import java.util.function.Consumer;
 
 public class BlockEnergyOutputHatch extends BlockEnergyHatch {
 
-  public BlockEnergyOutputHatch(EnergyHatchSize type) {
-    super(type);
+  public BlockEnergyOutputHatch(Properties id, EnergyHatchSize type) {
+    super(id, type);
   }
 
   @Override
   public void appendHoverText(ItemStack stack, Item.TooltipContext pContext, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
       if (EnergyDisplayUtil.displayFETooltip) {
-        tooltip.accept(Component.translatable("tooltip.energyhatch.storage", type.maxEnergy).withStyle(ChatFormatting.GRAY));
-        tooltip.accept(Component.translatable("tooltip.energyhatch.out.transfer", type.transferLimit).withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.energyhatch.storage", size.maxEnergy).withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.energyhatch.out.transfer", size.transferLimit).withStyle(ChatFormatting.GRAY));
       }
   }
 
   @Nullable
   @Override
   public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-    return new EnergyOutputHatchEntity(pos, state, type);
+    return new EnergyOutputHatchEntity(pos, state, size);
   }
 }

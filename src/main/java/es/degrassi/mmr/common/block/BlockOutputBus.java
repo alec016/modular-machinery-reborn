@@ -6,8 +6,10 @@ import es.degrassi.mmr.common.block.base.BlockTickEntity;
 import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.ItemBusSize;
 import es.degrassi.mmr.common.entity.ItemOutputBusEntity;
+import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -23,10 +25,23 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.ItemBusUI;
 
-public class BlockOutputBus extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public class BlockOutputBus extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof ItemOutputBusEntity entity) {
+      return ItemBusUI.create(holder, entity);
+    }
+    return null;
+  }
+  @Getter
   private final ItemBusSize size;
-  public BlockOutputBus(ItemBusSize size) {
+  public BlockOutputBus(Properties id, ItemBusSize size) {
+    super(id);
     this.size = size;
   }
 
@@ -44,7 +59,7 @@ public class BlockOutputBus extends BlockMachineComponent implements BlockTickEn
     BlockEntity te = level.getBlockEntity(pos);
     if(te instanceof ItemOutputBusEntity entity) {
       if (player instanceof ServerPlayer serverPlayer)
-        ItemBusContainer.open(serverPlayer, entity);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
     return super.useItemOn(stack, state, level, pos, player, hand, hitResult);

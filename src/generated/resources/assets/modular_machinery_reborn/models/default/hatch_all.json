@@ -1,0 +1,7 @@
+{
+  "parent": "modular_machinery_reborn:block/blockmodel_overlay_all",
+  "textures": {
+    "bg_all": "modular_machinery_reborn:block/casing_plain",
+    "ov_all": "modular_machinery_reborn:block/overlay_transparent"
+  }
+}

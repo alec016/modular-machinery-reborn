@@ -62,6 +62,8 @@ import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.util.Chunkloader;
 import es.degrassi.mmr.common.util.IntRange;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
@@ -73,8 +75,8 @@ import java.util.function.Supplier;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
-public class RequirementTypeRegistration {
-  private RequirementTypeRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class RequirementTypeRegistration {
   public static final DeferredRegister<RequirementType<? extends IRequirement<?, ?>, ?, ?>> MACHINE_REQUIREMENTS =
       DeferredRegister.create(RequirementType.REGISTRY_KEY, ModularMachineryReborn.MODID);
 

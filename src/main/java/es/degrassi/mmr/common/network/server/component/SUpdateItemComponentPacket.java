@@ -33,7 +33,7 @@ public record SUpdateItemComponentPacket(int slot, ItemStack item, BlockPos pos)
     if (context.flow().isClientbound())
       context.enqueueWork(() -> {
         if (context.player().level().getBlockEntity(packet.pos) instanceof TileInventory entity) {
-          entity.getInventory().setItem(packet.slot, packet.item);
+          entity.getInventory().setStack(packet.slot, packet.item);
         }
       });
   }

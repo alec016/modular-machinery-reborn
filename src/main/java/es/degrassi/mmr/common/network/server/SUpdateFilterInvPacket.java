@@ -30,7 +30,7 @@ public record SUpdateFilterInvPacket(BlockPos pos, ItemStack value) implements C
     if(context.flow().isClientbound())
       context.enqueueWork(() -> {
         if(context.player().level().getBlockEntity(packet.pos) instanceof FiltereableEntity<?, ?> machine) {
-          machine.getFilterInventory().setItem(0, packet.value);
+          machine.getFilterInventory().setStack(0, packet.value);
         }
       });
   }

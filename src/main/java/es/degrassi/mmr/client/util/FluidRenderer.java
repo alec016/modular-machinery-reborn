@@ -39,13 +39,13 @@ public class FluidRenderer {
     poseStack.pushPose();
     poseStack.translate(posX, posY, 0);
 
-    fluid.getFluidType();
-
-    IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid);
-    TextureAtlasSprite sprite = Minecraft.getInstance()
-        .getAtlasManager().get(new SpriteId(AtlasIds.BLOCKS, extensions.getRenderOverlayTexture(Minecraft.getInstance())));
-
-
+    var fluidModel = Minecraft.getInstance().getModelManager().getFluidStateModelSet()
+        .get(fluid.defaultFluidState());
+    var tintSource = fluidModel.fluidTintSource();
+    var tintColor = -1;
+    if (tintSource != null) {
+      tintColor = tintSource.colorAsStack(fluidStack);
+    }
 
     long amount = fluidStack.getAmount();
     int scaledAmount = (int) ((amount * height) / capacity);
@@ -56,7 +56,7 @@ public class FluidRenderer {
       scaledAmount = height;
     }
 
-    drawTiledSprite(poseStack, width, height, 0xffffffff, scaledAmount, sprite);
+    drawTiledSprite(poseStack, width, height, tintColor, scaledAmount, fluidModel.stillMaterial().sprite());
 
     poseStack.popPose();
   }

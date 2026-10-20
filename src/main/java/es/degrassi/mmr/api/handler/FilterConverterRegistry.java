@@ -7,12 +7,13 @@ import net.neoforged.fml.ModLoader;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class FilterConverterRegistry {
   private FilterConverterRegistry() {}
 
   @Getter
-  private static Map<ItemStack, FilterConverterFactory<?>> converters;
+  private static Map<Supplier<ItemStack>, FilterConverterFactory<?>> converters;
 
   public static void init() {
     RegisterFilterConversionEvent event = new RegisterFilterConversionEvent();
@@ -27,7 +28,7 @@ public class FilterConverterRegistry {
   public static boolean hasConverter(ItemStack itemStack) {
     return converters.keySet()
         .parallelStream()
-        .anyMatch(stack -> ItemStack.isSameItemSameComponents(stack, itemStack));
+        .anyMatch(stack -> ItemStack.isSameItemSameComponents(stack.get(), itemStack));
   }
 
   public static <T> boolean isConvertible(T value) {
@@ -42,6 +43,7 @@ public class FilterConverterRegistry {
         .filter(entry -> entry.getValue().get() == value)
         .findFirst()
         .map(Map.Entry::getKey)
+        .map(Supplier::get)
         .orElse(ItemStack.EMPTY);
   }
 
@@ -50,7 +52,7 @@ public class FilterConverterRegistry {
   public static <T> T convert(ItemStack from) {
     return (T) converters.entrySet()
         .parallelStream()
-        .filter(entry -> ItemStack.isSameItemSameComponents(from, entry.getKey()))
+        .filter(entry -> ItemStack.isSameItemSameComponents(from, entry.getKey().get()))
         .findFirst()
         .map(Map.Entry::getValue)
         .map(FilterConverterFactory::get)

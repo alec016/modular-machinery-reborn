@@ -34,6 +34,7 @@ import es.degrassi.mmr.common.network.server.component.SUpdateExperienceComponen
 import es.degrassi.mmr.common.network.server.component.SUpdateFluidComponentPacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateFuelComponentPacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateItemComponentPacket;
+import es.degrassi.mmr.common.network.server.component.SUpdateSideConfigPacket;
 import es.degrassi.mmr.common.util.Mods;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -51,6 +52,7 @@ public class PacketManager {
     registrar.playToClient(SOpenFilePacket.TYPE, SOpenFilePacket.CODEC, SOpenFilePacket::handle);
     registrar.playToClient(SMachineUpdatePacket.TYPE, SMachineUpdatePacket.CODEC, SMachineUpdatePacket::handle);
     registrar.playToClient(SUpdateEnergyComponentPacket.TYPE, SUpdateEnergyComponentPacket.CODEC, SUpdateEnergyComponentPacket::handle);
+    registrar.playToClient(SUpdateSideConfigPacket.TYPE, SUpdateSideConfigPacket.CODEC, SUpdateSideConfigPacket::handle);
     registrar.playToClient(SUpdateExperienceComponentPacket.TYPE, SUpdateExperienceComponentPacket.CODEC, SUpdateExperienceComponentPacket::handle);
     registrar.playToClient(SUpdateFuelComponentPacket.TYPE, SUpdateFuelComponentPacket.CODEC, SUpdateFuelComponentPacket::handle);
     registrar.playToClient(SUpdateFluidComponentPacket.TYPE, SUpdateFluidComponentPacket.CODEC, SUpdateFluidComponentPacket::handle);

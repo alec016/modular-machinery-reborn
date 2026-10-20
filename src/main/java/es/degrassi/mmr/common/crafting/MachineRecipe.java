@@ -11,9 +11,13 @@ import es.degrassi.mmr.api.codec.DefaultCodecs;
 import es.degrassi.mmr.api.crafting.requirement.RecipeRequirement;
 import es.degrassi.mmr.common.crafting.helper.ProgressData;
 import es.degrassi.mmr.common.crafting.requirement.PositionedSizedRequirement;
+import es.degrassi.mmr.common.crafting.requirement.RequirementDurability;
+import es.degrassi.mmr.common.crafting.requirement.RequirementDurabilityPerTick;
 import es.degrassi.mmr.common.crafting.requirement.RequirementEnergyPerTick;
+import es.degrassi.mmr.common.crafting.requirement.RequirementItem;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.machine.DynamicMachine;
+import es.degrassi.mmr.common.registration.ComponentRegistration;
 import es.degrassi.mmr.common.registration.RecipeRegistration;
 import es.degrassi.mmr.common.util.MMRLogger;
 import lombok.AccessLevel;
@@ -34,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -160,6 +165,11 @@ public class MachineRecipe implements Comparable<MachineRecipe>, Recipe<RecipeIn
   }
 
   @Override
+  public boolean isSpecial() {
+    return true;
+  }
+
+  @Override
   public String toString() {
     return asJson().toString();
   }
@@ -196,7 +206,20 @@ public class MachineRecipe implements Comparable<MachineRecipe>, Recipe<RecipeIn
 
   @Override
   public PlacementInfo placementInfo() {
-    return null;
+    return PlacementInfo.create(
+        recipeRequirements.stream().filter(recipeRequirement -> {
+          var type = recipeRequirement.requirement().getComponentType();
+            return type.equals(ComponentRegistration.COMPONENT_ITEM.get()) ||
+                type.equals(ComponentRegistration.COMPONENT_DURABILITY.get());
+        }).map(recipeRequirement -> switch (recipeRequirement.requirement()) {
+          case RequirementItem item -> item.ingredient.ingredient();
+          case RequirementDurability item -> item.ingredient;
+          case RequirementDurabilityPerTick item -> item.ingredient;
+          default -> null;
+        })
+        .filter(Objects::nonNull)
+        .toList()
+    );
   }
 
   public @NotNull Identifier getId() {

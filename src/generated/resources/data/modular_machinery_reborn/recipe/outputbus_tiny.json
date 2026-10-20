@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": "#c:chests",
+    "h": "minecraft:hopper",
+    "m": "modular_machinery_reborn:casing_plain"
+  },
+  "pattern": [
+    "c",
+    "m",
+    "h"
+  ],
+  "result": {
+    "id": "modular_machinery_reborn:outputbus_tiny"
+  }
+}

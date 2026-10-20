@@ -11,8 +11,8 @@ import es.degrassi.mmr.api.crafting.requirement.RecipeRequirement;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.component.ChunkloadComponent;
+import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
-import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmr.common.util.Chunkloader;
 import lombok.Getter;
@@ -91,6 +91,6 @@ public class RequirementChunkload implements IRequirement<ChunkloadComponent, Ch
         "modular_machinery_reborn.jei.ingredient.chunkload",
         radius()
     ));
-    info.setItemIcon(ItemRegistration.CHUNKLOADER.asItem());
+    info.setItemIcon(BlockRegistration.CHUNKLOADER.asItem());
   }
 }

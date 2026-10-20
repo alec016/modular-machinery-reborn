@@ -110,7 +110,11 @@ public class DurabilityHatchEntity extends TileInventory implements MachineCompo
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    return new ItemHandler(slots, Integer.MAX_VALUE, 0, stackSize);
+    // Durability hatch: single damageable item per slot, insertable from outside
+    // (legacy: inSlots = all slots, no output slots, filter = ItemStack::isDamageableItem, slotLimit = 1).
+    ItemHandler handler = new ItemHandler(slots, 1, 1, 0);
+    handler.setFilter(resource -> resource.toStack().isDamageableItem());
+    return handler;
   }
 
   @Nullable

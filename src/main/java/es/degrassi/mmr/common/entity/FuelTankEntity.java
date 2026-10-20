@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import com.google.common.collect.Maps;
+import es.degrassi.experiencelib.api.capability.IContentsListener;
 import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
 import es.degrassi.experiencelib.api.network.syncable.LongSyncable;
@@ -24,9 +25,8 @@ import es.degrassi.mmr.common.entity.base.TileInventory;
 import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.FuelComponent;
 import es.degrassi.mmr.common.manager.crafting.MachineStatus;
-import es.degrassi.mmr.common.manager.handler.AbstractHandler;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
-import es.degrassi.mmr.common.manager.handler.slot.ItemSlot;
+import es.degrassi.mmr.common.manager.handler.UpdateValueListener;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateFuelComponentPacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateItemComponentPacket;
@@ -40,7 +40,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -81,13 +80,16 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
 
   private final IOSideConfig config;
 
+  private final UpdateValueListener<ItemStack> listener;
+  private final IContentsListener fuelListener;
+
   private FuelTankEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, FuelTankSize size) {
     super(type, pos, state, 1);
     this.size = size;
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fueltank_" + size.getSerializedName());
     this.overlayTexture = defaultOverlayTexture;
     this.baseTexture = defaultBaseTexture;
-    this.inventory.setListener(new AbstractHandler.HandlerUpdateListener<>() {
+    this.listener = new UpdateValueListener<>() {
       @Override
       public void onChange(int slot, @NotNull ItemStack stack) {
         getControllerPosSet().forEach(p -> {
@@ -104,14 +106,15 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
 
       @Override
       public void onChange() {
-        for (int slot = 0; slot < inventory.getSlots(); slot++) {
-          onChange(slot, inventory.getStackInSlot(slot));
+        for (int slot = 0; slot < inventory.size(); slot++) {
+          onChange(slot, inventory.getStack(slot));
         }
       }
-    });
+    };
+    this.inventory.setListener(listener);
     this.fuelHandler = new BasicFuelHandler(this.getInventory());
     this.fuelHandler.setMaxFuel(size.burnTimeCapacity);
-    this.fuelHandler.setListener(() -> {
+    this.fuelListener = () -> {
       if (getLevel() != null && !getLevel().isClientSide())
         PacketDistributor.sendToPlayersTrackingChunk(
             (ServerLevel) getLevel(),
@@ -120,7 +123,8 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
         );
       if (getController() != null)
         getController().getProcessor().setMachineInventoryChanged();
-    });
+    };
+    this.fuelHandler.setListener(fuelListener);
     this.config = IOSideConfig.Template.DEFAULT_ALL_DISABLED.build(this);
     this.config.setCallback(this::configChanged);
   }
@@ -151,11 +155,13 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    int[] inSlots = new int[slots];
-    for (int i = 0; i < slots; i++) {
-      inSlots[i] = i;
-    }
-    return new ItemHandler(inSlots, new int[0], stack -> getLevel() != null && stack.getBurnTime(RecipeType.SMELTING, getLevel().fuelValues()) > 0, stackSize, Direction.values());
+    // Every slot is a fuel input (legacy: all slots in, no output slots, fuel-only filter).
+    ItemHandler handler = new ItemHandler(slots, stackSize, stackSize, 0, Direction.values());
+    handler.setFilter(resource -> {
+      var level = getLevel();
+      return level != null && level.fuelValues().isFuel(resource.toStack());
+    });
+    return handler;
   }
 
   @Override
@@ -169,28 +175,8 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fueltank_" + size.getSerializedName());
     this.overlayTexture = input.getString("overlayTexture").map(Identifier::parse).orElse(defaultOverlayTexture);
     input.readChild("config", config);
-    this.inventory.setListener(new AbstractHandler.HandlerUpdateListener<>() {
-      @Override
-      public void onChange(int slot, @NotNull ItemStack stack) {
-        getControllerPosSet().forEach(p -> {
-          if (getLevel() == null) return;
-          if (getLevel().isClientSide()) return;
-          if (getLevel().getBlockEntity(p) instanceof MachineControllerEntity controller) {
-            controller.getProcessor().setMachineInventoryChanged();
-          }
-        });
-        if (getLevel() instanceof ServerLevel l)
-          PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()),
-              new SUpdateItemComponentPacket(slot, stack, getBlockPos()));
-      }
-
-      @Override
-      public void onChange() {
-        for (int slot = 0; slot < inventory.getSlots(); slot++) {
-          onChange(slot, inventory.getStackInSlot(slot));
-        }
-      }
-    });
+    this.inventory.setListener(listener);
+    this.fuelHandler.setListener(fuelListener);
   }
 
   @Override
@@ -292,15 +278,13 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
   @Override
   public void tickAutoInput() {
     if (!getConfig().isEnabled()) return;
-    for (Direction side : inventory.accessibleSides) {
+    for (Direction side : inventory.getAccessibleSides()) {
       if (!getConfig().canAutoIO(side)) continue;
       var neighbour = getNeighbour(Capabilities.Item.BLOCK, side);
       if (neighbour == null) continue;
 
-      inventory.getInventory()
-          .stream()
-          .filter(ItemSlot::isInput)
-          .forEachOrdered(slot -> moveStacks(neighbour, slot, Integer.MAX_VALUE));
+      // Every slot of the fuel tank is an input slot, so pull into the whole handler.
+      moveStacks(neighbour, inventory, Integer.MAX_VALUE);
     }
   }
 

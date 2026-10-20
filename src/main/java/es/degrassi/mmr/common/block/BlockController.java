@@ -1,8 +1,10 @@
 package es.degrassi.mmr.common.block;
 
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.client.container.ControllerContainer;
 import es.degrassi.mmr.client.integration.athena.model.controller.ControllerBakedModel;
+import es.degrassi.mmr.client.screen.ControllerUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.block.base.BlockTickEntity;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
@@ -38,7 +40,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
@@ -46,7 +47,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
-public class BlockController extends BlockMachineComponent implements BlockTickEntity {
+public class BlockController extends BlockMachineComponent implements BlockTickEntity, BlockUIMenuType.BlockUI {
+  public BlockController(Properties id) {
+    super(id);
+  }
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof MachineControllerEntity controller) {
+      return ControllerUI.create(holder, controller);
+    }
+    return null;
+  }
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
     super.createBlockStateDefinition(builder);
@@ -88,7 +100,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
     });
   }
 
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+  public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
     BlockEntity tile = level.getBlockEntity(pos);
     if (tile instanceof MachineControllerEntity entity) {
       return ControllerItem.makeMachineItem(entity.getId());
@@ -140,7 +152,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
           PacketDistributor.sendToPlayersTrackingChunk(serverPlayer.level(), ChunkPos.containing(pos), new SAddControllerRenderer(machine.getRegistryName(), pos));
           return InteractionResult.SUCCESS;
         }
-        ControllerContainer.open(serverPlayer, controller);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       }
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }

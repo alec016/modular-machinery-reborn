@@ -2,6 +2,8 @@ package es.degrassi.mmr.common.registration;
 
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.common.util.EmptyRequirementType;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -11,8 +13,8 @@ import java.util.function.Supplier;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
-public class EmptyRequirementTypeRegistration {
-  private EmptyRequirementTypeRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class EmptyRequirementTypeRegistration {
 
   public static final DeferredRegister<EmptyRequirementType> MACHINE_COMPONENTS =
       DeferredRegister.create(EmptyRequirementType.REGISTRY_KEY, ModularMachineryReborn.MODID);

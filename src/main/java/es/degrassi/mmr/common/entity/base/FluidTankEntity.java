@@ -170,12 +170,16 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
     };
 
     this.tank.setListener(listener);
+    filterInventory.setListener(filterListener);
+  }
+
+  @Override
+  public void onLoad() {
+    super.onLoad();
     if (filterInventory.getResource(0).isEmpty()) {
       setFilter(null);
       filterInventory.setStack(0, Items.BUCKET.getDefaultInstance());
     }
-
-    filterInventory.setListener(filterListener);
   }
 
   public FluidResource getFilter() {
@@ -239,6 +243,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   public void tickInventory() {
     if (!shouldTickInventory()) return;
     capabilityInventory.forEach((slot, index) -> {
+      if (slot.isEmpty()) return;
       Optional.ofNullable(slot.getCapability(getCapability(), ItemAccess.forStack(slot))).ifPresent(cap -> {
         if (ioType == IOType.NONE) return;
         if (ioType.isInput()) {

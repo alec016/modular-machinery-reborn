@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "modular_machinery_reborn:casing_plain"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "modular_machinery_reborn:blocks/casing_plain"
+}

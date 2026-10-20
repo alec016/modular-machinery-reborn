@@ -2,12 +2,10 @@ package es.degrassi.mmr.api.capability;
 
 import es.degrassi.experiencelib.api.capability.IContentsListener;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
-import es.degrassi.mmr.common.manager.handler.slot.ItemSlot;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.FuelValues;
 
 @Getter
@@ -50,26 +48,24 @@ public class BasicFuelHandler implements IFuelHandler {
 
   @Override
   public void tryBurnItem(FuelValues fuelValues) {
-    this.inventory
-        .getInventory()
-        .stream()
-        .filter(ItemSlot::isInput)
-        .filter(slot -> !slot.getItemStack().isEmpty())
-        .filter(slot -> slot.getItemStack().getBurnTime(RecipeType.SMELTING, fuelValues) > 0)
-        .findFirst()
-        .ifPresent(slot -> {
-          long fuel = slot.getItemStack().getBurnTime(RecipeType.SMELTING, fuelValues);
-          if (!hasSpace(fuel)) return;
-          addFuel(fuel);
-          ItemStack stack = slot.getItemStack();
-          var remainder = stack.get(DataComponents.USE_REMAINDER);
-          if (remainder != null) {
-            slot.setItemStack(remainder.convertInto().create());
-          } else {
-            slot.extractItemBypassLimit(1, false);
-          }
-          slot.setChanged();
-        });
+    // The legacy per-slot ItemSlot view (es.degrassi.mmr.common.manager.handler.slot) was removed;
+    // iterate the ResourceHandler<ItemResource> slots by index instead.
+    for (int i = 0; i < inventory.size(); i++) {
+      ItemStack stack = inventory.getStack(i);
+      if (stack.isEmpty()) continue;
+      long fuel = fuelValues.burnDuration(stack);
+      if (fuel <= 0 || !hasSpace(fuel)) continue;
+
+      addFuel(fuel);
+      var remainder = stack.get(DataComponents.USE_REMAINDER);
+      if (remainder != null) {
+        inventory.setStack(i, remainder.convertInto().create());
+      } else {
+        inventory.setStack(i, stack.copyWithCount(stack.getCount() - 1));
+      }
+      setChanged();
+      return;
+    }
   }
 
   @Override

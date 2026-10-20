@@ -3,6 +3,7 @@ package es.degrassi.mmr.common.block;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.entity.HeightMeterEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
@@ -14,6 +15,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import javax.annotation.Nullable;
 
 public class BlockHeightMeter extends BlockMachineComponent {
+  public BlockHeightMeter(Properties id) {
+    super(id);
+  }
+
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
     super.createBlockStateDefinition(builder);

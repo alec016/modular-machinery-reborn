@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 public class StructureCreatorItem extends Item {
   private final StructureCreatorItemMode mode;
 
-  public StructureCreatorItem(StructureCreatorItemMode mode, Properties props) {
+  public StructureCreatorItem(Properties props, StructureCreatorItemMode mode) {
     super(props.stacksTo(1));
     this.mode = mode;
   }
@@ -70,7 +70,7 @@ public class StructureCreatorItem extends Item {
     if (isClientSide) {
       return sidedSuccess(true);
     }
-    var slot = findSlotMatchingItem(player.getInventory(), ItemRegistration.STRUCTURE_TEMPLATE_ITEM.toStack());
+    var slot = findSlotMatchingItem(player.getInventory(), ItemRegistration.STRUCTURE_TEMPLATE_ITEM.stack(1));
     if (slot >= 0) {
       s = player.getInventory().getItem(slot);
     } else {
@@ -80,7 +80,7 @@ public class StructureCreatorItem extends Item {
         return InteractionResult.SUCCESS;
       }
       player.getInventory().removeItem(slot, 1);
-      s = ItemRegistration.STRUCTURE_TEMPLATE_ITEM.toStack();
+      s = ItemRegistration.STRUCTURE_TEMPLATE_ITEM.stack(1);
       player.addItem(s);
     }
 

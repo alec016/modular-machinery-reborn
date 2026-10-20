@@ -7,10 +7,12 @@ import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.EffectDispenserSize;
 import es.degrassi.mmr.common.entity.EffectDispenserEntity;
 import es.degrassi.mmr.common.util.RedstoneHelper;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,8 +29,10 @@ import java.util.function.Consumer;
 import static es.degrassi.mmr.client.ModularMachineryRebornClient.createParticle;
 
 public class BlockEffectDispenser extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+  @Getter
   private final EffectDispenserSize size;
-  public BlockEffectDispenser(EffectDispenserSize size) {
+  public BlockEffectDispenser(Properties id, EffectDispenserSize size) {
+    super(id);
     this.size = size;
   }
 

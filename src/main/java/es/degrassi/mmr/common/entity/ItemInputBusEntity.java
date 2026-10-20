@@ -28,7 +28,9 @@ public class ItemInputBusEntity extends TileItemBus implements IAutoInputEntity<
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    return new ItemHandler(slots, Integer.MAX_VALUE, 0, stackSize, Direction.values());
+    // Input bus: every slot accepts insertion from outside, nothing is extractable
+    // (legacy: inSlots = all slots, outSlots = none, slotLimit = stackSize).
+    return new ItemHandler(slots, stackSize, stackSize, 0, Direction.values());
   }
 
   @Override

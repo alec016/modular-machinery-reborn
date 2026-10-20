@@ -1,12 +1,12 @@
 package es.degrassi.mmr.common.item;
 
-import es.degrassi.mmr.common.block.BlockCasing;
 import lombok.Getter;
+import net.minecraft.world.level.block.Block;
 
 @Getter
 public class CasingItem extends ItemBlockMachineComponent {
 
-  public CasingItem(BlockCasing casing) {
-    super(casing, new Properties());
+  public CasingItem(Block block, Properties props) {
+    super(block, props);
   }
 }

@@ -12,7 +12,6 @@ import es.degrassi.mmr.common.integration.kubejs.KubeJSIntegration;
 import es.degrassi.mmr.common.machine.DynamicMachine;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.DataComponentRegistration;
-import es.degrassi.mmr.common.registration.ItemRegistration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -28,6 +27,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -47,11 +47,10 @@ public class ControllerItem extends ItemBlockMachineComponent {
 
   private static final Map<Identifier, List<Component>> CACHED_COMPONENTS = Maps.newHashMap();
 
-  public ControllerItem() {
+  public ControllerItem(Block block, Properties props) {
     super(
-        BlockRegistration.CONTROLLER.get(),
-        new Properties()
-            .component(DataComponentRegistration.MACHINE_DATA, DUMMY)
+        block,
+        props.component(DataComponentRegistration.MACHINE_DATA, DUMMY)
     );
   }
 
@@ -159,15 +158,15 @@ public class ControllerItem extends ItemBlockMachineComponent {
   }
 
   @Override
-  public int getColorFromItemstack(ItemStack stack, int tintIndex) {
-    return getMachine(stack).map(DynamicMachine::getMachineColor).orElse(super.getColorFromItemstack(stack, tintIndex));
+  public int getColorFromItemStack(ItemStack stack) {
+    return getMachine(stack).map(DynamicMachine::getMachineColor).orElse(super.getColorFromItemStack(stack));
   }
 
   public static ItemStack makeMachineItem(Identifier machine) {
     if (ModularMachineryReborn.MACHINES_BLOCK.containsKey(machine))
       return ModularMachineryReborn.MACHINES_BLOCK.get(machine).asItem().getDefaultInstance();
 
-    ItemStack stack = ItemRegistration.CONTROLLER.get().getDefaultInstance();
+    ItemStack stack = BlockRegistration.CONTROLLER.stack(1);
     stack.set(DataComponentRegistration.MACHINE_DATA, machine);
     return stack;
   }

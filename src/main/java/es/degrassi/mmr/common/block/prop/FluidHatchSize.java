@@ -5,6 +5,7 @@ import es.degrassi.mmr.common.entity.base.BlockEntitySynchronized;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.network.server.component.SUpdateFluidComponentPacket;
 import lombok.Getter;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -50,7 +51,8 @@ public enum FluidHatchSize implements EnumRepresentable, ConfigLoaded {
   }
 
   private FluidHandler buildDefaultTank(BlockEntitySynchronized tileEntity, boolean canFill, boolean canDrain) {
-    var handler = new FluidHandler(canFill ? new int[] { 0 } : new int[]{}, canDrain ? new int[] { 0 } : new int[]{}, this.size);
+    // Single tank: capacity = hatch size, fillable tanks are inputs, drainable tanks are outputs.
+    var handler = new FluidHandler(1, this.size, canFill ? this.size : 0, canDrain ? this.size : 0, Direction.values());
     handler.setListener((slot, fluidStack) -> {
       if (tileEntity.getLevel() instanceof ServerLevel l)
         PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(tileEntity.getBlockPos()),

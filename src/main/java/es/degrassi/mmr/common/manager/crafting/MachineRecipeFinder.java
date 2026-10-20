@@ -40,13 +40,12 @@ public class MachineRecipeFinder {
   }
 
   public void init() {
-    if (tile.getLevel() == null)
+    if (tile.getLevel() == null || !(tile.getLevel() instanceof ServerLevel level))
       throw new IllegalStateException("Broken machine " + tile.getId() + "doesn't have a world");
-    this.recipes = ((ServerLevel) tile.getLevel()).getServer().getRecipeManager()
-        .getRecipes()
+    this.recipes = level.recipeAccess()
+        .recipeMap()
+        .byType(RecipeRegistration.RECIPE_TYPE.get())
         .stream()
-        .filter(recipe -> recipe.value() instanceof MachineRecipe)
-        .map(recipe -> (RecipeHolder<MachineRecipe>) recipe)
         .filter(recipe -> recipe.value().getOwningMachineIdentifier().equals(tile.getId()))
         .sorted(Comparators::compare)
         .map(RecipeChecker::new)

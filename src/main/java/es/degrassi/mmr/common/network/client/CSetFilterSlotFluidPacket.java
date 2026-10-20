@@ -44,7 +44,7 @@ public record CSetFilterSlotFluidPacket(FluidStack stack, BlockPos pos) implemen
               )
               .findAny()
               .map(Map.Entry::getKey)
-              .ifPresent(item -> machine.getFilterInventory().setItem(0, item));
+              .ifPresent(item -> machine.getFilterInventory().setStack(0, item.get()));
         }
       });
   }

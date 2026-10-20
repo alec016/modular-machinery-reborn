@@ -1,10 +1,8 @@
 package es.degrassi.mmr.data.blockstate.builder;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import es.degrassi.mmr.data.MMRTags;
-import net.minecraft.core.Direction;
+import es.degrassi.mmr.data.tags.MMRTags;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -22,6 +20,13 @@ public abstract class MMRStateBuilder<T extends MMRStateBuilder<T>> implements S
   private Identifier particle;
   private Identifier vertical;
   private Identifier overlay = null;
+  /**
+   * Variant model of the blockstate. Athena replaces this whole unbaked root through its loader
+   * when it applies; pointing at the block's own static default chain (instead of the 1.21.1
+   * {@code minecraft:block/air} placeholder) keeps the block visible with its fallback look even
+   * if athena's blockstate hook does not fire.
+   */
+  private Identifier variantModel = null;
   private Identifier ovCenter = null;
   private Identifier ovVertical = null;
   private Identifier ovHorizontal = null;
@@ -38,7 +43,7 @@ public abstract class MMRStateBuilder<T extends MMRStateBuilder<T>> implements S
     JsonObject blockState = new JsonObject();
     JsonObject variants = new JsonObject();
     JsonObject empty = new JsonObject();
-    empty.addProperty("model", "minecraft:block/air");
+    empty.addProperty("model", variantModel != null ? variantModel.toString() : "minecraft:block/air");
     variants.add("", empty);
     blockState.add("variants", variants);
     blockState.addProperty("athena:loader", loader().toString());
@@ -86,6 +91,11 @@ public abstract class MMRStateBuilder<T extends MMRStateBuilder<T>> implements S
 
   private T self() {
     return (T) this;
+  }
+
+  public T variantModel(Identifier variantModel) {
+    this.variantModel = variantModel;
+    return self();
   }
 
   public T connectToPlain() {

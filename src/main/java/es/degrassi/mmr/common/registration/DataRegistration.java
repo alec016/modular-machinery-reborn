@@ -17,6 +17,8 @@ import es.degrassi.mmr.api.network.syncable.IOSideConfigSyncable;
 import es.degrassi.mmr.api.network.syncable.ItemResourceSyncable;
 import es.degrassi.mmr.api.network.syncable.ItemStackSyncable;
 import es.degrassi.mmr.api.network.syncable.FluidResourceSyncable;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -28,8 +30,8 @@ import java.util.function.Supplier;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
-public class DataRegistration {
-  private DataRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DataRegistration {
   public static final DeferredRegister<DataType<? extends IData<?>, ?>> DATAS =
       DeferredRegister.create(DataType.REGISTRY_KEY, ModularMachineryReborn.MODID);
 

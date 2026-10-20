@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": "minecraft:bucket",
+    "h": "minecraft:hopper",
+    "m": "modular_machinery_reborn:casing_plain"
+  },
+  "pattern": [
+    "h",
+    "m",
+    "c"
+  ],
+  "result": {
+    "id": "modular_machinery_reborn:fluidinputhatch_tiny"
+  }
+}

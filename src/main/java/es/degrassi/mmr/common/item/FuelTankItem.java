@@ -10,15 +10,15 @@ public class FuelTankItem extends ItemBlockMachineComponent implements ItemHatch
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private final FuelTankSize type;
 
-  public FuelTankItem(BlockFuelTank block, FuelTankSize type) {
+  public FuelTankItem(BlockFuelTank block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
-            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_fueltank_" + type.getSerializedName()))
-            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/fuel_tank_" + type.getSerializedName()))
+            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_fueltank_" + block.getSize().getSerializedName()))
+            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/fuel_tank_" + block.getSize().getSerializedName()))
     );
-    this.type = type;
+    this.type = block.getSize();
   }
 
   @Override

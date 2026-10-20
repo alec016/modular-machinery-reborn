@@ -9,9 +9,9 @@ public class StructureCheckerItem extends ItemBlockMachineComponent implements I
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private static final Identifier OVERLAY_TEXTURE = ModularMachineryReborn.rl("block/overlay_structure_checker");
 
-  public StructureCheckerItem(BlockStructureChecker block) {
+  public StructureCheckerItem(BlockStructureChecker block, Properties props) {
     super(block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
             .component(DataComponentRegistration.OVERLAY_TEXTURE, OVERLAY_TEXTURE)
             .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/structure_checker"))

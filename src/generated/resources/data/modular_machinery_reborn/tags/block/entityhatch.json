@@ -1,0 +1,9 @@
+{
+  "values": [
+    "modular_machinery_reborn:entity_detector",
+    "modular_machinery_reborn:entity_spawner",
+    "modular_machinery_reborn:entity_killer",
+    "modular_machinery_reborn:entity_damager",
+    "modular_machinery_reborn:entity_healer"
+  ]
+}

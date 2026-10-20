@@ -9,18 +9,20 @@ import es.degrassi.mmr.common.machine.MachineComponent;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
 import es.degrassi.mmr.common.machine.component.FluidComponent;
 import es.degrassi.mmr.common.machine.component.ItemComponent;
-import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
 import es.degrassi.mmr.common.util.Chunkloader;
-import es.degrassi.mmr.common.manager.handler.slot.ItemSlot;
 import es.degrassi.mmr.common.util.TaskDelayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SimpleFluidIngredient;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -103,23 +105,26 @@ public class MachineControllerJS {
   public long addEnergy(long energy) {
     AtomicLong energyAtomic = new AtomicLong(energy);
     AtomicLong inserted = new AtomicLong(0);
-    this.internal.getComponentManager()
-        .getFoundComponentsList()
-        .stream()
-        .filter(c -> c instanceof EnergyComponent)
-        .map(c -> (EnergyComponent) c)
-        .filter(c -> !c.getIOType().isInput())
-        .forEach(c -> {
-          if (energyAtomic.get() <= 0) return;
-          IEnergyHandler handler = c.getContainerProvider();
-          boolean prevInsert = handler.canReceive();
-          handler.setCanInsert(true);
-          int received = handler.receiveEnergy((int) energyAtomic.get(), false);
-          energyAtomic.addAndGet(-received);
-          inserted.addAndGet(received);
-          handler.setCanInsert(prevInsert);
-        });
-    return inserted.get();
+    try (Transaction tx = Transaction.open(null)) {
+      this.internal.getComponentManager()
+          .getFoundComponentsList()
+          .stream()
+          .filter(c -> c instanceof EnergyComponent)
+          .map(c -> (EnergyComponent) c)
+          .filter(c -> !c.getIOType().isInput())
+          .forEach(c -> {
+            try (Transaction subTx = Transaction.open(tx)) {
+              if (energyAtomic.get() <= 0) return;
+              EnergyHandler handler = c.getContainerProvider();
+              int received = handler.insert((int) energyAtomic.get(), subTx);
+              energyAtomic.addAndGet(-received);
+              inserted.addAndGet(received);
+              subTx.commit();
+            }
+          });
+      tx.commit();
+      return inserted.get();
+    }
   }
 
   /**
@@ -128,25 +133,28 @@ public class MachineControllerJS {
    * @return energy extracted
    */
   public long removeEnergy(long energy) {
-    AtomicLong energyAtomic = new AtomicLong(energy);
-    AtomicLong extracted = new AtomicLong(0);
-    this.internal.getComponentManager()
-        .getFoundComponentsList()
-        .stream()
-        .filter(c -> c instanceof EnergyComponent)
-        .map(c -> (EnergyComponent) c)
-        .filter(c -> c.getIOType().isInput())
-        .forEach(c -> {
-          if (energyAtomic.get() <= 0) return;
-          IEnergyHandler handler = c.getContainerProvider();
-          boolean prevExtract = handler.canExtract();
-          handler.setCanExtract(true);
-          int drained = handler.extractEnergy((int) energyAtomic.get(), false);
-          energyAtomic.addAndGet(-drained);
-          extracted.addAndGet(drained);
-          handler.setCanExtract(prevExtract);
-        });
-    return extracted.get();
+    try (var tx = Transaction.open(null)) {
+      AtomicLong energyAtomic = new AtomicLong(energy);
+      AtomicLong extracted = new AtomicLong(0);
+      this.internal.getComponentManager()
+          .getFoundComponentsList()
+          .stream()
+          .filter(c -> c instanceof EnergyComponent)
+          .map(c -> (EnergyComponent) c)
+          .filter(c -> c.getIOType().isInput())
+          .forEach(c -> {
+            try (var subTx = Transaction.open(tx)) {
+              if (energyAtomic.get() <= 0) return;
+              EnergyHandler handler = c.getContainerProvider();
+              int drained = handler.extract((int) energyAtomic.get(), subTx);
+              energyAtomic.addAndGet(-drained);
+              extracted.addAndGet(drained);
+              subTx.commit();
+            }
+          });
+      tx.commit();
+      return extracted.get();
+    }
   }
 
   /** FLUID STUFF **/
@@ -201,18 +209,7 @@ public class MachineControllerJS {
         .map(c -> (FluidComponent) c)
         .filter(c -> !c.getIOType().isInput())
         .reduce(FluidComponent::merge)
-        .ifPresent(c -> {
-          AtomicInteger toAdd = new AtomicInteger(stack.getAmount());
-          c.getContainerProvider().getOutputs().stream()
-              .filter(component -> c.getContainerProvider().canPlaceOutput(component, stack))
-              .forEach(component -> {
-                int maxInsert = toAdd.get() - component.insertFluidBypassLimit(stack, true).getAmount();
-                toAdd.addAndGet(-maxInsert);
-                filled.addAndGet(maxInsert);
-                component.insertFluidBypassLimit(stack.copyWithAmount(maxInsert), false);
-                component.setChanged();
-              });
-        });
+        .ifPresent(c -> filled.addAndGet(c.getContainerProvider().addToOutputs(stack, stack.getAmount())));
 
     return filled.get();
   }
@@ -255,8 +252,11 @@ public class MachineControllerJS {
         .map(c -> (ItemComponent) c)
         .filter(c -> c.getIOType().equals(mode))
         .map(ItemComponent::getContainerProvider)
-        .map(ItemHandler::getInventory)
-        .map(c -> c.stream().map(ItemSlot::getItemStack).toList())
+        .map(handler -> {
+          List<ItemStack> stacks = new ArrayList<>();
+          handler.forEach(s -> stacks.add(s));
+          return stacks;
+        })
         .flatMap(List::stream)
         .toList();
   }
@@ -267,8 +267,7 @@ public class MachineControllerJS {
    * @return items that couldn't be added
    */
   public ItemStack addItem(ItemStack stack) {
-    AtomicReference<ItemStack> item = new AtomicReference<>(stack);
-    AtomicReference<ItemStack> inserted = new AtomicReference<>(ItemStack.EMPTY);
+    AtomicInteger toAdd = new AtomicInteger(stack.getCount());
     this.internal.getComponentManager()
         .getFoundComponentsList()
         .stream()
@@ -276,27 +275,20 @@ public class MachineControllerJS {
         .map(c -> (ItemComponent) c)
         .filter(c -> !c.getIOType().isInput())
         .forEach(c -> {
-          if (item.get().isEmpty()) return;
-          if (c.getSpaceForItem(item.get()) <= 0) return;
-          AtomicInteger toAdd = new AtomicInteger(stack.getCount());
-          c.getContainerProvider().getOutputs().stream().filter(component -> c.getContainerProvider().canPlaceOutput(component,
-              stack)).forEach(component -> {
-            int maxInsert = toAdd.get() - component.insertItemBypassLimit(stack, true).getCount();
-            toAdd.addAndGet(-maxInsert);
-            ItemStack remaining = component.insertItemBypassLimit(stack.copyWithCount(maxInsert), false);
-            item.set(remaining);
-          });
+          if (toAdd.get() <= 0) return;
+          if (c.getSpaceForItem(stack) <= 0) return;
+          int inserted = c.getContainerProvider().addToOutputs(stack, toAdd.get());
+          toAdd.addAndGet(-inserted);
         });
 
-    return inserted.get();
+    return stack.copyWithCount(toAdd.get());
   }
 
   /**
    * This method is only available for item input buses
    * @param stack to be removed
-   * @return extracted
    */
-  public ItemStack removeItem(ItemStack stack) {
+  public void removeItem(ItemStack stack) {
     AtomicReference<ItemStack> item = new AtomicReference<>(stack);
     AtomicReference<ItemStack> extracted = new AtomicReference<>(ItemStack.EMPTY);
     this.internal.getComponentManager()
@@ -310,23 +302,8 @@ public class MachineControllerJS {
           if (c.getItemAmount(item.get()) <= 0) return;
           AtomicInteger toRemove = new AtomicInteger(item.get().getCount());
           AtomicInteger removed = new AtomicInteger(0);
-          Predicate<ItemSlot> slotPredicate = component -> true;
-          c.getContainerProvider().getInputs().stream().filter(component -> ItemStack.isSameItemSameComponents(component.getItemStack(),
-              stack) && slotPredicate.test(component)).forEach(component -> {
-            int maxExtract = Math.min(component.getItemStack().getCount(), toRemove.get());
-            toRemove.addAndGet(-maxExtract);
-            component.getItemStack().shrink(maxExtract);
-            removed.getAndAdd(maxExtract);
-            if (extracted.get().isEmpty()) {
-              extracted.set(item.get().copyWithCount(maxExtract));
-            } else {
-              extracted.get().grow(maxExtract);
-            }
-          });
-          item.get().shrink(removed.get());
+          c.removeFromInputs(Ingredient.of(stack.getItem()), stack.count());
         });
-
-    return extracted.get();
   }
 
   /** FUEL STUFF **/

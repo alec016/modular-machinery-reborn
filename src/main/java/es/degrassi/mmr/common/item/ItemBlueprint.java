@@ -9,9 +9,9 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import java.util.function.Consumer;
 
 public class ItemBlueprint extends Item {
-  public ItemBlueprint() {
+  public ItemBlueprint(Properties props) {
     super(
-      new Properties()
+      props
         .stacksTo(1)
     );
   }

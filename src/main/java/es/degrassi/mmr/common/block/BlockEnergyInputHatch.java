@@ -18,15 +18,15 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class BlockEnergyInputHatch extends BlockEnergyHatch {
-  public BlockEnergyInputHatch(EnergyHatchSize type) {
-    super(type);
+  public BlockEnergyInputHatch(Properties id, EnergyHatchSize type) {
+    super(id, type);
   }
 
   @Override
   public void appendHoverText(ItemStack stack, Item.TooltipContext pContext, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     if (EnergyDisplayUtil.displayFETooltip) {
-      tooltip.accept(Component.translatable("tooltip.energyhatch.storage", type.maxEnergy).withStyle(ChatFormatting.GRAY));
-      tooltip.accept(Component.translatable("tooltip.energyhatch.in.accept", type.transferLimit).withStyle(ChatFormatting.GRAY));
+      tooltip.accept(Component.translatable("tooltip.energyhatch.storage", size.maxEnergy).withStyle(ChatFormatting.GRAY));
+      tooltip.accept(Component.translatable("tooltip.energyhatch.in.accept", size.transferLimit).withStyle(ChatFormatting.GRAY));
       tooltip.accept(Component.empty());
     }
   }
@@ -34,6 +34,6 @@ public class BlockEnergyInputHatch extends BlockEnergyHatch {
   @Nullable
   @Override
   public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-    return new EnergyInputHatchEntity(pos, state, type);
+    return new EnergyInputHatchEntity(pos, state, size);
   }
 }

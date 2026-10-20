@@ -95,7 +95,7 @@ public class MultiblockRecipe {
                                             if (ele instanceof ItemSlot slot) {
                                               if (requiredItems.containsKey(slot)) {
                                                 var stack = MultiblockScene.blockTimer.getOrDefault(requiredItems.get(slot), ItemStack.EMPTY);
-                                                slot.setItem(stack);
+                                                slot.setItem(stack, true);
                                               }
                                             }
                                           });

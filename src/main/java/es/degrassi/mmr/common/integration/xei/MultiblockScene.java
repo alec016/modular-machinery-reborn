@@ -25,7 +25,7 @@ public class MultiblockScene {
           dummyWorld.setBlockAndUpdate(pos, partialState.getBlockState());
         });
     var controllerPos = new BlockPos(0, 0, 0);
-    var controller = BlockRegistration.CONTROLLER.get().defaultBlockState();
+    var controller = BlockRegistration.CONTROLLER.block().defaultBlockState();
     MachineControllerEntity entity = new MachineControllerEntity(new BlockPos(0, 0, 0), controller);
     dummyWorld.setBlockAndUpdate(controllerPos, controller);
     entity.setLevel(dummyWorld);
@@ -45,7 +45,7 @@ public class MultiblockScene {
           scene.setBlockAndUpdate(pos, partialState.getBlockState());
         });
     var controllerPos = new BlockPos(0, 0, 0);
-    var controller = BlockRegistration.CONTROLLER.get().defaultBlockState();
+    var controller = BlockRegistration.CONTROLLER.block().defaultBlockState();
     MachineControllerEntity entity = new MachineControllerEntity(new BlockPos(0, 0, 0), controller);
     scene.setBlockAndUpdate(controllerPos, controller);
     entity.setLevel(scene);

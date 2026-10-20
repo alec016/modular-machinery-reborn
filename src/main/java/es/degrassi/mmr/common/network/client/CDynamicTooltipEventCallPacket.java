@@ -32,7 +32,7 @@ public record CDynamicTooltipEventCallPacket(int windowId) implements CustomPack
   }
 
   public static void handle(CDynamicTooltipEventCallPacket packet, IPayloadContext context) {
-    if (context.player() instanceof ServerPlayer player
+    /*if (context.player() instanceof ServerPlayer player
         && player.containerMenu.containerId == packet.windowId()
         && player.containerMenu instanceof ControllerContainer container
     ) {
@@ -48,6 +48,6 @@ public record CDynamicTooltipEventCallPacket(int windowId) implements CustomPack
                 }
                 PacketDistributor.sendToPlayer(player, new SSyncDynamicTooltipsPacket(container.getId(), map));
               });
-    }
+    }*/
   }
 }

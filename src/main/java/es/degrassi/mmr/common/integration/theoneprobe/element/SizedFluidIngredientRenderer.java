@@ -13,7 +13,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +21,6 @@ import org.joml.Vector2i;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.List;
 
 public class SizedFluidIngredientRenderer implements IElement {
@@ -39,15 +37,15 @@ public class SizedFluidIngredientRenderer implements IElement {
 
   public SizedFluidIngredientRenderer(SizedFluidIngredient ingredient, float chance, IIconStyle style) {
     this.ingredient = ingredient;
-    this.fluids = Arrays.asList(ingredient.getFluids());
+    this.fluids = ingredient.ingredient().fluids().stream().map(holder -> new FluidStack(holder, ingredient.amount())).toList();
     this.style = style;
     this.chance = chance;
   }
 
   public SizedFluidIngredientRenderer(RegistryFriendlyByteBuf buffer) {
-    this.ingredient = buffer.readJsonWithCodec(SizedFluidIngredient.FLAT_CODEC);
+    this.ingredient = buffer.readLenientJsonWithCodec(SizedFluidIngredient.CODEC);
     this.chance = buffer.readFloat();
-    this.fluids = Arrays.asList(this.ingredient.getFluids());
+    this.fluids = ingredient.ingredient().fluids().stream().map(holder -> new FluidStack(holder, ingredient.amount())).toList();
     this.style = (new IconStyle()).width(buffer.readInt()).height(buffer.readInt()).textureWidth(buffer.readInt()).textureHeight(buffer.readInt()).color(buffer.readInt());
   }
 
@@ -56,30 +54,37 @@ public class SizedFluidIngredientRenderer implements IElement {
     timer.onDraw();
     var font = Minecraft.getInstance().font;
     var fluid = timer.getOrDefault(fluids, FluidStack.EMPTY);
-    int tintColor = IClientFluidTypeExtensions.of(fluid.getFluid()).getTintColor(fluid);
-    Identifier stillTexture = IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture();
+    var fluidModel = Minecraft.getInstance().getModelManager().getFluidStateModelSet()
+        .get(fluid.getFluid().defaultFluidState());
+    var tintSource = fluidModel.fluidTintSource();
+    var tintColor = -1;
+    if (tintSource != null) {
+      tintColor = tintSource.colorAsStack(fluid);
+    }
     Color color = new Color(tintColor);
-    ElementIconRender.render(stillTexture, GuiGraphicsExtractor.pose(), x, y, 16, 16, -1, -1, this.style.getTextureWidth(), this.style.getTextureHeight(), color.getRGB());
+    ElementIconRender.render(fluidModel.stillMaterial().sprite().atlasLocation(), GuiGraphicsExtractor, x, y, 16, 16, -1, -1,
+        this.style.getTextureWidth(),
+        this.style.getTextureHeight(), color.getRGB());
 
     // Chance rendering
     if (this.chance < 1f) {
-      GuiGraphicsExtractor.pose().pushPose();
-      GuiGraphicsExtractor.pose().translate(0, -16, 0);
+      GuiGraphicsExtractor.pose().pushMatrix();
+      GuiGraphicsExtractor.pose().translate(0, -16);
       String s = (chance * 100) + "%";
       if (chance == 0f) s = "NC";
-      GuiGraphicsExtractor.pose().translate(x + 19 - 2, y + 6 + 3, 200.0F);
-      GuiGraphicsExtractor.pose().scale(0.75f, 0.75f, 0f);
-      GuiGraphicsExtractor.drawString(font, s, - font.width(s), 0, 16777215, true);
-      GuiGraphicsExtractor.pose().popPose();
+      GuiGraphicsExtractor.pose().translate(x + 19 - 2, y + 6 + 3);
+      GuiGraphicsExtractor.pose().scale(0.75f, 0.75f);
+      GuiGraphicsExtractor.text(font, s, - font.width(s), 0, 16777215, true);
+      GuiGraphicsExtractor.pose().popMatrix();
     }
     // Amount rendering
-    GuiGraphicsExtractor.pose().pushPose();
+    GuiGraphicsExtractor.pose().pushMatrix();
 
     String s = humanReadableNumber(this.ingredient.amount(), "B", true, null);
-    GuiGraphicsExtractor.pose().translate(x + 19 - 2, y + 6 + 3, 200.0F);
-    GuiGraphicsExtractor.pose().scale(0.75f, 0.75f, 0f);
-    GuiGraphicsExtractor.drawString(font, s,  - font.width(s), 0, 16777215, true);
-    GuiGraphicsExtractor.pose().popPose();
+    GuiGraphicsExtractor.pose().translate(x + 19 - 2, y + 6 + 3);
+    GuiGraphicsExtractor.pose().scale(0.75f, 0.75f);
+    GuiGraphicsExtractor.text(font, s,  - font.width(s), 0, 16777215, true);
+    GuiGraphicsExtractor.pose().popMatrix();
   }
 
   @Override
@@ -94,7 +99,7 @@ public class SizedFluidIngredientRenderer implements IElement {
 
   @Override
   public void toBytes(RegistryFriendlyByteBuf buffer) {
-    buffer.writeJsonWithCodec(SizedFluidIngredient.FLAT_CODEC, this.ingredient);
+    buffer.writeJsonWithCodec(SizedFluidIngredient.CODEC, this.ingredient);
     buffer.writeFloat(this.chance);
     buffer.writeInt(this.style.getWidth());
     buffer.writeInt(this.style.getHeight());

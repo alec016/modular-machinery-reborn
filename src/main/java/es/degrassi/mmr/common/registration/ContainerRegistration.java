@@ -1,6 +1,8 @@
 package es.degrassi.mmr.common.registration;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.IEventBus;
 
 /**
@@ -12,8 +14,8 @@ import net.neoforged.bus.api.IEventBus;
  * <p>
  * This class is kept for reference and to hold any future static menu type references if needed.
  */
-public class ContainerRegistration {
-  private ContainerRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ContainerRegistration {
 
   public static void register(IEventBus bus) {
     // LDLib2's BlockUIMenuType handles menu registration internally.

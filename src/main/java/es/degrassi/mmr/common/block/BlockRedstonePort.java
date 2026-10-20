@@ -1,10 +1,13 @@
 package es.degrassi.mmr.common.block;
 
-import es.degrassi.mmr.client.container.RedstonePortContainer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.RedstonePortUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.entity.RedstonePortEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,7 +21,19 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BlockRedstonePort extends BlockMachineComponent {
+public class BlockRedstonePort extends BlockMachineComponent implements BlockUIMenuType.BlockUI {
+  public BlockRedstonePort(Properties id) {
+    super(id);
+  }
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof RedstonePortEntity entity) {
+      return RedstonePortUI.create(holder, entity);
+    }
+    return null;
+  }
+
   @Override
   public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
     return new RedstonePortEntity(blockPos, blockState);
@@ -29,7 +44,7 @@ public class BlockRedstonePort extends BlockMachineComponent {
     BlockEntity te = level.getBlockEntity(pos);
     if(te instanceof RedstonePortEntity entity) {
       if (player instanceof ServerPlayer serverPlayer) {
-        RedstonePortContainer.open(serverPlayer, entity);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       }
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }

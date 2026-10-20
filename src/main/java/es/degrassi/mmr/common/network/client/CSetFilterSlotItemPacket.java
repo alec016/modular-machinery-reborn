@@ -31,7 +31,7 @@ public record CSetFilterSlotItemPacket(ItemStack stack, BlockPos pos) implements
     if(context.player() instanceof ServerPlayer player)
       context.enqueueWork(() -> {
         if(player.level().getBlockEntity(packet.pos) instanceof FiltereableEntity<?, ?> machine) {
-          machine.getFilterInventory().setItem(0, packet.stack);
+          machine.getFilterInventory().setStack(0, packet.stack);
         }
       });
   }

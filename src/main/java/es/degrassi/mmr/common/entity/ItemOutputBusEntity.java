@@ -28,7 +28,9 @@ public class ItemOutputBusEntity extends TileItemBus implements IAutoOutputEntit
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    return new ItemHandler(slots, stackSize, 0, Integer.MAX_VALUE, Direction.values());
+    // Output bus: nothing is insertable from outside, every slot is extractable
+    // (legacy: inSlots = none, outSlots = all slots, slotLimit = stackSize).
+    return new ItemHandler(slots, stackSize, 0, stackSize, Direction.values());
   }
 
   @Override

@@ -1,7 +1,3 @@
-/**
- * This item is mainly copied from
- * <url>https://github.com/Frinn38/Custom-Machinery/blob/1.21/src/main/java/fr/frinn/custommachinery/common/init/StructureCreatorItem.java</url>
- */
 package es.degrassi.mmr.common.item;
 
 import es.degrassi.mmr.api.IWrenchable;
@@ -20,8 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class WrenchItem extends Item {;
 
-  public WrenchItem() {
-    super(new Properties().stacksTo(1));
+  public WrenchItem(Properties props) {
+    super(props.stacksTo(1));
   }
 
   @Override

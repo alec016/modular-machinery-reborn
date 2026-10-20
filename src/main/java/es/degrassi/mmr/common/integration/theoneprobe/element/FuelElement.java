@@ -36,13 +36,13 @@ public class FuelElement implements IElement {
   public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y) {
     x = (int) (x * scale());
     y = (int) (y * scale());
-    GuiGraphicsExtractor.pose().pushPose();
-    GuiGraphicsExtractor.pose().scale(1/scale(), 1/scale(), 1/scale());
+    GuiGraphicsExtractor.pose().pushMatrix();
+    GuiGraphicsExtractor.pose().scale(1/scale(), 1/scale());
     GuiGraphicsExtractor.blit(emptyTexture, x, y, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
     var calcHeight = (int) (progress * getHeight());
     var offset = getHeight() - calcHeight;
     GuiGraphicsExtractor.blit(filledTexture, x + 1, y + offset + 1, 0, offset, getWidth(), calcHeight, getWidth(), getHeight());
-    GuiGraphicsExtractor.pose().popPose();
+    GuiGraphicsExtractor.pose().popMatrix();
   }
 
   @Override

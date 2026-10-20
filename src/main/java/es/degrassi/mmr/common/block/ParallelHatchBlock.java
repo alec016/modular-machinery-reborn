@@ -1,10 +1,13 @@
 package es.degrassi.mmr.common.block;
 
-import es.degrassi.mmr.client.container.ParallelHatchContainer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.ParallelHatchUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.ParallelHatchSize;
 import es.degrassi.mmr.common.entity.ParallelHatchEntity;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,10 +36,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public class ParallelHatchBlock extends BlockMachineComponent implements TooltipAppendable {
-  protected final ParallelHatchSize type;
-  public ParallelHatchBlock(ParallelHatchSize type) {
-    this.type = type;
+public class ParallelHatchBlock extends BlockMachineComponent implements TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof ParallelHatchEntity entity) {
+      return ParallelHatchUI.create(holder, entity);
+    }
+    return null;
+  }
+  @Getter
+  protected final ParallelHatchSize size;
+  public ParallelHatchBlock(Properties id, ParallelHatchSize type) {
+    super(id);
+    this.size = type;
   }
 
   @Override
@@ -61,7 +74,7 @@ public class ParallelHatchBlock extends BlockMachineComponent implements Tooltip
     tooltip.accept(
         Component.translatable(
             "tooltip.parallelhatch.size",
-            type.max
+            size.max
         ).withStyle(ChatFormatting.GRAY)
     );
   }
@@ -72,7 +85,7 @@ public class ParallelHatchBlock extends BlockMachineComponent implements Tooltip
     BlockEntity te = level.getBlockEntity(pos);
     if (te instanceof ParallelHatchEntity entity) {
       if (player instanceof ServerPlayer sp) {
-        ParallelHatchContainer.open(sp, entity);
+        BlockUIMenuType.openUI(sp, pos);
       }
       return InteractionResult.SUCCESS;
     }
@@ -81,7 +94,7 @@ public class ParallelHatchBlock extends BlockMachineComponent implements Tooltip
 
   @Override
   public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-    return new ParallelHatchEntity(blockPos, blockState, type);
+    return new ParallelHatchEntity(blockPos, blockState, size);
   }
 
   @Override

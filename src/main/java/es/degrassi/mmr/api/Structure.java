@@ -12,7 +12,7 @@ import es.degrassi.mmr.common.crafting.modifier.ModifierReplacement;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.DynamicMachine;
-import es.degrassi.mmr.data.MMRTags;
+import es.degrassi.mmr.data.tags.MMRTags;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

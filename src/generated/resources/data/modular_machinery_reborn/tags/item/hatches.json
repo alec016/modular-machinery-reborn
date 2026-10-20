@@ -1,0 +1,22 @@
+{
+  "values": [
+    "#modular_machinery_reborn:energyhatch",
+    "#modular_machinery_reborn:itembus",
+    "#modular_machinery_reborn:fluidhatch",
+    "#modular_machinery_reborn:experiencehatch",
+    "#modular_machinery_reborn:parallelhatch",
+    "#modular_machinery_reborn:durability_hatch",
+    "#modular_machinery_reborn:fueltank",
+    "#modular_machinery_reborn:effect_dispenser",
+    "#modular_machinery_reborn:entityhatch",
+    "modular_machinery_reborn:biome_reader",
+    "modular_machinery_reborn:dimensional_detector",
+    "modular_machinery_reborn:weather_sensor",
+    "modular_machinery_reborn:time_counter",
+    "modular_machinery_reborn:chunkloader",
+    "modular_machinery_reborn:height_meter",
+    "modular_machinery_reborn:structure_checker",
+    "modular_machinery_reborn:redstone_port",
+    "modular_machinery_reborn:command_executioner"
+  ]
+}

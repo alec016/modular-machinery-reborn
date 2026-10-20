@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity.base;
 
 import com.google.common.collect.Maps;
+import es.degrassi.experiencelib.api.ExperienceResource;
 import es.degrassi.experiencelib.api.capability.ExperienceLibCapabilities;
 import es.degrassi.experiencelib.api.capability.IExperienceHandler;
 import es.degrassi.experiencelib.api.network.ISyncable;
@@ -33,9 +34,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +53,6 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class ExperienceHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<ExperienceComponent>,
@@ -122,62 +119,63 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
     return true;
   }
 
-  // TODO: add transaction
   @Override
   public void tickInventory() {
     if (!shouldTickInventory()) return;
-    capabilityInventory.getInventory().forEach(slot -> {
-      Optional.ofNullable(slot.getItemStack().getCapability(getCapability())).ifPresent(cap -> {
+    try (Transaction root = Transaction.openRoot()) {
+      capabilityInventory.forEach((stack, slot) -> {
+        if (stack.isEmpty()) return;
+        var cap = stack.getCapability(getCapability(), ItemAccess.forStack(stack));
+        if (cap == null) return;
         if (ioType == IOType.NONE) return;
         if (ioType.isInput()) {
-          if (!cap.canExtract(0)) return;
-          if (this.getTank().getExperience() >= this.getTank().getExperienceCapacity()) return;
-          if (slot.getItemStack().is(Items.EXPERIENCE_BOTTLE)) {
-            int experienceBottles = slot.getItemStack().getCount();
+          if (this.getTank().getAmountAsLong(0) >= this.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY))
+            return;
+          if (stack.is(Items.EXPERIENCE_BOTTLE)) {
+            int experienceBottles = stack.getCount();
             for (int i = 0; i < experienceBottles; i++) {
-              long simulatedCap = cap.extractExperience(0, Long.MAX_VALUE, true);
-              long simulatedInsert = getTank().receiveExperienceRecipe(0, simulatedCap, true);
-              if (simulatedInsert < 7) return;
-              ItemStack stack = slot.extractItemBypassLimit(1, true);
-              if (stack.isEmpty()) return;
-              slot.extractItemBypassLimit(1, false);
-              cap.extractExperienceRecipe(0, simulatedInsert, false);
-              getTank().receiveExperience(0, simulatedInsert, false);
+              try (Transaction subTx = Transaction.open(root)) {
+                long simulatedCap = cap.extractRecipe(0, Long.MAX_VALUE, subTx);
+                long simulatedInsert = getTank().insertRecipe(0, simulatedCap, subTx);
+                if (simulatedInsert < 7) return;
+                if (capabilityInventory.extractFromInputs(stack, 1) <= 0) return;
+                subTx.commit();
+              }
             }
           } else {
-            if (slot.getItemStack().is(Items.GLASS_BOTTLE)) return;
-            long simulatedCap = cap.extractExperience(0, Long.MAX_VALUE, true);
-            long simulatedInsert = getTank().receiveExperience(0, simulatedCap, true);
-            cap.extractExperienceRecipe(0, simulatedInsert, false);
-            getTank().receiveExperienceRecipe(0, simulatedInsert, false);
+            try (Transaction subTx = Transaction.open(root)) {
+              if (stack.is(Items.GLASS_BOTTLE)) return;
+              long simulatedCap = cap.extractRecipe(0, Long.MAX_VALUE, subTx);
+              long simulatedInsert = getTank().insertRecipe(0, simulatedCap, subTx);
+              if (simulatedInsert > 0) subTx.commit();
+            }
           }
         } else if (ioType.isOutput()) {
-          if (!cap.canReceive(0)) return;
-          if (this.getTank().getExperience() == 0) return;
-          if (slot.getItemStack().is(Items.GLASS_BOTTLE)) {
-            int experienceBottles = slot.getItemStack().getCount();
-            if (experienceBottles > 1) return;
-            long simulatedCap = cap.receiveExperienceRecipe(0, Long.MAX_VALUE, true);
-            long simulatedInsert = getTank().extractExperienceRecipe(0, simulatedCap, true);
-            if (simulatedInsert < 7) return;
-            ItemStack extracted = slot.extractItemBypassLimit(1, true);
-            if (extracted.isEmpty()) return;
-            ItemStack stack = slot.insertItemBypassLimit(new ItemStack(Items.EXPERIENCE_BOTTLE, 1), true);
-            if (stack.isEmpty()) return;
-            slot.extractItemBypassLimit(1, false);
-            slot.insertItemBypassLimit(new ItemStack(Items.EXPERIENCE_BOTTLE, 1), false);
-            cap.receiveExperienceRecipe(0, simulatedInsert, false);
-            getTank().extractExperienceRecipe(0, simulatedInsert, false);
+          if (this.getTank().getAmountAsLong(0) == 0) return;
+          if (stack.is(Items.GLASS_BOTTLE)) {
+            try (Transaction subTx = Transaction.open(root)) {
+              int experienceBottles = stack.getCount();
+              if (experienceBottles > 1) return;
+              long simulatedCap = cap.insertRecipe(0, Long.MAX_VALUE, subTx);
+              long simulatedInsert = getTank().extractRecipe(0, simulatedCap, subTx);
+              if (simulatedInsert < 7) return;
+              if (!capabilityInventory.canPlaceOutput(slot, new ItemStack(Items.EXPERIENCE_BOTTLE, 1))) return;
+              if (capabilityInventory.extractFromInputs(stack, 1) <= 0) return;
+              capabilityInventory.addToOutputs(new ItemStack(Items.EXPERIENCE_BOTTLE, 1), 1);
+              subTx.commit();
+            }
           } else {
-            if (slot.getItemStack().is(Items.EXPERIENCE_BOTTLE)) return;
-            long simulatedCap = cap.receiveExperienceRecipe(0, Long.MAX_VALUE, true);
-            long simulatedInsert = getTank().extractExperienceRecipe(0, simulatedCap, true);
-            cap.receiveExperienceRecipe(0, simulatedInsert, false);
-            getTank().extractExperienceRecipe(0, simulatedInsert, false);
+            try (Transaction subTx = Transaction.open(root)) {
+              if (stack.is(Items.EXPERIENCE_BOTTLE)) return;
+              long simulatedCap = cap.insertRecipe(0, Long.MAX_VALUE, subTx);
+              long simulatedInsert = getTank().extractRecipe(0, simulatedCap, subTx);
+              if (simulatedInsert > 0) subTx.commit();
+            }
           }
         }
       });
-    });
+      root.commit();
+    }
   }
 
   @Override

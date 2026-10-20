@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": "modular_machinery_reborn:fluidinputhatch_tiny",
+    "c": "minecraft:bucket",
+    "h": "minecraft:hopper",
+    "m": "modular_machinery_reborn:modularium"
+  },
+  "pattern": [
+    " h ",
+    "mbm",
+    "cmc"
+  ],
+  "result": {
+    "id": "modular_machinery_reborn:fluidinputhatch_small"
+  }
+}

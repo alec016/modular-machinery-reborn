@@ -43,10 +43,8 @@ public record SSyncDynamicTooltipsPacket(Identifier machineId, Int2ObjectArrayMa
   }
 
   public static void handle(SSyncDynamicTooltipsPacket packet, IPayloadContext context) {
-    if (context.flow().isClientbound()) {
-      if (context.player().containerMenu instanceof ControllerContainer container && container.getId().equals(packet.machineId)) {
-        container.setTooltips(packet.tooltips);
-      }
-    }
-  }
+    // LEGACY: the vanilla-menu UI this relied on was replaced by the LDLib2 ModularUI screens
+    // (es.degrassi.mmr.client.screen.*UI + BlockUIMenuType). There is no ContainerBase menu to
+    // act on any more, so this is a no-op until it is re-implemented on top of LDLib2.
+}
 }

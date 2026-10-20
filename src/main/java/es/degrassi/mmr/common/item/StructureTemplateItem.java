@@ -49,9 +49,9 @@ public class StructureTemplateItem extends Item {
   private static final NamedCodec<List<List<String>>> PATTERN_CODEC = NamedCodec.STRING.listOf().listOf();
   private static final NamedCodec<Map<Character, BlockIngredient>> KEYS_CODEC = NamedCodec.unboundedMap(DefaultCodecs.CHARACTER, BlockIngredient.STRING_CODEC, "Map<Character, Block>");
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-  public StructureTemplateItem() {
+  public StructureTemplateItem(Properties props) {
     super(
-        new Item.Properties().stacksTo(1)
+        props.stacksTo(1)
             .component(DataComponentRegistration.STRUCTURE_CREATOR_DATA, new ArrayList<>())
     );
   }

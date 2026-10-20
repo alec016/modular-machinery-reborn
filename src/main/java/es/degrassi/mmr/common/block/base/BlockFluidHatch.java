@@ -1,10 +1,13 @@
 package es.degrassi.mmr.common.block.base;
 
-import es.degrassi.mmr.client.container.FluidHatchContainer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.FluidHatchUI;
 import es.degrassi.mmr.common.block.prop.FluidHatchSize;
 import es.degrassi.mmr.common.entity.base.FluidTankEntity;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.util.RedstoneHelper;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,9 +33,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public abstract class BlockFluidHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public abstract class BlockFluidHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof FluidTankEntity entity) {
+      return FluidHatchUI.create(holder, entity);
+    }
+    return null;
+  }
+  @Getter
   protected final FluidHatchSize size;
-  public BlockFluidHatch(FluidHatchSize size) {
+  public BlockFluidHatch(Properties id, FluidHatchSize size) {
+    super(id);
     this.size = size;
   }
 
@@ -58,7 +71,7 @@ public abstract class BlockFluidHatch extends BlockMachineComponent implements B
         });
       }
       if (player instanceof ServerPlayer serverPlayer) {
-        FluidHatchContainer.open(serverPlayer, fluidTank);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       }
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }

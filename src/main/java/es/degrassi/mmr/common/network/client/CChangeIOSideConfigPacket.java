@@ -1,5 +1,7 @@
 package es.degrassi.mmr.common.network.client;
 
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
@@ -29,7 +31,7 @@ public record CChangeIOSideConfigPacket(int containerId, RelativeSide side, bool
   public static void handle(CChangeIOSideConfigPacket packet, IPayloadContext context) {
     if (context.player() instanceof ServerPlayer player) {
       context.enqueueWork(() -> {
-        if(player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof ContainerBase<?> container) {
+        /*if(player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof ContainerBase<?> container) {
           var tile = container.getEntity();
           if (tile instanceof IAutoEntity<?> && tile instanceof ISideConfigComponent<?> sideEntity) {
             var config = sideEntity.getConfig();
@@ -40,7 +42,7 @@ public record CChangeIOSideConfigPacket(int containerId, RelativeSide side, bool
                 c.setPrevious(packet.side);
             }
           }
-        }
+        }*/
       });
     }
   }

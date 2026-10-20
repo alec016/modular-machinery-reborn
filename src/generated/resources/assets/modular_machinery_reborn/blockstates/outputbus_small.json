@@ -1,0 +1,20 @@
+{
+  "athena:loader": "modular_machinery_reborn:hatch",
+  "connect_to": {
+    "type": "tag",
+    "tag": "modular_machinery_reborn:plain_connectable"
+  },
+  "ctm_textures": {
+    "center": "modular_machinery_reborn:block/casing_plain_corners",
+    "empty": "modular_machinery_reborn:block/casing_empty",
+    "horizontal": "modular_machinery_reborn:block/casing_plain_horizontal",
+    "overlay": "modular_machinery_reborn:block/overlay_outputbus_small",
+    "particle": "modular_machinery_reborn:block/casing_plain",
+    "vertical": "modular_machinery_reborn:block/casing_plain_vertical"
+  },
+  "variants": {
+    "": {
+      "model": "modular_machinery_reborn:default/hatches/outputbus_small"
+    }
+  }
+}

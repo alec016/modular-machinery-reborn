@@ -1,12 +1,10 @@
 package es.degrassi.mmr.common.util;
 
 import es.degrassi.mmr.common.entity.ChunkloaderEntity;
+import es.degrassi.mmr.common.registration.TicketTypeRegistration;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -31,8 +29,6 @@ public class Chunkloader implements ValueIOSerializable {
     this(entity, 1, false);
   }
 
-  private static final TicketType MACHINE_CHUNKLOADER = Registry.register(BuiltInRegistries.TICKET_TYPE, "chunkloader", new TicketType(0L, TicketType.FLAG_PERSIST));
-
   public void setActive(ServerLevel level, int radius) {
     if(this.active)
       this.setInactive(level);
@@ -43,7 +39,7 @@ public class Chunkloader implements ValueIOSerializable {
     BlockPos machinePos = getEntity().getBlockPos();
     ChunkPos chunk = ChunkPos.containing(machinePos);
     level.setChunkForced(chunk.getRegionX(), chunk.getRegionZ(), true);
-    level.getChunkSource().addTicketAndLoadWithRadius(MACHINE_CHUNKLOADER, chunk, radius + 1);
+    level.getChunkSource().addTicketAndLoadWithRadius(TicketTypeRegistration.MACHINE_CHUNKLOADER.get(), chunk, radius + 1);
   }
 
   public void setActiveWithTempo(ServerLevel level, int radius, int tempo) {
@@ -59,7 +55,7 @@ public class Chunkloader implements ValueIOSerializable {
     ChunkPos chunk = ChunkPos.containing(machinePos);
     if(ChunkloaderList.findInSameChunk(getEntity()).isEmpty())
       level.setChunkForced(chunk.getRegionX(), chunk.getRegionZ(), false);
-    level.getChunkSource().removeTicketWithRadius(MACHINE_CHUNKLOADER, chunk, this.radius + 1);
+    level.getChunkSource().removeTicketWithRadius(TicketTypeRegistration.MACHINE_CHUNKLOADER.get(), chunk, this.radius + 1);
   }
 
   public void serverTick() {

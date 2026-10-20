@@ -10,8 +10,8 @@ import es.degrassi.mmr.api.crafting.requirement.RecipeRequirement;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.component.HeightComponent;
+import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
-import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmr.common.util.IntRange;
 import lombok.Getter;
@@ -87,6 +87,6 @@ public class RequirementHeight implements IRequirement<HeightComponent, IntRange
         "modular_machinery_reborn.jei.ingredient.height",
         height().toFormattedString()
     ));
-    info.setItemIcon(ItemRegistration.HEIGHT_METER.asItem());
+    info.setItemIcon(BlockRegistration.HEIGHT_METER.asItem());
   }
 }

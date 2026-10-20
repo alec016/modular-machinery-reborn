@@ -1,8 +1,8 @@
 package es.degrassi.mmr.client;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.math.Quadrant;
+import es.degrassi.experiencelib.api.definition.BlockDefinition;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.IWrenchable;
 import es.degrassi.mmr.api.entity.ColorableMachineEntity;
@@ -13,6 +13,7 @@ import es.degrassi.mmr.client.entity.renderer.IWrenchableRenderer;
 import es.degrassi.mmr.client.entity.renderer.StructureCheckerRenderer;
 import es.degrassi.mmr.client.integration.athena.MMRAthenaModels;
 import es.degrassi.mmr.client.integration.jei.MMRJeiClientIntegration;
+import es.degrassi.mmr.client.item.MMRItemTintSource;
 import es.degrassi.mmr.client.item.MMRItemTooltip;
 import es.degrassi.mmr.client.item.MMRItemTooltipComponent;
 import es.degrassi.mmr.client.model.InitBuiltInModels;
@@ -20,7 +21,6 @@ import es.degrassi.mmr.client.model.controller.ControllerModelLoader;
 import es.degrassi.mmr.client.model.hatch.HatchModelLoader;
 import es.degrassi.mmr.client.util.FluidRenderer;
 import es.degrassi.mmr.common.block.base.BlockDynamicColor;
-import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.DurabilityHatchEntity;
 import es.degrassi.mmr.common.entity.FuelTankEntity;
@@ -31,34 +31,27 @@ import es.degrassi.mmr.common.entity.base.EnergyHatchEntity;
 import es.degrassi.mmr.common.entity.base.ExperienceHatchEntity;
 import es.degrassi.mmr.common.entity.base.FluidTankEntity;
 import es.degrassi.mmr.common.entity.base.TileItemBus;
-import es.degrassi.mmr.common.item.ItemDynamicColor;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.EntityRegistration;
-import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.common.util.Mods;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraft.client.color.item.ItemTintSource;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -72,12 +65,14 @@ import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneMod
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("unused")
 @Mod(value = ModularMachineryReborn.MODID, dist = Dist.CLIENT)
@@ -95,6 +90,8 @@ public class ModularMachineryRebornClient {
 
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> hatchModelKeys = new HashMap<>();
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> configModelKeys = new HashMap<>();
+  /** Same as the base keys, but rotated to match vanilla blockstate {@code facing} variants (see {@link #registerRotated}). */
+  private static final Map<Identifier, Map<Direction, StandaloneModelKey<BlockStateModel>>> rotatedModelKeys = new HashMap<>();
 
   private static final List<Block> blockModelsToRegister = Lists.newLinkedList();
   private static final List<Item> itemModelsToRegister = Lists.newLinkedList();
@@ -108,12 +105,9 @@ public class ModularMachineryRebornClient {
     this.bus = bus;
   }
 
-  // RenderHighlightEvent.Block was removed in NeoForge 26.1 - block highlight rendering
-  // will need to be reimplemented when structure rendering is re-enabled.
-
   @SubscribeEvent
   public void registerBlockEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
-    EntityRegistration.ENTITY_TYPE.getEntries().forEach(holder -> {
+    EntityRegistration.DR.getEntries().forEach(holder -> {
       if (holder.getDelegate().value().create(BlockPos.ZERO,
           holder.value().getValidBlocks().iterator().next().defaultBlockState()) instanceof IWrenchable aw && aw.shouldAddRender())
         event.registerBlockEntityRenderer(holder.get(), IWrenchableRenderer::new);
@@ -148,6 +142,58 @@ public class ModularMachineryRebornClient {
     return Minecraft.getInstance().getModelManager().getStandaloneModel(key);
   }
 
+  /**
+   * The 1.21.1 fallback flow ({@code DefaultHatchBakedModel} / model loaders) rebaked the default chain
+   * per render, rotating it to the machine facing with quaternions. The 26.1 standalone pipeline bakes
+   * models once, so every default/config model additionally registers the three horizontal rotations the
+   * legacy code applied (same quaternions as vanilla {@code y: 90/180/270} blockstate variants).
+   */
+  private static void registerRotated(ModelEvent.RegisterStandalone event, Identifier modelRL) {
+    EnumMap<Direction, StandaloneModelKey<BlockStateModel>> rotated = new EnumMap<>(Direction.class);
+    registerRotated(event, rotated, modelRL, Direction.EAST, Quadrant.R90);
+    registerRotated(event, rotated, modelRL, Direction.SOUTH, Quadrant.R180);
+    registerRotated(event, rotated, modelRL, Direction.WEST, Quadrant.R270);
+    rotatedModelKeys.put(modelRL, rotated);
+  }
+
+  private static void registerRotated(ModelEvent.RegisterStandalone event,
+                                      Map<Direction, StandaloneModelKey<BlockStateModel>> rotated,
+                                      Identifier modelRL, Direction facing, Quadrant angle) {
+    StandaloneModelKey<BlockStateModel> key = new StandaloneModelKey<>(() -> "mmr_rot_" + angle + "_" + modelRL);
+    event.register(key, SimpleUnbakedStandaloneModel.blockStateModel(modelRL,
+        BlockModelRotation.get(Quadrant.fromXYZAngles(Quadrant.R0, angle, Quadrant.R0))));
+    rotated.put(facing, key);
+  }
+
+  /**
+   * The unbaked-key registry for one default/config model, preferring the facing-rotated variant
+   * baked by {@link #registerRotated}. {@code facing == null} (or NORTH) returns the unrotated key.
+   */
+  @Nullable
+  public static StandaloneModelKey<BlockStateModel> modelKey(Identifier modelRL, @Nullable Direction facing) {
+    StandaloneModelKey<BlockStateModel> base = baseModelKey(modelRL);
+    if (base == null) return null;
+    if (facing == null || facing == Direction.NORTH || !rotatedModelKeys.containsKey(modelRL)) return base;
+    StandaloneModelKey<BlockStateModel> key = rotatedModelKeys.get(modelRL).get(facing);
+    return key != null ? key : base;
+  }
+
+  @Nullable
+  private static StandaloneModelKey<BlockStateModel> baseModelKey(Identifier modelRL) {
+    if (ModularMachineryReborn.rl("default/hatch_all").equals(modelRL)) return DEFAULT_HATCH_ALL_KEY;
+    if (ModularMachineryReborn.rl("default/hatch_orientable").equals(modelRL)) return DEFAULT_HATCH_ORIENTABLE_KEY;
+    if (ModularMachineryReborn.rl("default/controller").equals(modelRL)) return DEFAULT_CONTROLLER_KEY;
+    StandaloneModelKey<BlockStateModel> key = hatchModelKeys.get(modelRL);
+    if (key != null) return key;
+    return configModelKeys.get(modelRL);
+  }
+
+  /** Resolved block-state model for one default/config model key, or {@code null} before bake/when unregistered. */
+  @Nullable
+  public static BlockStateModel standaloneModel(Identifier modelRL, @Nullable Direction facing) {
+    return getStandaloneModel(modelKey(modelRL, facing));
+  }
+
   public static boolean shouldAddParticles(RandomSource r) {
     return switch (Minecraft.getInstance().options.particles().get()) {
       case ALL -> true;
@@ -166,7 +212,7 @@ public class ModularMachineryRebornClient {
     );
   }
 
-  private static class MMRBlockTintSource implements BlockTintSource {
+  private record MMRBlockTintSource(int tintIndex) implements BlockTintSource {
     @Override
     public int color(BlockState blockState) {
       return -1;
@@ -174,49 +220,34 @@ public class ModularMachineryRebornClient {
 
     @Override
     public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-      return blockColor(state, level, pos, 4);
+      return blockColor(state, level, pos, tintIndex);
     }
   }
 
-  private record MMRItemTintSource(int color) implements ItemTintSource {
-    public static final MapCodec<MMRItemTintSource> MAP_CODEC =
-        RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(MMRItemTintSource::color)).apply(i, MMRItemTintSource::new));
-    @Override
-    public int calculate(ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity) {
-      return itemColor(itemStack, 4);
-    }
-
-    @Override
-    public MapCodec<MMRItemTintSource> type() {
-      return MAP_CODEC;
-    }
+  private List<BlockTintSource> createTintSources() {
+    return IntStream.range(0, 5)
+        .<BlockTintSource>mapToObj(MMRBlockTintSource::new)
+        .toList();
   }
 
   @SubscribeEvent
   public void registerBlockColors(final RegisterColorHandlersEvent.BlockTintSources event) {
+    List<Block> toRegister = new ArrayList<>();
     BlockRegistration.BLOCKS
-        .getEntries()
         .stream()
-        .map(DeferredHolder::value)
+        .map(BlockDefinition::block)
         .filter(b -> b instanceof BlockDynamicColor)
-        .forEach(block -> event.register(List.of(new MMRBlockTintSource()), block));
-    ModularMachineryReborn.MACHINES_BLOCK.values().forEach(block -> event.register(List.of(new MMRBlockTintSource()), block));
+        .forEach(toRegister::add);
+    toRegister.addAll(ModularMachineryReborn.MACHINES_BLOCK.values());
+    event.register(createTintSources(), toRegister.toArray(Block[]::new));
   }
 
   @SubscribeEvent
   public void registerItemColors(final RegisterColorHandlersEvent.ItemTintSources event) {
-    ItemRegistration.ITEMS
-        .getEntries()
-        .stream()
-        .filter(item -> item.value() instanceof ItemDynamicColor)
-        .forEach(item -> event.register(item.getId(), new MMRItemTintSource(Config.machineColor).type()));
-    ModularMachineryReborn.MACHINES_BLOCK.values().forEach(block -> event.register(Holder.direct(block.asItem()).getKey().identifier(),
-        new MMRItemTintSource(Config.machineColor).type()));
+    event.register(MMRItemTintSource.ID, MMRItemTintSource.MAP_CODEC);
   }
 
-  public static int blockColor(BlockState state, @Nullable  BlockAndTintGetter level, @Nullable BlockPos pos, int tintIndex) {
-    if (level == null || pos == null)
-      return 0;
+  public static int blockColor(BlockState state, BlockAndTintGetter level, BlockPos pos, int tintIndex) {
     switch (tintIndex) {
       case 1 -> level.getBlockTint(pos, BiomeColors.WATER_COLOR_RESOLVER);
       case 2 -> level.getBlockTint(pos, BiomeColors.GRASS_COLOR_RESOLVER);
@@ -228,36 +259,32 @@ public class ModularMachineryRebornClient {
         }
       }
     }
-    return Config.machineColor;
-  }
-
-  public static int itemColor(ItemStack stack, int tintIndex) {
-    if (stack.getItem() instanceof ItemDynamicColor colorableItem) {
-      return colorableItem.getColorFromItemstack(stack, tintIndex);
-    }
-    return Config.machineColor;
+    return -1;
   }
 
   @SubscribeEvent
-  @OnlyIn(Dist.CLIENT)
   public void onModelRegister(ModelEvent.RegisterStandalone event) {
     Identifier nopeRl = ModularMachineryReborn.rl("block/nope");
     event.register(NOPE_MODEL_KEY, SimpleUnbakedStandaloneModel.blockStateModel(nopeRl));
 
     Identifier defaultControllerRl = ModularMachineryReborn.rl("default/controller");
     event.register(DEFAULT_CONTROLLER_KEY, SimpleUnbakedStandaloneModel.blockStateModel(defaultControllerRl));
+    registerRotated(event, defaultControllerRl);
 
     Identifier defaultHatchAllRl = ModularMachineryReborn.rl("default/hatch_all");
     event.register(DEFAULT_HATCH_ALL_KEY, SimpleUnbakedStandaloneModel.blockStateModel(defaultHatchAllRl));
 
     Identifier defaultHatchOrientableRl = ModularMachineryReborn.rl("default/hatch_orientable");
     event.register(DEFAULT_HATCH_ORIENTABLE_KEY, SimpleUnbakedStandaloneModel.blockStateModel(defaultHatchOrientableRl));
+    registerRotated(event, ModularMachineryReborn.rl("default/hatch_all"));
+    registerRotated(event, defaultHatchOrientableRl);
 
     Minecraft.getInstance().getResourceManager().listResources("models/default/hatches", s -> s.getPath().endsWith(".json")).forEach((rl, resource) -> {
       Identifier modelRL = Identifier.fromNamespaceAndPath(rl.getNamespace(), rl.getPath().substring(7).replace(".json", ""));
       StandaloneModelKey<BlockStateModel> key = new StandaloneModelKey<>(() -> "mmr_hatch_" + modelRL);
       hatchModelKeys.put(modelRL, key);
       event.register(key, SimpleUnbakedStandaloneModel.blockStateModel(modelRL));
+      registerRotated(event, modelRL);
     });
 
     for (String folder : MMRConfig.get().modelFolders.get()) {
@@ -266,6 +293,7 @@ public class ModularMachineryRebornClient {
         StandaloneModelKey<BlockStateModel> key = new StandaloneModelKey<>(() -> "mmr_config_" + modelRL);
         configModelKeys.put(modelRL, key);
         event.register(key, SimpleUnbakedStandaloneModel.blockStateModel(modelRL));
+        registerRotated(event, modelRL);
       });
     }
 
@@ -290,7 +318,6 @@ public class ModularMachineryRebornClient {
   }
 
   @SubscribeEvent
-  @OnlyIn(Dist.CLIENT)
   public void clientSetup(final FMLClientSetupEvent event) {
     if (Mods.isJEILoaded()) {
       new MMRJeiClientIntegration(bus);

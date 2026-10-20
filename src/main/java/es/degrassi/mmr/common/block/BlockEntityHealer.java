@@ -8,6 +8,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockEntityHealer extends BaseEntityBlock {
+  public BlockEntityHealer(Properties id) {
+    super(id);
+  }
+
   @Override
   public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
     return new EntityHealerEntity(blockPos, blockState);

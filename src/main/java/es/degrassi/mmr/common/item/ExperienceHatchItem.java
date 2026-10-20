@@ -15,15 +15,15 @@ public class ExperienceHatchItem extends ItemBlockMachineComponent implements It
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private final ExperienceHatchSize type;
 
-  public ExperienceHatchItem(BlockExperienceHatch block, ExperienceHatchSize type) {
+  public ExperienceHatchItem(BlockExperienceHatch block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
-            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_experience" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
-            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/experience" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
+            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_experience" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
+            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/experience" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
     );
-    this.type = type;
+    this.type = block.getSize();
   }
 
   private static IOType fromBlock(Block block) {

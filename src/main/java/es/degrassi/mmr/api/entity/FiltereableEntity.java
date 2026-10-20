@@ -20,16 +20,14 @@ public interface FiltereableEntity<T, E> {
   ItemHandler getFilterInventory();
 
   default ItemHandler createFilterInventory() {
-    return new ItemHandler(
-        new int[]{ 0 },
-        new int[]{},
-        stack -> {
-          var hasConverter = FilterConverterRegistry.hasConverter(stack);
-          var value = FilterConverterRegistry.convert(stack);
-          return hasConverter && value != null && value.getClass().equals(getFilter().getClass());
-        },
-        1
-    );
+    ItemHandler handler = new ItemHandler(1, 1, 1, 0);
+    handler.setFilter(resource -> {
+      var stack = resource.toStack();
+      var hasConverter = FilterConverterRegistry.hasConverter(stack);
+      var value = FilterConverterRegistry.convert(stack);
+      return hasConverter && value != null && value.getClass().equals(getFilter().getClass());
+    });
+    return handler;
   }
 
   CompoundTag serializeFilter(HolderLookup.Provider provider);

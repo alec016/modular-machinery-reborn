@@ -15,15 +15,15 @@ public class EnergyHatchItem extends ItemBlockMachineComponent implements ItemHa
   private final EnergyHatchSize type;
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
 
-  public EnergyHatchItem(BlockEnergyHatch block, EnergyHatchSize type) {
+  public EnergyHatchItem(BlockEnergyHatch block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
-            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_energy" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
-            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/energy" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
+            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_energy" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
+            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/energy" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
     );
-    this.type = type;
+    this.type = block.getSize();
   }
 
   private static IOType fromBlock(Block block) {

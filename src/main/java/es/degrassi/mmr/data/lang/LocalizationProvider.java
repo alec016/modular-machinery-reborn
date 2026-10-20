@@ -1,0 +1,260 @@
+package es.degrassi.mmr.data.lang;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import es.degrassi.experiencelib.api.datagen.LocalizationEnum;
+import es.degrassi.experiencelib.api.definition.BlockDefinition;
+import es.degrassi.mmr.ModularMachineryReborn;
+import lombok.Getter;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.DataProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.Tags;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+@Getter
+@ParametersAreNonnullByDefault
+public abstract class LocalizationProvider implements DataProvider {
+  private final Map<String, String> data = new TreeMap<>();
+  private final Map<String, JsonElement> jsonData = new TreeMap<>();
+  private final DataGenerator generator;
+  private boolean wasSaved = false;
+
+  protected LocalizationProvider(DataGenerator generator) {
+    this.generator = generator;
+  }
+
+  public abstract Lang getLang();
+
+  @Override
+  public @NonNull String getName() {
+    return "Localization (%s)".formatted(getLang().name());
+  }
+
+  public final @NonNull CompletableFuture<?> run(CachedOutput cache) {
+    init();
+    return save(cache);
+  }
+
+  public final LocalizationProvider withTranslations(@Nullable Map<String, String> translations) {
+    if (translations != null && !translations.isEmpty()) data.putAll(translations);
+    return this;
+  }
+
+  public <T extends Enum<T> & LocalizationEnum> void addEnum(Class<T> localizedEnum) {
+    addEnum(localizedEnum, LocalizationEnum::getEnglishText);
+  }
+
+  public <T extends Enum<T> & LocalizationEnum> void addEnum(Class<T> localizedEnum, Function<@NotNull T, String> parser) {
+    for (var enumConstant : localizedEnum.getEnumConstants()) {
+      var parsedResult = parser.apply(enumConstant);
+      if (parsedResult == null) continue;
+      add(enumConstant.getTranslationKey(), parsedResult);
+    }
+  }
+
+  public Component component(String key, String text) {
+    add(key, text);
+    return Component.translatable(key);
+  }
+
+  private CompletableFuture<?> save(CachedOutput output) {
+    wasSaved = true;
+
+    var path = generator.getPackOutput().getOutputFolder().resolve("assets/%s/lang/%s".formatted(ModularMachineryReborn.MODID, getLang().getFile()));
+
+    var sorted = new TreeMap<>(data);
+
+    var jsonLocalization = new JsonObject();
+
+    for (var entry : sorted.entrySet()) {
+      jsonLocalization.addProperty(entry.getKey(), entry.getValue());
+    }
+    jsonData.forEach(jsonLocalization::add);
+
+    return DataProvider.saveStable(output, jsonLocalization, path);
+  }
+
+  public final void init() {
+    addEnums();
+    addTags();
+    addItemGroups();
+    addCommands();
+    addStructureCreator();
+    addGuiTitles();
+    addGuiController();
+    addCraftcheck();
+    addComponents();
+    addTooltips();
+    addItems();
+    addBlocks();
+    addIngredients();
+    addControllerTexts();
+    addJade();
+    addKeys();
+    addRecipeModifiers();
+    addJsonProps();
+  }
+
+  protected void addEnums(){}
+  protected void addGuiController(){}
+  protected void addTags(){}
+  protected void addItemGroups() {}
+  protected void addCommands(){}
+  protected void addKeys(){}
+  protected void addJade(){}
+  protected void addControllerTexts(){}
+  protected void addRecipeModifiers(){}
+  protected void addIngredients(){}
+  protected void addItems(){}
+  protected void addBlocks(){}
+  protected void addTooltips(){}
+  protected void addComponents(){}
+  protected void addCraftcheck(){}
+  protected void addGuiTitles(){}
+  protected void addStructureCreator(){}
+  protected void addJsonProps(){}
+
+  protected final void add(String key, String value) {
+    Preconditions.checkState(!wasSaved, "Cannot add more translations after they were already saved");
+    if (this.jsonData.containsKey(key) || this.data.put(key, value) != null) {
+      throw new IllegalStateException("Duplicate translation key " + key);
+    }
+  }
+
+  protected final void add(String key, JsonElement value) {
+    Preconditions.checkState(!wasSaved, "Cannot add more translations after they were already saved");
+    if (this.data.containsKey(key) || this.jsonData.put(key, value) != null) {
+      throw new IllegalStateException("Duplicate translation key " + key);
+    }
+  }
+
+  public final String modId() {
+    return ModularMachineryReborn.MODID;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String gui(String suffix) {
+    return "gui." + suffix;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String mmr(String suffix) {
+    return "mmr." + suffix;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String mm(String suffix) {
+    return modId() + "." + suffix;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String craftCheck(String suffix) {
+    return "craftcheck.failure." + suffix;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String missingComponent(String type) {
+    return "component.missing." + type;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String tooltip(String message) {
+    return "tooltip." + message;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String jei(String suffix) {
+    return "jei." + suffix;
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String ingredient(String suffix) {
+    return "ingredient." + suffix;
+  }
+
+  protected final @NotNull String jeiIngredient(String suffix) {
+    return mm(jei(ingredient(suffix)));
+  }
+
+  @Contract(pure = true)
+  protected final @NotNull String recipeModifier(String type) {
+    return mmr("recipe.modifier." + type);
+  }
+
+  protected final void addBlock(Supplier<? extends Block> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void addBlock(BlockDefinition<? extends Block> key, String name) {
+    this.add(key.block(), name);
+  }
+
+  protected final void add(Block key, String name) {
+    this.add(key.getDescriptionId(), name);
+  }
+
+  protected final void addItem(Supplier<? extends Item> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void add(Item key, String name) {
+    this.add(key.getDescriptionId(), name);
+  }
+
+  protected final void addItemStack(Supplier<ItemStack> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void add(ItemStack key, String name) {
+    this.add(key.getItem(), name);
+  }
+
+  protected final void addEffect(Supplier<? extends MobEffect> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void add(MobEffect key, String name) {
+    this.add(key.getDescriptionId(), name);
+  }
+
+  protected final void addEntityType(Supplier<? extends EntityType<?>> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void add(EntityType<?> key, String name) {
+    this.add(key.getDescriptionId(), name);
+  }
+
+  protected final void addTag(Supplier<? extends TagKey<?>> key, String name) {
+    this.add(key.get(), name);
+  }
+
+  protected final void add(TagKey<?> tagKey, String name) {
+    this.add(Tags.getTagTranslationKey(tagKey), name);
+  }
+
+  protected final void addDimension(ResourceKey<Level> dimension, String value) {
+    this.add(dimension.identifier().toLanguageKey("dimension"), value);
+  }
+}

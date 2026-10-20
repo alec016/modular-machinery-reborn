@@ -1,6 +1,9 @@
 package es.degrassi.mmr.common.integration.theoneprobe;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.entity.IAutoEntity;
+import es.degrassi.mmr.api.entity.IAutoInputEntity;
+import es.degrassi.mmr.api.entity.IAutoOutputEntity;
 import es.degrassi.mmr.common.crafting.MachineRecipe;
 import es.degrassi.mmr.common.crafting.helper.CraftingStatus;
 import es.degrassi.mmr.common.crafting.requirement.RequirementFluid;
@@ -11,9 +14,6 @@ import es.degrassi.mmr.common.entity.FuelTankEntity;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.entity.RedstonePortEntity;
 import es.degrassi.mmr.common.entity.base.ColorableMachineComponentEntity;
-import es.degrassi.mmr.api.entity.IAutoEntity;
-import es.degrassi.mmr.api.entity.IAutoInputEntity;
-import es.degrassi.mmr.api.entity.IAutoOutputEntity;
 import es.degrassi.mmr.common.integration.theoneprobe.element.CustomProgress;
 import es.degrassi.mmr.common.integration.theoneprobe.element.FuelElement;
 import es.degrassi.mmr.common.integration.theoneprobe.element.SizedFluidIngredientRenderer;

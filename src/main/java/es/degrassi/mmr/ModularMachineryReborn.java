@@ -50,6 +50,7 @@ import es.degrassi.mmr.common.registration.EmptyRequirementTypeRegistration;
 import es.degrassi.mmr.common.registration.EntityRegistration;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmr.common.registration.ProcessorTypeRegistration;
+import es.degrassi.mmr.common.registration.RecipeRegistration;
 import es.degrassi.mmr.common.registration.Registration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
 import es.degrassi.mmr.common.util.EmptyRequirementType;
@@ -130,10 +131,11 @@ public class ModularMachineryReborn {
     GAME_BUS.addListener(this::registerReloadListener);
     GAME_BUS.addListener(this::registerCommands);
     GAME_BUS.addListener(this::onReloadStart);
+    GAME_BUS.addListener(this::onDatapackSync);
   }
 
   private static void initConfigs(final ModContainer container) {
-    container.registerConfig(ModConfig.Type.COMMON, MMRConfig.getSpec(), config("common"));
+    container.registerConfig(ModConfig.Type.STARTUP, MMRConfig.getSpec(), config("common"));
     container.registerConfig(ModConfig.Type.COMMON, EnergyHatchConfig.getSpec(), config("energy_hatch"));
     container.registerConfig(ModConfig.Type.COMMON, FluidHatchConfig.getSpec(), config("fluid_hatch"));
     container.registerConfig(ModConfig.Type.COMMON, ItemBusConfig.getSpec(), config("item_bus"));
@@ -218,10 +220,10 @@ public class ModularMachineryReborn {
     BuiltInRegistries.FLUID.forEach(fluid -> {
       if (!fluid.isSource(fluid.defaultFluidState())) return;
       if (fluid.isSame(Fluids.EMPTY)) {
-        event.register(Items.BUCKET.getDefaultInstance(), FluidStack.EMPTY);
+        event.register(Items.BUCKET::getDefaultInstance, () -> FluidStack.EMPTY);
         return;
       }
-      event.register(fluid.getBucket().getDefaultInstance(), new FluidStack(fluid, 1));
+      event.register(fluid.getBucket()::getDefaultInstance, () -> new FluidStack(fluid, 1));
     });
   }
 
@@ -257,32 +259,32 @@ public class ModularMachineryReborn {
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_INPUT_BUS.get(),
-        (be, side) -> be.getInventory().accessibleSides.contains(side) ? be.getInventory() : null
+        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_OUTPUT_BUS.get(),
-        (be, side) -> be.getInventory().accessibleSides.contains(side) ? be.getInventory() : null
+        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_DURABILITY_HATCH.get(),
-        (be, side) -> be.getInventory().accessibleSides.contains(side) ? be.getInventory() : null
+        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.FUEL_TANK.get(),
-        (be, side) -> be.getInventory().accessibleSides.contains(side) ? be.getInventory() : null
+        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Fluid.BLOCK,
         EntityRegistration.FLUID_INPUT_HATCH.get(),
-        (be, side) -> be.getTank().accessibleSides.contains(side) ? be.getTank() : null
+        (be, side) -> be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
     );
     event.registerBlockEntity(
         Capabilities.Fluid.BLOCK,
         EntityRegistration.FLUID_OUTPUT_HATCH.get(),
-        (be, side) -> be.getTank().accessibleSides.contains(side) ? be.getTank() : null
+        (be, side) -> be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
     );
     event.registerBlockEntity(
         Capabilities.Energy.BLOCK,
@@ -350,6 +352,10 @@ public class ModularMachineryReborn {
         });
       }
     }
+  }
+
+  private void onDatapackSync(final OnDatapackSyncEvent event) {
+    event.sendRecipes(RecipeRegistration.RECIPE_TYPE.get());
   }
 
   public static MinecraftServer getMinecraftServer() {

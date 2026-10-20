@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": "modular_machinery_reborn:casing_plain",
+    "o": "#c:obsidians"
+  },
+  "pattern": [
+    "oco",
+    "c c",
+    "oco"
+  ],
+  "result": {
+    "count": 4,
+    "id": "modular_machinery_reborn:casing_reinforced"
+  }
+}

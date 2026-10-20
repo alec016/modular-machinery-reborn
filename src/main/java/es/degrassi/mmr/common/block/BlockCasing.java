@@ -5,6 +5,7 @@ import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +21,8 @@ import java.util.Locale;
 public class BlockCasing extends BlockMachineComponent {
   private final CasingType casingType;
   public static final MapCodec<BlockMachineComponent> CODEC = simpleCodec((props) -> new BlockMachineComponent(props) {});
-  public BlockCasing(CasingType type) {
+  public BlockCasing(Properties id, CasingType type) {
+    super(id);
     this.casingType = type;
   }
 
@@ -35,10 +37,6 @@ public class BlockCasing extends BlockMachineComponent {
       return bc.getCasingType() == bc1.getCasingType();
     }
     return super.skipRendering(state, adjacentState, direction);
-  }
-
-  protected VoxelShape getVisualShape(BlockState p_309057_, BlockGetter p_308936_, BlockPos p_308956_, CollisionContext p_309006_) {
-    return Shapes.empty();
   }
 
   public enum CasingType implements StringRepresentable {

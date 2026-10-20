@@ -10,15 +10,15 @@ public class EffectDispenserItem extends ItemBlockMachineComponent implements It
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private final EffectDispenserSize type;
 
-  public EffectDispenserItem(BlockEffectDispenser block, EffectDispenserSize type) {
+  public EffectDispenserItem(BlockEffectDispenser block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
-            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_effectdispenser_" + type.getSerializedName()))
-            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/effect_dispenser_" + type.getSerializedName()))
+            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_effectdispenser_" + block.getSize().getSerializedName()))
+            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/effect_dispenser_" + block.getSize().getSerializedName()))
     );
-    this.type = type;
+    this.type = block.getSize();
   }
 
   @Override

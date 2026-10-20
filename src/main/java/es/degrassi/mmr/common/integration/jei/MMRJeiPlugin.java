@@ -2,23 +2,17 @@ package es.degrassi.mmr.common.integration.jei;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.api.client.machine.TooltipUse;
-import es.degrassi.mmr.client.container.FilterSlotComponent;
-import es.degrassi.mmr.client.screen.BaseScreen;
-import es.degrassi.mmr.client.screen.ControllerScreen;
-import es.degrassi.mmr.client.screen.widget.tabs.ITabGroupScreen;
-import es.degrassi.mmr.client.screen.widget.tabs.TabGroupWidget;
+import es.degrassi.mmr.client.MMRClientEvents;
 import es.degrassi.mmr.common.crafting.MachineRecipe;
 import es.degrassi.mmr.common.integration.jei.category.MMRMultiblockRecipeCategory;
 import es.degrassi.mmr.common.integration.jei.category.MMRRecipeCategory;
 import es.degrassi.mmr.common.integration.jei.ingredient.CustomIngredientTypes;
 import es.degrassi.mmr.common.integration.jei.ingredient.DummyIngredientRenderer;
 import es.degrassi.mmr.common.integration.jei.ingredient.helpers.DurationIngredientHelper;
-import es.degrassi.mmr.common.integration.jei.ingredient.helpers.VoidIngredientHelper;
 import es.degrassi.mmr.common.integration.jei.ingredient.helpers.EnergyIngredientHelper;
 import es.degrassi.mmr.common.integration.jei.ingredient.helpers.FuelIngredientHelper;
+import es.degrassi.mmr.common.integration.jei.ingredient.helpers.VoidIngredientHelper;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Duration;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Energy;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Fuel;
@@ -26,22 +20,21 @@ import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import es.degrassi.mmr.common.integration.xei.MultiblockRecipe;
 import es.degrassi.mmr.common.item.ControllerItem;
 import es.degrassi.mmr.common.machine.DynamicMachine;
+import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.DataComponentRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.common.registration.RecipeRegistration;
+import es.degrassi.mmr.common.util.Comparators;
 import es.degrassi.mmr.common.util.Mods;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
-import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IJeiHelpers;
-import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
-import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.IFocusFactory;
 import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IIngredientAliasRegistration;
 import mezz.jei.api.registration.IModInfoRegistration;
@@ -60,9 +53,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,17 +72,37 @@ public class MMRJeiPlugin implements IModPlugin {
     return recipeCategories.get(machine.getRegistryName());
   }
 
-  @Nullable
-  private static MMRMultiblockRecipeCategory getMultiblockCategory(DynamicMachine machine) {
-    return multiblockCategories.get(machine.getRegistryName());
-  }
-
   public static Optional<MMRRecipeCategory> getCategory(Identifier machine) {
     return Optional.ofNullable(recipeCategories.get(machine));
   }
 
-  private static Optional<MMRMultiblockRecipeCategory> getMultiblockCategory(Identifier machine) {
+  public static Optional<MMRMultiblockRecipeCategory> getMultiblockCategory(Identifier machine) {
     return Optional.ofNullable(multiblockCategories.get(machine));
+  }
+
+  @Nullable
+  private static IJeiRuntime jeiRuntime;
+
+  /**
+   * Opens the JEI recipe screen on the whole machine's categories (the "Show Recipes" tab click of
+   * the controller screen): the normal category plus the LDLib2 multiblock preview one when built.
+   * No-op when JEI is present but had not handed over its runtime yet.
+   */
+  public static void showRecipes(Identifier machine) {
+    if (jeiRuntime == null) {
+      return;
+    }
+    List<IRecipeType<?>> types = new ArrayList<>();
+    getCategory(machine).ifPresent(category -> types.add(category.getRecipeType()));
+    getMultiblockCategory(machine).ifPresent(category -> types.add(category.getRecipeType()));
+    if (!types.isEmpty()) {
+      jeiRuntime.getRecipesGui().showTypes(types);
+    }
+  }
+
+  @Nullable
+  private static MMRMultiblockRecipeCategory getMultiblockCategory(DynamicMachine machine) {
+    return multiblockCategories.get(machine.getRegistryName());
   }
 
   @Override
@@ -134,74 +146,11 @@ public class MMRJeiPlugin implements IModPlugin {
 
   @Override
   public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-    registration.addGuiContainerHandler(BaseScreen.class, new IGuiContainerHandler<>() {
-      @Override
-      public List<Rect2i> getGuiExtraAreas(BaseScreen screen) {
-        List<Rect2i> extraAreas = Lists.newArrayList();
-        if (!(screen instanceof ITabGroupScreen tabScreen)) return extraAreas;
-        TabGroupWidget tabs = tabScreen.getTabs();
-        extraAreas.add(new Rect2i(tabs.getX(), tabs.getY(), tabs.getWidth(), tabs.getHeight()));
-        return extraAreas;
-      }
-    });
-    registration.addGuiContainerHandler(ControllerScreen.class, new IGuiContainerHandler<>() {
-      @Override
-      public Collection<IGuiClickableArea> getGuiClickableAreas(ControllerScreen containerScreen, double mouseX, double mouseY) {
-        if (containerScreen.getPopupUnderMouse(mouseX, mouseY) != null)
-          return List.of();
-        var tab = containerScreen.getTabs().getTabs().get(0);
-        return List.of(createBasic(
-            tab.getWidth() * Optional.ofNullable(ModularMachineryReborn.MACHINE_EXTRA_TOOLTIPS.get(containerScreen.getMenu().getId()))
-                .map(c -> c.get(TooltipUse.GUI))
-                .map(c -> !c.isEmpty() ? 4 : 3)
-                .orElse(3),
-            -tab.getHeight(),
-            tab.getWidth(),
-            tab.getHeight(),
-            containerScreen.getMenu().getId()
-        ));
-      }
-
-      @Override
-      public List<Rect2i> getGuiExtraAreas(ControllerScreen screen) {
-        List<Rect2i> extraAreas = Lists.newArrayList();
-        TabGroupWidget tabs = screen.getTabs();
-        extraAreas.add(new Rect2i(tabs.getX(), tabs.getY(), tabs.getWidth(), tabs.getHeight()));
-        screen.popups().forEach(popup -> extraAreas.add(new Rect2i(popup.x, popup.y, popup.xSize, popup.ySize)));
-        return extraAreas;
-      }
-    });
-
-    registration.addGhostIngredientHandler(BaseScreen.class, new IGhostIngredientHandler<>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public <I> List<Target<I>> getTargetsTyped(BaseScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
-        var stack = ingredient;
-        if (JeiFilterDragDropRegistry.canDrop(stack)) {
-          return screen.getMenu().slots.stream()
-              .filter(slot -> slot instanceof FilterSlotComponent<?,?>)
-              .map(slot -> {
-                FilterSlotComponent<I,?> filterSlot = (FilterSlotComponent<I,?>) slot;
-                return new Target<I>() {
-                  @Override
-                  public Rect2i getArea() {
-                    return new Rect2i(screen.getLeftPos() + filterSlot.x, screen.getTopPos() + filterSlot.y, 16, 16);
-                  }
-
-                  @Override
-                  public void accept(I ingredient) {
-                    JeiFilterDragDropRegistry.drop(filterSlot, stack);
-                  }
-                };
-              }).collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-      }
-
-      @Override
-      public void onComplete() {}
-    });
-  }
+    // LEGACY: the extra-area / clickable-area / ghost-ingredient handlers below targeted the
+    // old AbstractContainerScreen UI (BaseScreen, ControllerScreen, FilterSlotComponent), which
+    // has been replaced by the LDLib2 ModularUI screens. JEI still renders the recipes; the
+    // extras of the new screens can be re-registered here once their layout is final.
+}
 
   private static IGuiClickableArea createBasic(
       int xPos,
@@ -211,7 +160,7 @@ public class MMRJeiPlugin implements IModPlugin {
       Identifier id
   ) {
     Rect2i area = new Rect2i(xPos, yPos, width, height);
-    ItemStack stack = new ItemStack(ItemRegistration.CONTROLLER.get());
+    ItemStack stack = BlockRegistration.CONTROLLER.stack(1);
     stack.set(DataComponentRegistration.MACHINE_DATA, id);
     return new IGuiClickableArea() {
       @Override
@@ -228,15 +177,11 @@ public class MMRJeiPlugin implements IModPlugin {
 
   @Override
   public void registerItemSubtypes(ISubtypeRegistration registration) {
-    registration.registerSubtypeInterpreter(ItemRegistration.CONTROLLER.get(), CONTROLLER_ITEM_INTERPRETER);
+    registration.registerSubtypeInterpreter(BlockRegistration.CONTROLLER.asItem(), CONTROLLER_ITEM_INTERPRETER);
   }
 
-  public static final ISubtypeInterpreter<ItemStack> CONTROLLER_ITEM_INTERPRETER = new ISubtypeInterpreter<>() {
-    @Override
-    public Object getSubtypeData(ItemStack ingredient, UidContext context) {
-      return ControllerItem.getMachine(ingredient).map(machine -> machine.getRegistryName().toString()).orElse("dummy");
-    }
-  };
+  public static final ISubtypeInterpreter<ItemStack> CONTROLLER_ITEM_INTERPRETER = (ingredient, context) ->
+      ControllerItem.getMachine(ingredient).map(machine -> machine.getRegistryName().toString()).orElse("dummy");
 
   @Override
   public void registerCategories(IRecipeCategoryRegistration registration) {
@@ -261,9 +206,9 @@ public class MMRJeiPlugin implements IModPlugin {
     if (jeiHelpers == null) jeiHelpers = registration.getJeiHelpers();
     for (DynamicMachine machine : ModularMachineryReborn.MACHINES.values()) {
       if (machine == null || machine == DynamicMachine.DUMMY) continue;
-      ItemStack stack = new ItemStack(ItemRegistration.CONTROLLER.get());
+      ItemStack stack = BlockRegistration.CONTROLLER.stack(1);
       stack.set(DataComponentRegistration.MACHINE_DATA, machine.getRegistryName());
-      registration.addCraftingStation(getCategory(machine).getRecipeType(), ItemRegistration.BLUEPRINT.get().getDefaultInstance(), stack);
+      registration.addCraftingStation(getCategory(machine).getRecipeType(), stack);
       if (Mods.isLDLibLoaded()) {
         registration.addCraftingStation(getMultiblockCategory(machine).getRecipeType(), ItemRegistration.BLUEPRINT.get().getDefaultInstance(), stack);
       }
@@ -273,12 +218,12 @@ public class MMRJeiPlugin implements IModPlugin {
   @Override
   public void registerRecipes(IRecipeRegistration registration) {
     if (Minecraft.getInstance().level == null) return;
-    Map<Identifier, List<MachineRecipe>> machineRecipes = Minecraft.getInstance().level.getRecipeManager()
-            .getAllRecipesFor(RecipeRegistration.RECIPE_TYPE.get())
+    Map<Identifier, List<MachineRecipe>> machineRecipes = MMRClientEvents.getClientRecipes()
+            .byType(RecipeRegistration.RECIPE_TYPE.get())
             .stream()
+            .filter(holder -> !holder.value().isHidden())
+            .sorted(Comparators::compare)
             .map(RecipeHolder::value)
-            .filter(recipe -> !recipe.isHidden())
-            .sorted(Comparator.comparingInt(MachineRecipe::getConfiguredPriority).reversed())
             .collect(Collectors.groupingBy(MachineRecipe::getOwningMachineIdentifier));
 
     machineRecipes.forEach((id, recipes) -> getCategory(id)
@@ -318,6 +263,7 @@ public class MMRJeiPlugin implements IModPlugin {
 
   @Override
   public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+    MMRJeiPlugin.jeiRuntime = jeiRuntime;
     jeiHelpers = jeiRuntime.getJeiHelpers();
   }
 }

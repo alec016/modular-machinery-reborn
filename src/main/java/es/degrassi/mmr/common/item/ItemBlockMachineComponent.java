@@ -12,13 +12,12 @@ import net.minecraft.world.level.block.Block;
 import java.util.function.Consumer;
 
 public class ItemBlockMachineComponent extends BlockItem implements ItemDynamicColor {
-
   public ItemBlockMachineComponent(Block block, Properties props) {
     super(block, props);
   }
 
   @Override
-  public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+  public int getColorFromItemStack(ItemStack stack) {
     if(stack.isEmpty()) {
       return 0;
     }

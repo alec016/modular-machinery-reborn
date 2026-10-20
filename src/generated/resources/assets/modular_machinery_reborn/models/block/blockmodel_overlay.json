@@ -1,0 +1,129 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#bg_down",
+          "tintindex": 1
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#bg_east",
+          "tintindex": 1
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#bg_north",
+          "tintindex": 1
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#bg_south",
+          "tintindex": 1
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#bg_up",
+          "tintindex": 1
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#bg_west",
+          "tintindex": 1
+        }
+      },
+      "from": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "to": [
+        16.0,
+        16.0,
+        16.0
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#ov_r_down"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#ov_r_east"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#ov_r_north"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#ov_r_south"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#ov_r_up"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#ov_r_west"
+        }
+      },
+      "from": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "to": [
+        16.0,
+        16.0,
+        16.0
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#ov_down"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#ov_east"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#ov_north"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#ov_south"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#ov_up"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#ov_west"
+        }
+      },
+      "from": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "to": [
+        16.0,
+        16.0,
+        16.0
+      ]
+    }
+  ],
+  "render_type": "cutout",
+  "textures": {
+    "ov_r_all": "modular_machinery_reborn:block/overlay_transparent"
+  }
+}

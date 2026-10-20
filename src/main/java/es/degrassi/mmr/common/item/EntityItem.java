@@ -13,10 +13,10 @@ import net.minecraft.world.level.block.Block;
 
 public class EntityItem extends ItemBlockMachineComponent implements ItemHatch {
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
-  public EntityItem(BaseEntityBlock block) {
+  public EntityItem(BaseEntityBlock block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
             .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_entity" + fromBlock(block)))
             .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/entity_" + fromBlock(block)))

@@ -3,6 +3,8 @@ package es.degrassi.mmr.common.registration;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -16,8 +18,8 @@ import java.util.function.Supplier;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
-public class DataComponentRegistration {
-  private DataComponentRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DataComponentRegistration {
   public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ModularMachineryReborn.MODID);
 
   public static final Supplier<DataComponentType<Identifier>> MACHINE_DATA =

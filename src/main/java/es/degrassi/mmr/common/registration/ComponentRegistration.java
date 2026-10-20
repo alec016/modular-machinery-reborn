@@ -13,6 +13,8 @@ import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.util.Chunkloader;
 import es.degrassi.mmr.common.util.IntRange;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
@@ -24,8 +26,8 @@ import java.util.function.Supplier;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
-public class ComponentRegistration {
-  private ComponentRegistration() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ComponentRegistration {
 
   public static final DeferredRegister<ComponentType<?>> MACHINE_COMPONENTS =
       DeferredRegister.create(ComponentType.REGISTRY_KEY, ModularMachineryReborn.MODID);

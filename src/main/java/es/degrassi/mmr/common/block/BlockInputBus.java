@@ -1,13 +1,17 @@
 package es.degrassi.mmr.common.block;
 
-import es.degrassi.mmr.client.container.ItemBusContainer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.ItemBusUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.block.base.BlockTickEntity;
 import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.ItemBusSize;
 import es.degrassi.mmr.common.entity.ItemInputBusEntity;
+import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -17,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -25,16 +28,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public class BlockInputBus extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public class BlockInputBus extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof ItemInputBusEntity entity) {
+      return ItemBusUI.create(holder, entity);
+    }
+    return null;
+  }
+
+  @Getter
   private final ItemBusSize size;
-  public BlockInputBus(ItemBusSize size) {
-    super(
-      Properties.of()
-        .dynamicShape()
-        .noOcclusion()
-        .strength(2F, 10F)
-        .sound(SoundType.METAL)
-    );
+  public BlockInputBus(Properties id, ItemBusSize size) {
+    super(id);
     this.size = size;
   }
 
@@ -52,7 +59,7 @@ public class BlockInputBus extends BlockMachineComponent implements BlockTickEnt
     BlockEntity te = level.getBlockEntity(pos);
     if(te instanceof ItemInputBusEntity entity) {
       if (player instanceof ServerPlayer serverPlayer)
-        ItemBusContainer.open(serverPlayer, entity);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
     return super.useItemOn(stack, state, level, pos, player, hand, hitResult);

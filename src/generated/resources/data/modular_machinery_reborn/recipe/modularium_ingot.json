@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "g": "#c:ingots/gold",
+    "i": "#c:ingots/iron",
+    "o": "#c:dusts/glowstone",
+    "r": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "gig",
+    "iri",
+    "ror"
+  ],
+  "result": {
+    "count": 5,
+    "id": "modular_machinery_reborn:modularium"
+  }
+}

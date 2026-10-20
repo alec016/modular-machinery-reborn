@@ -6,10 +6,12 @@ import es.degrassi.mmr.client.container.ExperienceHatchContainer;
 import es.degrassi.mmr.common.block.prop.ExperienceHatchSize;
 import es.degrassi.mmr.common.entity.base.ExperienceHatchEntity;
 import es.degrassi.mmr.common.util.RedstoneHelper;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -30,11 +32,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.ExperienceHatchUI;
 
-public abstract class BlockExperienceHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public abstract class BlockExperienceHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof ExperienceHatchEntity entity) {
+      return ExperienceHatchUI.create(holder, entity);
+    }
+    return null;
+  }
+  @Getter
   protected final ExperienceHatchSize size;
 
-  public BlockExperienceHatch(ExperienceHatchSize size) {
+  public BlockExperienceHatch(Properties id, ExperienceHatchSize size) {
+    super(id);
     this.size = size;
   }
 
@@ -51,7 +66,7 @@ public abstract class BlockExperienceHatch extends BlockMachineComponent impleme
     BlockEntity te = level.getBlockEntity(pos);
     if (te instanceof ExperienceHatchEntity entity) {
       if (player instanceof ServerPlayer serverPlayer) {
-        ExperienceHatchContainer.open(serverPlayer, entity);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       }
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }

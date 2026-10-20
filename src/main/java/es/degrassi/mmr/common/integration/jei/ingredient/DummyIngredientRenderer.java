@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("removal")
 public class DummyIngredientRenderer<T> implements IIngredientRenderer<T> {
 
   @Override

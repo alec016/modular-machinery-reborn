@@ -1,12 +1,15 @@
 package es.degrassi.mmr.common.block;
 
-import es.degrassi.mmr.client.container.FuelTankContainer;
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import es.degrassi.mmr.client.screen.FuelTankUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.block.base.BlockTickEntity;
 import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.FuelTankSize;
 import es.degrassi.mmr.common.entity.FuelTankEntity;
 import es.degrassi.mmr.common.util.RedstoneHelper;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,9 +31,19 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class BlockFuelTank extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public class BlockFuelTank extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+
+  @Override
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof FuelTankEntity entity) {
+      return FuelTankUI.create(holder, entity);
+    }
+    return null;
+  }
+  @Getter
   protected final FuelTankSize size;
-  public BlockFuelTank(FuelTankSize size) {
+  public BlockFuelTank(Properties id, FuelTankSize size) {
+    super(id);
     this.size = size;
   }
 
@@ -39,7 +52,7 @@ public class BlockFuelTank extends BlockMachineComponent implements BlockTickEnt
     BlockEntity te = level.getBlockEntity(pos);
     if(te instanceof FuelTankEntity entity) {
       if (player instanceof ServerPlayer serverPlayer) {
-        FuelTankContainer.open(serverPlayer, entity);
+        BlockUIMenuType.openUI(serverPlayer, pos);
       }
       return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }

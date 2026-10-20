@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "modular_machinery_reborn:controller"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:copy_components",
+          "source": "block_entity"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "modular_machinery_reborn:blocks/controller"
+}

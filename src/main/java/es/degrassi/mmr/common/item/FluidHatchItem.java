@@ -15,15 +15,15 @@ public class FluidHatchItem extends ItemBlockMachineComponent implements ItemHat
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private final FluidHatchSize type;
 
-  public FluidHatchItem(BlockFluidHatch block, FluidHatchSize type) {
+  public FluidHatchItem(BlockFluidHatch block, Properties props) {
     super(
         block,
-        new Properties()
+        props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)
-            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_fluid" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
-            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/fluid" + fromBlock(block).getSerializedName() + "hatch_" + type.getSerializedName()))
+            .component(DataComponentRegistration.OVERLAY_TEXTURE, ModularMachineryReborn.rl("block/overlay_fluid" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
+            .component(DataComponentRegistration.DEFAULT_MODEL, ModularMachineryReborn.rl("default/hatches/fluid" + fromBlock(block).getSerializedName() + "hatch_" + block.getSize().getSerializedName()))
     );
-    this.type = type;
+    this.type = block.getSize();
   }
 
   private static IOType fromBlock(Block block) {

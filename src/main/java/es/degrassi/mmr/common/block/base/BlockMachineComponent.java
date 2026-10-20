@@ -6,6 +6,9 @@ import es.degrassi.mmr.api.entity.ColorableMachineEntity;
 import es.degrassi.mmr.api.entity.ItemDroppeable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +34,10 @@ import java.util.List;
 
 public abstract class BlockMachineComponent extends Block implements BlockDynamicColor, EntityBlock {
   protected static Properties defaultProps() {
-    return Properties.of()
+    return defaultProps(Properties.of());
+  }
+  protected static Properties defaultProps(Properties props) {
+    return props
         .strength(2F, 10F)
         .sound(SoundType.METAL)
         .requiresCorrectToolForDrops()
@@ -40,10 +46,10 @@ public abstract class BlockMachineComponent extends Block implements BlockDynami
   }
   public static final Property<Boolean> CONNECT_TEXTURES = BooleanProperty.create("connect_textures");
   protected BlockMachineComponent(Properties properties) {
-    super(properties.requiresCorrectToolForDrops());
+    super(defaultProps(properties).requiresCorrectToolForDrops());
   }
-  protected BlockMachineComponent() {
-    super(defaultProps());
+  protected BlockMachineComponent(Identifier id) {
+    super(defaultProps().setId(ResourceKey.create(Registries.BLOCK, id)));
   }
   @Override
   public int getColorMultiplier(BlockState state, @Nullable BlockAndTintGetter worldIn, @Nullable BlockPos pos, int tintIndex) {

@@ -10,9 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ItemComponent extends MachineComponent<ItemHandler> {
   private final ItemHandler handler;
@@ -33,9 +30,12 @@ public class ItemComponent extends MachineComponent<ItemHandler> {
   }
 
   public int getIngredientAmount(Ingredient ingredient) {
-    return this.handler.getInputs().stream().filter(component -> ingredient.test(component.getItemStack()))
-        .mapToInt(component -> component.getItemStack().getCount())
-        .sum();
+    int amount = 0;
+    for (int i = 0; i < handler.size(); i++) {
+      ItemStack stack = handler.getStack(i);
+      if (!stack.isEmpty() && ingredient.test(stack)) amount += stack.getCount();
+    }
+    return amount;
   }
 
   public int getItemAmount(ItemStack stack) {
@@ -47,17 +47,11 @@ public class ItemComponent extends MachineComponent<ItemHandler> {
   }
 
   public void removeFromInputs(Ingredient ingredient, int amount) {
-    AtomicInteger toRemove = new AtomicInteger(amount);
-    try (Transaction root = Transaction.openRoot()) {
-      this.handler.getInputs().stream().filter(component -> ingredient.test(component.getItemStack())).forEach(component -> {
-        try (Transaction sub = Transaction.open(root)) {
-          int maxExtract = Math.min(component.getItemStack().getCount(), toRemove.get());
-          var extracted = component.extractItemBypassLimit(maxExtract, sub);
-          toRemove.addAndGet(-extracted.getCount());
-          sub.commit();
-        }
-      });
-      root.commit();
+    int toRemove = amount;
+    for (int i = 0; i < handler.size() && toRemove > 0; i++) {
+      ItemStack stack = handler.getStack(i);
+      if (stack.isEmpty() || !ingredient.test(stack)) continue;
+      toRemove -= handler.extractFromInputs(stack, Math.min(stack.getCount(), toRemove));
     }
   }
 

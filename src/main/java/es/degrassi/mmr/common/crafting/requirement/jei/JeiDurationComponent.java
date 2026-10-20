@@ -12,6 +12,7 @@ import es.degrassi.mmr.common.integration.jei.category.drawable.ProgressDrawable
 import es.degrassi.mmr.common.integration.jei.ingredient.CustomIngredientTypes;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Duration;
 import es.degrassi.mmr.common.machine.component.DurationComponent;
+import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import lombok.Getter;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;

@@ -8,6 +8,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockEntityDetector extends BaseEntityBlock {
+  public BlockEntityDetector(Properties id) {
+    super(id);
+  }
+
   @Override
   public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
     return new EntityDetectorEntity(blockPos, blockState);
