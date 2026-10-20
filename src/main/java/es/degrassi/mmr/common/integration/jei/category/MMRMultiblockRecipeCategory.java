@@ -60,9 +60,9 @@ public class MMRMultiblockRecipeCategory extends ModularUIRecipeCategory<Multibl
     public void draw(GuiGraphicsExtractor GuiGraphicsExtractor, int xOffset, int yOffset) {
       controller.draw(GuiGraphicsExtractor, xOffset, yOffset);
       GuiGraphicsExtractor.pose().pushMatrix();
-      var v = new Vector2f(xOffset / 2f, yOffset / 2f).add(3, 3).div(0.5f);
+      var v = new Vector2f(xOffset / 2f, yOffset / 2f).add(0, 4.5f).div(0.5f);
       GuiGraphicsExtractor.pose().translate(v);
-      GuiGraphicsExtractor.pose().scale(0.75f);
+      GuiGraphicsExtractor.pose().scale(0.5f);
       GuiGraphicsExtractor.fakeItem(Items.STRUCTURE_BLOCK.getDefaultInstance(), 0, 0);
       GuiGraphicsExtractor.pose().popMatrix();
     }
