@@ -281,7 +281,6 @@ public abstract class BaseMMRBlockStateProvider implements DataProvider {
     if (tinted) {
       itemModels.itemModelOutput.accept(BuiltInRegistries.ITEM.getValue(item), ItemModelUtils.tintedModel(
           id,
-          new Constant(-1),
           new MMRItemTintSource()
       ));
     } else {

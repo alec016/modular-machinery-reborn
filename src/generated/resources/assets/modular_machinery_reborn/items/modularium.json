@@ -4,10 +4,6 @@
     "model": "modular_machinery_reborn:item/modularium",
     "tints": [
       {
-        "type": "minecraft:constant",
-        "value": -1
-      },
-      {
         "type": "modular_machinery_reborn:mmr_item"
       }
     ]
