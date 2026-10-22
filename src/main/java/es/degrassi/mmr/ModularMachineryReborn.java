@@ -289,12 +289,12 @@ public class ModularMachineryReborn {
     event.registerBlockEntity(
         Capabilities.Energy.BLOCK,
         EntityRegistration.ENERGY_INPUT_HATCH.get(),
-        (be, side) -> be
+        (be, side) -> be.getEnergyHandler()
     );
     event.registerBlockEntity(
         Capabilities.Energy.BLOCK,
         EntityRegistration.ENERGY_OUTPUT_HATCH.get(),
-        (be, side) -> be
+        (be, side) -> be.getEnergyHandler()
     );
     event.registerBlockEntity(
         ExperienceLibCapabilities.EXPERIENCE.block(),

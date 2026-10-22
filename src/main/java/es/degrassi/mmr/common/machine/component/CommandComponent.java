@@ -3,16 +3,16 @@ package es.degrassi.mmr.common.machine.component;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.entity.CommandExecutionerEntity;
+import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.MachineComponent;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
-import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec2;
@@ -88,7 +88,7 @@ public class CommandComponent extends MachineComponent<Void> {
         Vec3.atCenterOf(entity.getBlockPos()),
         getMachineRotation(),
         (ServerLevel) entity.getLevel(),
-        permission -> permission instanceof Permission.HasCommandLevel(PermissionLevel level) && level.id() == permissionLevel,
+        LevelBasedPermissionSet.forLevel(PermissionLevel.byId(permissionLevel)),
         "Modular Machinery Reborn",
         entity.getController().getFoundMachine().getName(),
         entity.getLevel().getServer(),

@@ -1,6 +1,6 @@
 package es.degrassi.mmr.common.integration.xei;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
@@ -12,6 +12,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.SplitView;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
 import com.lowdragmc.lowdraglib2.integration.xei.IngredientIO;
 import com.lowdragmc.lowdraglib2.utils.virtuallevel.DummyWorld;
+import es.degrassi.mmr.client.screen.MMRSceneFx;
 import es.degrassi.mmr.common.block.BlockController;
 import es.degrassi.mmr.common.item.ControllerItem;
 import es.degrassi.mmr.common.machine.DynamicMachine;
@@ -21,7 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MultiblockRecipe {
@@ -39,7 +39,7 @@ public class MultiblockRecipe {
 
   public ModularUI createModularUI() {
     DummyWorld scene = MultiblockScene.createTestScene(multiblock);
-    Map<ItemSlot, List<ItemStack>> requiredItems = Maps.newHashMap();
+    List<ItemSlot> requiredItems = Lists.newArrayList();
     var itemsView = new ScrollerView();
     itemsView.addScrollViewChildren(new ItemSlot()
         .setItem(ControllerItem.makeMachineItem(multiblock.getRegistryName()))
@@ -50,20 +50,8 @@ public class MultiblockRecipe {
         .stream()
         .filter(stacks -> !stacks.isEmpty() && !stacks.stream().allMatch(ItemStack::isEmpty))
         .forEach(stacks -> {
-            var slot = new UnlimitedItemSlot();
-            var first = stacks.getFirst();
-            ItemStack displayStack = MultiblockScene.blockTimer.getOrDefault(stacks, first).copy();
-            if (displayStack.isEmpty()) {
-                displayStack = first.copy();
-            }
-            displayStack.setCount(first.getCount());
-            requiredItems.put(
-                slot
-                    .setItem(displayStack)
-                    .xeiRecipeIngredient(IngredientIO.INPUT)
-                    .xeiRecipeSlot(),
-                stacks
-            );
+            requiredItems.add(new UnlimitedItemSlot()
+                .xeiRecipeSlot(IngredientIO.INPUT, 1, stacks.getFirst().count(), stacks::stream));
       });
 
     var blockLabel = new Label().setText("");
@@ -72,7 +60,7 @@ public class MultiblockRecipe {
             .layout(layout -> layout.widthPercent(100).heightPercent(100))
             .addChildren(
                 new SplitView.Horizontal()
-                    .left(itemsView.addScrollViewChildren(requiredItems.keySet().toArray(ItemSlot[]::new))
+                    .left(itemsView.addScrollViewChildren(requiredItems.toArray(ItemSlot[]::new))
                         .layout(layout -> layout.widthPercent(100).heightPercent(100))
                     )
                     .right(new UIElement()
@@ -90,15 +78,6 @@ public class MultiblockRecipe {
                                       MultiblockScene.tick(scene, multiblock);
                                     })
                                     .setAfterWorldRender(s -> {
-                                      itemsView.viewContainer.getChildren()
-                                          .forEach(ele -> {
-                                            if (ele instanceof ItemSlot slot) {
-                                              if (requiredItems.containsKey(slot)) {
-                                                var stack = MultiblockScene.blockTimer.getOrDefault(requiredItems.get(slot), ItemStack.EMPTY);
-                                                slot.setItem(stack, true);
-                                              }
-                                            }
-                                          });
                                       if (selectedPos.get() != null) {
                                         var state = scene.getBlockState(selectedPos.get());
                                         if (state.isAir()) {

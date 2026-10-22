@@ -1,11 +1,8 @@
 package es.degrassi.mmr.common.manager.crafting;
 
 import com.google.common.collect.Lists;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
-import es.degrassi.experiencelib.api.network.syncable.BooleanSyncable;
-import es.degrassi.experiencelib.api.network.syncable.FloatSyncable;
-import es.degrassi.experiencelib.api.network.syncable.IntegerSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.api.crafting.CraftingContext;
 import es.degrassi.mmr.api.crafting.CraftingResult;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
@@ -14,25 +11,27 @@ import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.MachineComponent;
 import es.degrassi.mmr.common.manager.crafting.RequirementList.RequirementWithFunction;
 import es.degrassi.mmr.common.util.Utils;
+import es.degrassi.mmr.ModularMachineryReborn;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
-public class MachineProcessorCore implements ISyncableStuff {
+public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable {
 
   private final MachineProcessor processor;
   private final MachineControllerEntity tile;
@@ -104,6 +103,14 @@ public class MachineProcessorCore implements ISyncableStuff {
 
   public boolean hasActiveRecipe() {
     return getCurrentRecipe() != null;
+  }
+
+  /**
+   * Client-safe variant of {@link #hasActiveRecipe()}: the experience-lib synced flag, set by the
+   * server even when the client cannot resolve the recipe object from its id.
+   */
+  public boolean hasSyncedActiveRecipe() {
+    return hasActiveRecipe;
   }
 
   public void tick() {
@@ -264,10 +271,20 @@ public class MachineProcessorCore implements ISyncableStuff {
     nbt.putBoolean("active", active);
     nbt.putInt("core", core);
     if (this.currentRecipe != null)
-      nbt.putString("recipe", this.currentRecipe.id().toString());
+      nbt.putString("recipe", this.currentRecipe.id().identifier().toString());
     nbt.putString("phase", this.phase.toString());
     nbt.putFloat("recipeProgressTime", this.recipeProgressTime);
     return nbt;
+  }
+
+  public void serialize(ValueOutput output) {
+    output.putBoolean("active", active);
+    output.putInt("core", core);
+    output.putString("phase", phase.toString());
+    output.putFloat("recipeProgressTime", recipeProgressTime);
+    if (currentRecipe != null) {
+      output.putString("recipe", currentRecipe.id().identifier().toString());
+    }
   }
 
   public void deserialize(ValueInput nbt) {
@@ -278,35 +295,13 @@ public class MachineProcessorCore implements ISyncableStuff {
     this.recipeProgressTime = nbt.getFloatOr("recipeProgressTime", 0f);
   }
 
-  public void deserializeFromCompound(CompoundTag nbt) {
-    this.active = nbt.getBooleanOr("active", false);
-    this.core = nbt.getIntOr("core", 0);
-    if (nbt.contains("recipe"))
-      this.futureRecipeID = Identifier.parse(nbt.getStringOr("recipe", ""));
-    if (nbt.contains("phase"))
-      this.phase = Phase.valueOf(nbt.getStringOr("phase", Phase.CONDITIONS.name()));
-    if (nbt.contains("recipeProgressTime"))
-      this.recipeProgressTime = nbt.getFloatOr("recipeProgressTime", 0f);
-  }
-
-  public void deserializeFromValueInput(ValueInput nbt) {
-    this.active = nbt.getBooleanOr("active", false);
-    this.core = nbt.getIntOr("core", 0);
-    if (nbt.child("recipe").isPresent())
-      this.futureRecipeID = Identifier.parse(nbt.getStringOr("recipe", ""));
-    if (nbt.child("phase").isPresent())
-      this.phase = Phase.valueOf(nbt.getStringOr("phase", Phase.CONDITIONS.name()));
-    if (nbt.child("recipeProgressTime").isPresent())
-      this.recipeProgressTime = nbt.getFloatOr("recipeProgressTime", 0f);
-  }
-
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(BooleanSyncable.create(() -> active, active -> this.active = active));
-    container.accept(IntegerSyncable.create(() -> core, core -> this.core = core));
-    container.accept(FloatSyncable.create(() -> this.recipeProgressTime, recipeProgressTime -> this.recipeProgressTime = recipeProgressTime));
-    container.accept(IntegerSyncable.create(() -> this.recipeTotalTime, recipeTotalTime -> this.recipeTotalTime = recipeTotalTime));
-    container.accept(BooleanSyncable.create(() -> getCurrentRecipe() != null, hasActiveRecipe -> this.hasActiveRecipe = hasActiveRecipe));
+  public void getStuffToSync(SyncableList container) {
+    container.syncBool(() -> active, active -> this.active = active);
+    container.syncInt(() -> core, core -> this.core = core);
+    container.syncFloat(() -> this.recipeProgressTime, recipeProgressTime -> this.recipeProgressTime = recipeProgressTime);
+    container.syncInt(() -> this.recipeTotalTime, recipeTotalTime -> this.recipeTotalTime = recipeTotalTime);
+    container.syncBool(() -> getCurrentRecipe() != null, hasActiveRecipe -> this.hasActiveRecipe = hasActiveRecipe);
   }
 
   public float getCurrentActiveRecipeProgress() {

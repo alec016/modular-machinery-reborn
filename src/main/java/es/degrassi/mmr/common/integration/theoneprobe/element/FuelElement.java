@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import mcjty.theoneprobe.api.IElement;
 import mcjty.theoneprobe.api.IElementFactory;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 
@@ -38,10 +39,10 @@ public class FuelElement implements IElement {
     y = (int) (y * scale());
     GuiGraphicsExtractor.pose().pushMatrix();
     GuiGraphicsExtractor.pose().scale(1/scale(), 1/scale());
-    GuiGraphicsExtractor.blit(emptyTexture, x, y, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
+    GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
     var calcHeight = (int) (progress * getHeight());
     var offset = getHeight() - calcHeight;
-    GuiGraphicsExtractor.blit(filledTexture, x + 1, y + offset + 1, 0, offset, getWidth(), calcHeight, getWidth(), getHeight());
+    GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, filledTexture, x + 1, y + offset + 1, 0, offset, getWidth(), calcHeight, getWidth(), getHeight());
     GuiGraphicsExtractor.pose().popMatrix();
   }
 

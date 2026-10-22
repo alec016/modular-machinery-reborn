@@ -1,18 +1,26 @@
 package es.degrassi.mmr.common.machine;
 
 import es.degrassi.experiencelib.api.codec.NamedCodec;
+import es.degrassi.experiencelib.api.datagen.LocalizationEnum;
+import es.degrassi.experiencelib.data.localization.AutoCollectLang;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.api.client.ComponentTranslatable;
-import net.minecraft.network.chat.Component;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.minecraft.util.StringRepresentable;
 
 import javax.annotation.Nullable;
 import java.util.Locale;
 
-public enum IOType implements StringRepresentable, ComponentTranslatable {
-  INPUT,
-  OUTPUT,
-  NONE;
+@AutoCollectLang(ModularMachineryReborn.MODID)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+public enum IOType implements StringRepresentable, LocalizationEnum {
+  INPUT("Input"),
+  OUTPUT("Output"),
+  NONE("None");
+
+  @Getter
+  private final String englishText;
 
   public static final NamedCodec<IOType> CODEC = NamedCodec.enumCodec(IOType.class);
 
@@ -48,7 +56,7 @@ public enum IOType implements StringRepresentable, ComponentTranslatable {
   }
 
   @Override
-  public Component getTranslation() {
-    return Component.translatable(ModularMachineryReborn.MODID + ".requirement.mode." + getSerializedName());
+  public String getTranslationKey() {
+    return ModularMachineryReborn.MODID + ".requirement.mode." + getSerializedName();
   }
 }

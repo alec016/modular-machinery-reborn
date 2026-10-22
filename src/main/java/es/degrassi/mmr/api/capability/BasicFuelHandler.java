@@ -59,9 +59,9 @@ public class BasicFuelHandler implements IFuelHandler {
       addFuel(fuel);
       var remainder = stack.get(DataComponents.USE_REMAINDER);
       if (remainder != null) {
-        inventory.setStack(i, remainder.convertInto().create());
+        inventory.set(i, inventory.getResourceFrom(remainder.convertInto().create()), 1);
       } else {
-        inventory.setStack(i, stack.copyWithCount(stack.getCount() - 1));
+        inventory.set(i, inventory.getResourceFrom(stack), stack.getCount() - 1);
       }
       setChanged();
       return;

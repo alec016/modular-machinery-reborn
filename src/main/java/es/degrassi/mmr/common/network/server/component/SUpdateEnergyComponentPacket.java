@@ -29,7 +29,7 @@ public record SUpdateEnergyComponentPacket(long amount, BlockPos pos) implements
     if (context.flow().isClientbound())
       context.enqueueWork(() -> {
         if (context.player().level().getBlockEntity(packet.pos) instanceof EnergyHatchEntity entity) {
-          entity.setCurrentEnergy(packet.amount);
+          entity.getEnergyHandler().set(packet.amount);
         }
       });
   }

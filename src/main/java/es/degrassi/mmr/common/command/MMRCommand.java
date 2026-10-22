@@ -17,8 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.permissions.Permission;
-import net.minecraft.server.permissions.PermissionLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.Util;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +35,7 @@ public class MMRCommand {
 
   private static ArgumentBuilder<CommandSourceStack, ?> logging() {
     return Commands.literal("log")
-      .requires(cs -> cs.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS)))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(ctx -> {
         if (ctx.getSource().getEntity() instanceof ServerPlayer player)
           PacketDistributor.sendToPlayer(player, new SOpenFilePacket(new File("logs/modular_machinery_reborn/mmr.log").toURI().toString()));
@@ -46,7 +45,7 @@ public class MMRCommand {
 
   private static ArgumentBuilder<CommandSourceStack, ?> reload() {
     return Commands.literal("reload")
-      .requires(cs -> cs.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS)))
+      .requires(cs -> cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
       .executes(ctx -> {
         Config.load();
         ConfigLoaded.load();
@@ -73,8 +72,6 @@ public class MMRCommand {
         if (player != null)
           player.sendSystemMessage(Component.translatable(ModularMachineryReborn.MODID + ".command.reload.machines").withStyle(ChatFormatting.GRAY));
       })
-      .thenRun(() ->
-          ModularMachineryReborn.CONTROLLERS.forEach(MachineControllerEntity::onStructureUnformed)
-      );
+      .thenRun(() -> ModularMachineryReborn.CONTROLLERS.forEach(MachineControllerEntity::onStructureUnformed));
   }
 }

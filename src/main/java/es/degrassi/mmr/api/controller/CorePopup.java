@@ -1,5 +1,6 @@
 package es.degrassi.mmr.api.controller;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
@@ -24,6 +25,10 @@ public record CorePopup(int maxCores, Map<String, List<CompoundTag>> pages) {
       NamedCodec.of(CompoundTag.CODEC).listOf(),
       "CorePages"
   ).codec();
+
+  public CorePopup copy() {
+    return new CorePopup(maxCores, Maps.newHashMap(pages));
+  }
 
   public static final StreamCodec<RegistryFriendlyByteBuf, CorePopup> STREAM_CODEC = new StreamCodec<>() {
     @Override

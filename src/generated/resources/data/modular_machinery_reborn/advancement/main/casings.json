@@ -1,0 +1,51 @@
+{
+  "parent": "modular_machinery_reborn:main/root",
+  "criteria": {
+    "casings": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:casing_circuitry"
+          },
+          {
+            "items": "modular_machinery_reborn:casing_firebox"
+          },
+          {
+            "items": "modular_machinery_reborn:casing_gearbox"
+          },
+          {
+            "items": "modular_machinery_reborn:casing_plain"
+          },
+          {
+            "items": "modular_machinery_reborn:casing_reinforced"
+          },
+          {
+            "items": "modular_machinery_reborn:casing_vent"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.mmr.Casings.desc"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "modular_machinery_reborn:casing_plain"
+    },
+    "title": {
+      "translate": "advancement.mmr.Casings"
+    }
+  },
+  "requirements": [
+    [
+      "casings"
+    ]
+  ],
+  "rewards": {
+    "experience": 10
+  },
+  "sends_telemetry_event": true
+}

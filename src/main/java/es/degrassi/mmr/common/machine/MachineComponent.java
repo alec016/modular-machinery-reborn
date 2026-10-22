@@ -5,7 +5,6 @@ import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class MachineComponent<T> implements Comparable<MachineComponent<T>> {
   private final IOType ioType;
@@ -20,7 +19,6 @@ public abstract class MachineComponent<T> implements Comparable<MachineComponent
 
   public abstract ComponentType<T> getComponentType();
 
-  @Nullable
   public abstract T getContainerProvider();
 
   public void onStatusChanged(MachineStatus oldStatus, MachineStatus newStatus, Component errorMessage) {

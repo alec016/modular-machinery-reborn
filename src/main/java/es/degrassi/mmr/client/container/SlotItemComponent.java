@@ -1,13 +1,5 @@
 package es.degrassi.mmr.client.container;
 
-/**
- * LEGACY UI - replaced by the LDLib2 {@code ModularUI} screens in {@code es.degrassi.mmr.client.screen.*UI}.
- *
- * This type is kept as an empty shell so that legacy references still resolve; the original
- * implementation is commented out below for reference. Nothing here is registered any more
- * (menus are opened through {@code BlockUIMenuType.openUI}).
- */
-// ==== original implementation, commented out ====
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import lombok.Getter;
 import net.minecraft.world.Container;

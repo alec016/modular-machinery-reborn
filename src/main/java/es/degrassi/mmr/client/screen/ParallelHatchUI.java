@@ -1,11 +1,11 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
-import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.client.CoreActionType;
 import es.degrassi.mmr.common.entity.ParallelHatchEntity;
 import es.degrassi.mmr.common.network.client.CCoreButtonClickedPacked;
@@ -20,13 +20,15 @@ import java.util.List;
 /**
  * LDLib2 replacement for the old {@code ParallelHatchContainer} + {@code ParallelHatchScreen} pair.
  *
- * <p>Parity with 1.21.1: a 176x176 nine-slice panel ({@code sprites/background.png}, the legacy
- * {@code blitSprite(..., 176, 176)}), the vanilla-style title caption at (8, 6), and the {@code
- * GridLayout} row at y = 25: the {@code CoreActionButton} (16x16 icon on the 18x20 toolbar plate)
- * centered in the first cell (x = 16), the live core count spanning the middle columns (x = 50..
- * 126) and the add button centered in the last cell (x = 144). Click behaviour is the old {@code
- * ParallelHatchScreen#action}: shift = ±10, control = jump to max/min, plain click = ±1, sent
- * through the existing {@code CCoreButtonClickedPacked} packet.
+ * <p>176x166 nine-slice panel ({@code sprites/background.png}), the vanilla-style title caption at
+ * (8, 6), and the legacy {@code GridLayout} row re-centered between the title and the inventory
+ * caption (y = 33): the {@code CoreActionButton} (16x16 icon on the 18x20 toolbar plate) centered
+ * in the left grid cell (x = 15), the live core count spanning the middle columns (x = 50..126,
+ * vertically centered on the button plates both span 32..52) and the add button centered in the
+ * right cell (x = 143). The vanilla inventory caption and grid fill the lower half, like the other
+ * machine screens. Click behaviour is the old {@code ParallelHatchScreen#action}: shift = ±10,
+ * control = jump to max/min, plain click = ±1, sent through the existing
+ * {@code CCoreButtonClickedPacked} packet.
  */
 public final class ParallelHatchUI {
 
@@ -34,30 +36,34 @@ public final class ParallelHatchUI {
 
   public static ModularUI create(BlockUIMenuType.BlockUIHolder holder, ParallelHatchEntity entity) {
     UIElement panel = MMRMachineUI.panelNineSlice(
-        ModularMachineryReborn.rl("textures/gui/sprites/background.png"),
-        MMRMachineUI.PANEL_WIDTH,
-        176
-    );
+        MMRMachineUI.TEX_BACKGROUND, MMRMachineUI.PANEL_WIDTH, MMRMachineUI.PANEL_HEIGHT);
 
     MMRMachineUI.captionLabel(panel,
         Component.translatable("modular_machinery_reborn.gui.title.parallel_hatch"), 8, 6);
 
-    MMRWidgets.iconButton(panel, CoreActionType.REMOVE.icon(), 16, 25,
+    // Row re-centered between the title (ends ~15) and the inventory caption (y = 72): the 18x20
+    // button plates span 32..52 at rowY = 33, leaving a balanced 17px above / 20px below instead
+    // of the old 28px of dead space under the buttons.
+    int rowY = 33;
+    IconButton.iconButton(panel, CoreActionType.REMOVE.icon(), 15, rowY,
         event -> action(entity, false, KeyState.isShiftDown(), KeyState.isCtrlDown()),
         () -> legend(CoreActionType.REMOVE));
 
+    // The count label (16px tall, text vertically centered) sits one pixel down so its center
+    // meets the 20px button plates' center exactly (plate spans 32..52, label spans 34..50).
     var cores = MMRMachineUI.syncedLabel(panel,
-        () -> Component.literal(String.format("%s", entity.getCores())), 50, 25);
+        () -> Component.literal(String.format("%s", entity.getCores())), 50, rowY + 1);
     cores.lss("width", 76).lss("height", 16);
     cores.textStyle(style -> style
         .textAlignHorizontal(Horizontal.CENTER)
         .textAlignVertical(Vertical.CENTER));
 
-    MMRWidgets.iconButton(panel, CoreActionType.ADD.icon(), 144, 25,
+    IconButton.iconButton(panel, CoreActionType.ADD.icon(), 143, rowY,
         event -> action(entity, true, KeyState.isShiftDown(), KeyState.isCtrlDown()),
         () -> legend(CoreActionType.ADD));
 
-    MMRMachineUI.playerInventory(panel, 8, 84);
+    MMRMachineUI.inventoryLabel(panel, MMRMachineUI.INVENTORY_X, MMRMachineUI.INVENTORY_LABEL_Y);
+    MMRMachineUI.playerInventory(panel, MMRMachineUI.INVENTORY_X, MMRMachineUI.INVENTORY_Y);
     return MMRMachineUI.menu(panel, holder.player);
   }
 

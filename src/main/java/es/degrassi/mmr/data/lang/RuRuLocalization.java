@@ -457,6 +457,8 @@ final class RuRuLocalization extends LocalizationProvider {
     add(mm(gui("title.parallel_hatch")), "Параллельное Ядро");
     add(mm(gui("title.fuel_tank")), "Fuel Tank");
     add(mm(gui("title.redstone_port")), "Redstone Port");
+    add(mm(gui("title.experience_hatch")), "Порт Опыта");
+    add(mm(gui("title.durability_hatch")), "Порт Прочности");
     add(mmr(gui("button.back")), "Назад");
     add(mmr(gui("button.close")), "Закрыть");
     add(mmr(gui("button.page.next")), "Следующая страница");
@@ -541,10 +543,10 @@ final class RuRuLocalization extends LocalizationProvider {
     add(gui("controller.status.redstone_stopped"), "Мульти-структура приостановлено из-за ред стоун сигнала");
     add(gui("controller.status.paused"), "Приостановлено");
     add(gui("controller.status.missing_structure"), "Мульти-структура не найдена");
-    add(gui("controller.status.no_recipe"), "Рецепт не найден");
-    add(gui("controller.status.failure"), "");
-    add(gui("controller.status.crafting"), "Работает...");
-    add(gui("controller.status.crafting.progress"), "Прогресс: %s");
+    add(gui("controller.status.idle"), "Рецепт не найден");
+    add(gui("controller.status.errored"), "");
+    add(gui("controller.status.running"), "Работает...");
+    add(gui("controller.status.running.progress"), "Прогресс: %s");
     add(mmr("core.active.true"), "Поток может выполнить рецепты");
     add(mmr("core.active.false"), "Поток не может выполнить рецепты");
     add(mmr("core.number"), "Поток %s#");

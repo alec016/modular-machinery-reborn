@@ -4,16 +4,29 @@ import com.google.common.collect.Maps;
 import es.degrassi.experiencelib.api.codec.EnumMapCodec;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.common.util.Color;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class IOSideConfig extends SideConfig<IOSideMode>{
   private final Map<Direction, Boolean> autoIOFaces = new EnumMap<>(Direction.class);
+
+  public static final StreamCodec<RegistryFriendlyByteBuf, IOSideConfig> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.map(HashMap::new, RelativeSide.CODEC.streamCodec(), IOSideMode.CODEC.streamCodec()),
+      config -> config.sides,
+      Color.CODEC.streamCodec(),
+      SideConfig::getColor,
+      (sides, color) -> new IOSideConfig(null, sides, true, color)
+  );
 
   public IOSideConfig(ISideConfigComponent<IOSideMode> component, Map<RelativeSide, IOSideMode> defaultConfig, boolean enabled, Color color) {
     super(component, defaultConfig, enabled, color);

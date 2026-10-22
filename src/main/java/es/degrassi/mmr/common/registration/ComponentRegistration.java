@@ -10,6 +10,7 @@ import es.degrassi.mmr.api.crafting.requirement.WeatherType;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.util.Chunkloader;
 import es.degrassi.mmr.common.util.IntRange;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
@@ -41,7 +42,7 @@ public final class ComponentRegistration {
       ComponentType::create);
   public static final Supplier<ComponentType<FluidHandler>> COMPONENT_FLUID = MACHINE_COMPONENTS.register(rootLC("fluid"),
       ComponentType::create);
-  public static final Supplier<ComponentType<EnergyHandler>> COMPONENT_ENERGY = MACHINE_COMPONENTS.register(rootLC("energy"),
+  public static final Supplier<ComponentType<SimpleEnergyHandler>> COMPONENT_ENERGY = MACHINE_COMPONENTS.register(rootLC("energy"),
       ComponentType::create);
   public static final Supplier<ComponentType<Identifier>> COMPONENT_DIMENSION = MACHINE_COMPONENTS.register(rootLC("dimension"),
       ComponentType::create);

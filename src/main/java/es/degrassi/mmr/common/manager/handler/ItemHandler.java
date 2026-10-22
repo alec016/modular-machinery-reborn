@@ -1,7 +1,6 @@
 package es.degrassi.mmr.common.manager.handler;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
-import es.degrassi.mmr.api.network.syncable.ItemStackSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
@@ -9,7 +8,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
   public ItemHandler(int size, long capacity, long maxIn, long maxOut, Direction... accessibleSides) {
@@ -17,10 +15,10 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     for (int i = 0; i < size(); i++) {
       final int index = i;
-      container.accept(ItemStackSyncable.create(() -> stacks.get(index), v -> stacks.set(index, v)));
+      container.syncItemStack(() -> stacks.get(index), v -> stacks.set(index, v));
     }
   }
 
@@ -71,7 +69,12 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return slotStack.count() < Math.min(stack.getMaxStackSize(), getCapacity(index, resource));
   }
 
-  /** Inserts into any slot bypassing the external maxIn limit. Returns the amount actually inserted. */
+  /**
+   * Inserts into any slot bypassing the external maxIn limit. Returns the amount actually inserted.
+   * Writes go through {@link #set}, so the per-slot change listeners (update packets to tracking
+   * players) fire like with any transactional write — plain {@code stacks.set} would mutate the
+   * storage silently and leave every listener and client copy stale until the next full sync.
+   */
   public int addToOutputs(ItemStack stack, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
@@ -80,12 +83,7 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
       int capacity = Math.min(getCapacity(i, ItemResource.of(stack)), stack.getMaxStackSize());
       int maxInsert = Math.min(capacity - slotStack.count(), remaining);
       if (maxInsert <= 0) continue;
-      if (slotStack.isEmpty()) {
-        setStack(i, stack.copyWithCount(maxInsert));
-      } else {
-        slotStack.grow(maxInsert);
-        setStack(i, slotStack);
-      }
+      set(i, ItemResource.of(stack), slotStack.count() + maxInsert);
       remaining -= maxInsert;
     }
     return amount - remaining;
@@ -99,7 +97,7 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
       if (slotStack.isEmpty() || !ItemStack.isSameItemSameComponents(slotStack, stack)) continue;
       int maxExtract = Math.min(slotStack.count(), remaining);
       if (maxExtract <= 0) continue;
-      setStack(i, slotStack.copyWithCount(slotStack.count() - maxExtract));
+      set(i, ItemResource.of(slotStack), slotStack.count() - maxExtract);
       remaining -= maxExtract;
     }
     return amount - remaining;
@@ -174,7 +172,7 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
       int maxRepair = Math.min(slotStack.getDamageValue(), toRepair);
       if (maxRepair <= 0) continue;
       slotStack.setDamageValue(slotStack.getDamageValue() - maxRepair);
-      setStack(i, slotStack);
+      set(i, ItemResource.of(slotStack), slotStack.count());
       toRepair -= maxRepair;
     }
   }
@@ -188,7 +186,11 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
       if (maxRemove <= 0) continue;
       slotStack.setDamageValue(slotStack.getDamageValue() + maxRemove);
       if (slotStack.getDamageValue() >= slotStack.getMaxDamage()) slotStack.shrink(1);
-      setStack(i, slotStack.count() <= 0 ? ItemStack.EMPTY : slotStack);
+      if (slotStack.isEmpty()) {
+        set(i, ItemResource.EMPTY, 0);
+      } else {
+        set(i, ItemResource.of(slotStack), slotStack.count());
+      }
       toRemove -= maxRemove;
     }
   }

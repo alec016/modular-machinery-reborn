@@ -1,13 +1,10 @@
 package es.degrassi.mmr.common.manager.handler;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
-import es.degrassi.mmr.api.network.syncable.FluidStackSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
-
-import java.util.function.Consumer;
 
 public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
   public FluidHandler(int size, long capacity, long maxIn, long maxOut, Direction...accessibleSides) {
@@ -15,10 +12,10 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     for (int i = 0; i < size(); i++) {
       final var index = i;
-      container.accept(FluidStackSyncable.create(() -> stacks.get(index), v -> stacks.set(index, v)));
+      container.syncFluidStack(() -> stacks.get(index), v -> stacks.set(index, v));
     }
   }
 
@@ -115,7 +112,27 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return Math.max(space, 0);
   }
 
-  /** Pours into any tank bypassing the external maxIn limit. Returns the amount actually inserted. */
+  /**
+   * Free volume ignoring WHICH fluid goes in: every empty tank counts at full capacity and every
+   * filled tank at its own leftover room (an incompatible tank can still take more of what it
+   * holds). This is the hatch-level fullness the fill drawer needs before anything is picked: a
+   * full-sum of 0 means no fluid at all fits anymore.
+   */
+  public int getTotalFreeSpace() {
+    int space = 0;
+    for (int i = 0; i < size(); i++) {
+      FluidStack value = getStack(i);
+      space += Math.max(0, (int) getCapacityPerSlot() - value.amount());
+    }
+    return space;
+  }
+
+  /**
+   * Pours into any tank bypassing the external maxIn limit. Returns the amount actually inserted.
+   * Writes go through {@link #set} (like {@code addToOutputs} in ItemHandler) so the change
+   * listeners — the fluid update packets — fire; plain {@code stacks.set} would leave every
+   * listener and client copy stale, which is how the operator fill used to look dead.
+   */
   public int addToOutputs(FluidStack stack, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
@@ -124,10 +141,9 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
       int maxInsert = Math.min((int) getCapacityPerSlot() - value.amount(), remaining);
       if (maxInsert <= 0) continue;
       if (value.isEmpty()) {
-        setStack(i, stack.copyWithAmount(maxInsert));
+        set(i, FluidResource.of(stack), maxInsert);
       } else {
-        value.setAmount(value.amount() + maxInsert);
-        setStack(i, value);
+        set(i, FluidResource.of(value), value.amount() + maxInsert);
       }
       remaining -= maxInsert;
     }
@@ -142,7 +158,7 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
       if (value.isEmpty() || !FluidStack.isSameFluidSameComponents(value, stack)) continue;
       int maxExtract = Math.min(value.amount(), remaining);
       if (maxExtract <= 0) continue;
-      setStack(i, value.copyWithAmount(value.amount() - maxExtract));
+      set(i, FluidResource.of(value), value.amount() - maxExtract);
       remaining -= maxExtract;
     }
     return amount - remaining;
@@ -156,7 +172,7 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
       if (value.isEmpty() || !ingredient.test(value)) continue;
       int maxExtract = Math.min(value.amount(), remaining);
       if (maxExtract <= 0) continue;
-      setStack(i, value.copyWithAmount(value.amount() - maxExtract));
+      set(i, FluidResource.of(value), value.amount() - maxExtract);
       remaining -= maxExtract;
     }
   }

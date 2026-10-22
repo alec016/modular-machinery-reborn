@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "modularium": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:modularium"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.mmr.Root.desc"
+    },
+    "icon": {
+      "id": "modular_machinery_reborn:modularium"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancement.mmr.Root"
+    }
+  },
+  "requirements": [
+    [
+      "modularium"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

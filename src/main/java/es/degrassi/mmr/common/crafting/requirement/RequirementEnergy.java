@@ -10,15 +10,15 @@ import es.degrassi.mmr.api.crafting.requirement.IRequirementList;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
 
-public class RequirementEnergy implements IRequirement<EnergyComponent, EnergyHandler> {
+public class RequirementEnergy implements IRequirement<EnergyComponent, SimpleEnergyHandler> {
   public static final NamedMapCodec<RequirementEnergy> CODEC = NamedCodec.record(instance -> instance.group(
       NamedCodec.longRange(0, Long.MAX_VALUE).fieldOf("amount").forGetter(req -> req.requirement),
       NamedCodec.enumCodec(IOType.class).fieldOf("mode").forGetter(IRequirement::getMode),
@@ -41,19 +41,18 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, EnergyHa
   }
 
   @Override
-  public RequirementType<RequirementEnergy, EnergyComponent, EnergyHandler> getType() {
+  public RequirementType<RequirementEnergy, EnergyComponent, SimpleEnergyHandler> getType() {
     return RequirementTypeRegistration.ENERGY.get();
   }
 
   @Override
-  public ComponentType<EnergyHandler> getComponentType() {
+  public ComponentType<SimpleEnergyHandler> getComponentType() {
     return ComponentRegistration.COMPONENT_ENERGY.get();
   }
 
   @Override
   public boolean test(EnergyComponent component, ICraftingContext context) {
-    EnergyHandler handler = component.getContainerProvider();
-    assert handler != null;
+    SimpleEnergyHandler handler = component.getContainerProvider();
     return switch (mode) {
       case INPUT -> handler.getAmountAsLong() >= requirement;
       case OUTPUT -> handler.getCapacityAsLong() >= handler.getAmountAsLong() + requirement;
@@ -74,14 +73,18 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, EnergyHa
     try (var root = Transaction.open(null)) {
       int amount = (int) context.getIntegerModifiedValue(this.requirement, this);
       var handler = component.getContainerProvider();
+      var tempMaxExtract = handler.getMaxExtract();
+      handler.setMaxExtract(Long.MAX_VALUE);
       try (Transaction sub = Transaction.open(root)) {
         int canExtract = handler.extract(amount, sub);
         if (canExtract >= amount) {
           sub.commit();
           root.commit();
+          handler.setMaxExtract(tempMaxExtract);
           return CraftingResult.success();
         }
         root.commit();
+        handler.setMaxExtract(tempMaxExtract);
         return CraftingResult.error(Component.translatable("craftcheck.failure.energy.input", requirement, canExtract));
       }
     }
@@ -91,14 +94,18 @@ public class RequirementEnergy implements IRequirement<EnergyComponent, EnergyHa
     try (var root = Transaction.open(null)) {
       int amount = (int) context.getIntegerModifiedValue(this.requirement, this);
       var handler = component.getContainerProvider();
+      var tempMaxInsert = handler.getMaxInsert();
+      handler.setMaxInsert(Long.MAX_VALUE);
       try (var sub = Transaction.open(root)) {
         int canReceive = handler.insert(amount, sub);
         if (canReceive >= amount) {
           sub.commit();
           root.commit();
+          handler.setMaxInsert(tempMaxInsert);
           return CraftingResult.success();
         }
         root.commit();
+        handler.setMaxInsert(tempMaxInsert);
         return CraftingResult.error(Component.translatable(
             "craftcheck.failure.energy.output", requirement, handler.getCapacityAsLong() - handler.getAmountAsLong()
         ));

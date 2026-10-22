@@ -13,8 +13,10 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
+import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
@@ -37,15 +39,25 @@ public class SizedFluidIngredientRenderer implements IElement {
 
   public SizedFluidIngredientRenderer(SizedFluidIngredient ingredient, float chance, IIconStyle style) {
     this.ingredient = ingredient;
-    this.fluids = ingredient.ingredient().fluids().stream().map(holder -> new FluidStack(holder, ingredient.amount())).toList();
+    this.fluids = ingredient
+        .ingredient()
+        .display()
+        .resolve(ContextMap.EMPTY, FluidStackContentsFactory.INSTANCE)
+        .map(holder -> holder.copyWithAmount(ingredient.amount()))
+        .toList();
     this.style = style;
     this.chance = chance;
   }
 
   public SizedFluidIngredientRenderer(RegistryFriendlyByteBuf buffer) {
-    this.ingredient = buffer.readLenientJsonWithCodec(SizedFluidIngredient.CODEC);
+    this.ingredient = SizedFluidIngredient.STREAM_CODEC.decode(buffer);
     this.chance = buffer.readFloat();
-    this.fluids = ingredient.ingredient().fluids().stream().map(holder -> new FluidStack(holder, ingredient.amount())).toList();
+    this.fluids = ingredient
+        .ingredient()
+        .display()
+        .resolve(ContextMap.EMPTY, FluidStackContentsFactory.INSTANCE)
+        .map(holder -> holder.copyWithAmount(ingredient.amount()))
+        .toList();
     this.style = (new IconStyle()).width(buffer.readInt()).height(buffer.readInt()).textureWidth(buffer.readInt()).textureHeight(buffer.readInt()).color(buffer.readInt());
   }
 
@@ -62,9 +74,7 @@ public class SizedFluidIngredientRenderer implements IElement {
       tintColor = tintSource.colorAsStack(fluid);
     }
     Color color = new Color(tintColor);
-    ElementIconRender.render(fluidModel.stillMaterial().sprite().atlasLocation(), GuiGraphicsExtractor, x, y, 16, 16, -1, -1,
-        this.style.getTextureWidth(),
-        this.style.getTextureHeight(), color.getRGB());
+    ElementIconRender.render(fluidModel.stillMaterial().sprite(), GuiGraphicsExtractor, x, y, 16, 16, color.getRGB());
 
     // Chance rendering
     if (this.chance < 1f) {
@@ -99,7 +109,7 @@ public class SizedFluidIngredientRenderer implements IElement {
 
   @Override
   public void toBytes(RegistryFriendlyByteBuf buffer) {
-    buffer.writeJsonWithCodec(SizedFluidIngredient.CODEC, this.ingredient);
+    SizedFluidIngredient.STREAM_CODEC.encode(buffer, this.ingredient);
     buffer.writeFloat(this.chance);
     buffer.writeInt(this.style.getWidth());
     buffer.writeInt(this.style.getHeight());

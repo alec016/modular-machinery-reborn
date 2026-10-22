@@ -1,8 +1,9 @@
 package es.degrassi.mmr.common.entity.base;
 
 import com.google.common.collect.Maps;
-import es.degrassi.experiencelib.api.network.ISyncable;
+import com.google.common.primitives.Ints;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
@@ -14,7 +15,6 @@ import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
-import es.degrassi.mmr.api.network.syncable.IOSideConfigSyncable;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.EnergyHatchSize;
 import es.degrassi.mmr.common.entity.EnergyInputHatchEntity;
@@ -23,10 +23,10 @@ import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateEnergyComponentPacket;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
-import es.degrassi.mmr.common.util.MiscUtils;
 import es.degrassi.mmr.common.util.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,28 +47,22 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
-public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity implements EnergyHandler,
-    MachineComponentEntity<EnergyComponent>, ControllerAccessible, TextureableMachineEntity, CapabilityInventoryEntity<EnergyHandler>, ITickEntity, IServerTickEntity,
+public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<EnergyComponent>,
+    ControllerAccessible, TextureableMachineEntity, CapabilityInventoryEntity<EnergyHandler>, ITickEntity, IServerTickEntity,
     ISyncableStuff, IAutoEntity<EnergyHandler>, ISideConfigComponent<IOSideMode> {
 
-  protected long energy = 0;
   protected EnergyHatchSize size;
   protected IOType ioType;
   @Getter
   @Nullable private BlockPos controllerPos;
-
-  @Setter
-  private boolean canExtract = false;
-  @Setter
-  private boolean canInsert = false;
 
   @Getter
   @Setter
@@ -94,6 +88,9 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   @Getter
   private final IOSideConfig config;
 
+  @Getter
+  private final SimpleEnergyHandler energyHandler;
+
   protected EnergyHatchEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, EnergyHatchSize size,
                               IOType ioType) {
     super(type, pos, state);
@@ -104,7 +101,18 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
     this.capabilityInventory = createCapabilityInventory();
     this.config = IOSideConfig.Template.DEFAULT_ALL_DISABLED.build(this);
     this.config.setCallback(this::configChanged);
+    this.energyHandler = new SimpleEnergyHandler(
+        size.maxEnergy,
+        transfer(ioType.isInput(), size.transferLimit),
+        transfer(ioType.isOutput(), size.transferLimit)
+    );
+
+    energyHandler.setListener(this::onContentsChange);
     invalidateCapabilities();
+  }
+
+  private static long transfer(boolean predicate, long amount) {
+    return predicate ? amount : 0;
   }
 
   @Override
@@ -140,16 +148,22 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
         try(var transaction = Transaction.openRoot()) {
           if (ioType.isInput()) {
             if (!this.canReceive()) return;
-            if (this.getCurrentEnergy() >= this.getMaxEnergy()) return;
-            int simulatedCap = cap.extract(Integer.MAX_VALUE, transaction);
-            int simulatedInsert = receiveEnergy(simulatedCap, true);
-            receiveEnergy(simulatedInsert, false);
+            if (this.getEnergyHandler().getAmountAsLong() >= this.getEnergyHandler().getCapacityAsLong()) return;
+            int simulatedCap;
+            try (var subTx = Transaction.open(transaction)) {
+              simulatedCap = cap.extract(Integer.MAX_VALUE, subTx);
+            }
+            var inserted = energyHandler.insert(simulatedCap, transaction);
+            cap.extract(inserted, transaction);
           } else if (ioType.isOutput()) {
             if (!this.canExtract()) return;
-            if (this.getEnergyStored() == 0) return;
-            int simulatedExtract = extractEnergy(Integer.MAX_VALUE, true);
+            if (this.energyHandler.getAmountAsLong() == 0) return;
+            int simulatedExtract;
+            try (var subTx = Transaction.open(transaction)) {
+              simulatedExtract = energyHandler.extract(Integer.MAX_VALUE, subTx);
+            }
             int simulatedCap = cap.insert(simulatedExtract, transaction);
-            extractEnergy(simulatedCap, false);
+            energyHandler.extract(simulatedCap, transaction);
           }
           transaction.commit();
         } catch (Exception ignored) {}
@@ -160,7 +174,7 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   @Nullable
   @Override
   public EnergyComponent provideComponent() {
-    return new EnergyComponent(this, ioType);
+    return new EnergyComponent(energyHandler, ioType);
   }
 
   private void onContentsChange() {
@@ -171,82 +185,23 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
         controller.getProcessor().setMachineInventoryChanged();
       }
     });
-  }
-
-  @Override
-  public int insert(int amount, TransactionContext transaction) {
-    return 0;
-  }
-
-  @Override
-  public int extract(int amount, TransactionContext transaction) {
-    return 0;
-  }
-
-  @Override
-  public long getAmountAsLong() {
-    return energy;
-  }
-
-  @Override
-  public long getCapacityAsLong() {
-    return this.size.maxEnergy;
-  }
-
-  //#region toRemove
-  public int receiveEnergy(int maxReceive, boolean simulate) {
-    if (!canReceive()) {
-      return 0;
-    }
-    int insertable = this.energy + maxReceive > this.size.maxEnergy ? convertDownEnergy(this.size.maxEnergy - this.energy) : maxReceive;
-    insertable = Math.min(insertable, convertDownEnergy(size.transferLimit));
-    if (!simulate) {
-      this.energy = MiscUtils.clamp(this.energy + insertable, 0, this.size.maxEnergy);
-      markForUpdate();
-      onContentsChange();
-      if (getLevel() instanceof ServerLevel l)
-        PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()), new SUpdateEnergyComponentPacket(this.energy, getBlockPos()));
-    }
-    return insertable;
-  }
-
-  public int extractEnergy(int maxExtract, boolean simulate) {
-    if (!canExtract()) {
-      return 0;
-    }
-    int extractable = this.energy - maxExtract < 0 ? convertDownEnergy(this.energy) : maxExtract;
-    extractable = Math.min(extractable, convertDownEnergy(size.transferLimit));
-    if (!simulate) {
-      this.energy = MiscUtils.clamp(this.energy - extractable, 0, this.size.maxEnergy);
-      onContentsChange();
-      markForUpdate();
-      if (getLevel() instanceof ServerLevel l)
-        PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()), new SUpdateEnergyComponentPacket(this.energy, getBlockPos()));
-    }
-    return extractable;
-  }
-
-  public int getEnergyStored() {
-    return convertDownEnergy(this.energy);
-  }
-
-  public int getMaxEnergyStored() {
-    return convertDownEnergy(this.size.maxEnergy);
+    setChanged();
+    if (getLevel() instanceof ServerLevel l)
+      PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()),
+          new SUpdateEnergyComponentPacket(this.energyHandler.getAmountAsLong(), getBlockPos()));
   }
 
   public boolean canExtract() {
-    return canExtract || ioType != null && !ioType.isInput();
+    return ioType != null && !ioType.isInput();
   }
 
   public boolean canReceive() {
-    return canInsert || ioType != null && ioType.isInput();
+    return ioType != null && ioType.isInput();
   }
-//#endregion
-
   @Override
   protected void loadAdditional(ValueInput compound) {
     super.loadAdditional(compound);
-    this.energy = compound.getLongOr("energy", 0L);
+    compound.readChild("energyHandler", energyHandler);
     this.ioType = IOType.getByString(compound.getStringOr("ioType", ""));
     this.size = EnergyHatchSize.value(compound.getStringOr("hatchSize", "").toUpperCase(Locale.ROOT));
     compound.getLong("controllerPos").ifPresent(val -> controllerPos = BlockPos.of(val));
@@ -263,7 +218,7 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   protected void saveAdditional(ValueOutput compound) {
     super.saveAdditional(compound);
 
-    compound.putLong("energy", this.energy);
+    compound.putChild("energyHandler", energyHandler);
     if (ioType == null) {
       ioType = this instanceof EnergyInputHatchEntity ? IOType.INPUT : IOType.OUTPUT;
     }
@@ -294,25 +249,38 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
     return size;
   }
 
-  //#region toRemove
-  public long getCurrentEnergy() {
-    return this.energy;
+  protected void attemptFETransfer(EnergyHandler from, EnergyHandler to, long maxTransferLeft) {
+    if (from.getAmountAsLong() <= 0) return;
+    if (to.getAmountAsLong() == to.getCapacityAsLong()) return;
+    try (var root = Transaction.open(null)) {
+      for (int i : parts(maxTransferLeft)) {
+        try (var subTx = Transaction.open(root)) {
+          var remaining = to.getCapacityAsLong() - to.getAmountAsLong();
+          var available = from.getAmountAsLong();
+          var toSimulate = Ints.saturatedCast(Math.min(i, Math.min(remaining, available)));
+          int simulated;
+          try (var simTx = Transaction.open(subTx)) {
+            simulated = from.extract(toSimulate, simTx);
+          }
+          if (simulated <= 0) break;
+          var done = to.insert(simulated, subTx);
+          from.extract(done, subTx);
+          subTx.commit();
+        }
+      }
+      root.commit();
+    }
   }
 
-  public void setCurrentEnergy(long energy) {
-    this.energy = MiscUtils.clamp(energy, 0, getMaxEnergy());
-
-    if (getLevel() instanceof ServerLevel l)
-      PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()), new SUpdateEnergyComponentPacket(this.energy, getBlockPos()));
-    onContentsChange();
-    markForUpdate();
+  private Integer[] parts(long amount) {
+    List<Integer> list = new ArrayList<>();
+    do {
+      int amountToInsert = Math.clamp(amount = amount - Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
+      if (amountToInsert <= 0) break;
+      list.add(amountToInsert);
+    } while(amount > Integer.MAX_VALUE);
+    return list.toArray(Integer[]::new);
   }
-
-  public long getMaxEnergy() {
-    return this.size.maxEnergy;
-  }
-
-  //#endregion
 
   @Override
   public ModelData getModelData() {
@@ -401,7 +369,7 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(IOSideConfigSyncable.create(this::getConfig, this.config::set));
+  public void getStuffToSync(SyncableList container) {
+    container.sync(IOSideConfig.class, this::getConfig, this.config::set);
   }
 }

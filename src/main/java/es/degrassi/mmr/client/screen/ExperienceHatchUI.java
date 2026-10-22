@@ -1,4 +1,8 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
+import es.degrassi.mmr.client.screen.widget.gauges.ExperienceBarGauge;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
+import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
@@ -9,6 +13,7 @@ import es.degrassi.mmr.common.entity.ExperienceInputHatchEntity;
 import es.degrassi.mmr.common.entity.ExperienceOutputHatchEntity;
 import es.degrassi.mmr.common.entity.base.ExperienceHatchEntity;
 import es.degrassi.mmr.common.network.client.CExperienceButtonClickedPacket;
+import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import java.util.List;
@@ -32,10 +37,21 @@ public final class ExperienceHatchUI {
     UIElement panel = MMRMachineUI.panel(MMRMachineUI.TEX_GUIEXPERIENCE, MMRMachineUI.PANEL_WIDTH, 166);
 
     // Legacy right tab: the GTCEu-style 3D auto-IO configurator for this hatch's io orientation.
-    MMRTabs.autoIoTab(panel, hatch, MMRMachineUI.PANEL_WIDTH, 0, hatch.getMode().isInput());
+    new AutoIoTab<>(panel, hatch, MMRMachineUI.PANEL_WIDTH, 0, hatch.getMode().isInput());
+
+    // Operator-only fill tab, hanging left: pours XP points straight into the tank (input hatches).
+    if (hatch.getMode().isInput()) {
+      FillTab.fillExperienceTab(panel, holder.player, hatch, FillTab.LEFT_TAB_X, 0,
+          () -> (int) Math.max(0L, Math.min(hatch.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY)
+              - hatch.getTank().getAmountAsLong(0), Integer.MAX_VALUE)));
+    }
+
+    // Vanilla-style title above the legacy bar: the (8, 6) caption spot the old screen left blank.
+    MMRMachineUI.captionLabel(panel,
+        Component.translatable("modular_machinery_reborn.gui.title.experience_hatch"), 8, 6);
 
     // The legacy ExperienceWidget spot: (leftPos + 8, topPos + 20), width = imageWidth - 16.
-    MMRMachineUI.add(panel, MMRGauges.experienceBar(
+    MMRMachineUI.add(panel, new ExperienceBarGauge(
             160,
             () -> tank.getAmountAsLong(0),
             () -> tank.getCapacityAsLong(0, ExperienceResource.EMPTY))
@@ -71,7 +87,7 @@ public final class ExperienceHatchUI {
   private static void addExperienceButton(UIElement panel, ExperienceHatchEntity hatch,
                                           ExperienceButtonType type,
                                           int x, int y) {
-    MMRWidgets.iconButton(panel, type.icon(), x, y,
+    IconButton.iconButton(panel, type.icon(), x, y,
         event -> ClientPacketDistributor.sendToServer(
             new CExperienceButtonClickedPacket(hatch.getBlockPos(), type, type.extract())),
         () -> List.of(type.component()));

@@ -59,6 +59,7 @@ import es.degrassi.mmr.common.machine.component.TimeComponent;
 import es.degrassi.mmr.common.machine.component.WeatherComponent;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.util.Chunkloader;
 import es.degrassi.mmr.common.util.IntRange;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
@@ -101,10 +102,10 @@ public final class RequirementTypeRegistration {
   public static final Supplier<RequirementType<RequirementFluidPerTick, FluidComponent, FluidHandler>> FLUID_PER_TICK =
       MACHINE_REQUIREMENTS.register(rootLC("fluid_per_tick"),
       () -> RequirementType.inventory(RequirementFluidPerTick.CODEC));
-  public static final Supplier<RequirementType<RequirementEnergyPerTick, EnergyComponent, EnergyHandler>> ENERGY_PER_TICK =
+  public static final Supplier<RequirementType<RequirementEnergyPerTick, EnergyComponent, SimpleEnergyHandler>> ENERGY_PER_TICK =
       MACHINE_REQUIREMENTS.register(rootLC("energy_per_tick"),
       () -> RequirementType.inventory(RequirementEnergyPerTick.CODEC));
-  public static final Supplier<RequirementType<RequirementEnergy, EnergyComponent, EnergyHandler>> ENERGY =
+  public static final Supplier<RequirementType<RequirementEnergy, EnergyComponent, SimpleEnergyHandler>> ENERGY =
       MACHINE_REQUIREMENTS.register(rootLC("energy"),
       () -> RequirementType.inventory(RequirementEnergy.CODEC));
   public static final Supplier<RequirementType<RequirementDuration, DurationComponent, Void>> SPEED =

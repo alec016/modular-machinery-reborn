@@ -1,7 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
@@ -26,8 +26,6 @@ import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -134,6 +132,6 @@ public class CommandExecutionerEntity extends ColorableMachineComponentEntity im
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
   }
 }

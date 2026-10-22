@@ -1,0 +1,32 @@
+{
+  "parent": "modular_machinery_reborn:main/root",
+  "criteria": {
+    "controller": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:controller"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.mmr.Controller.desc"
+    },
+    "icon": {
+      "id": "modular_machinery_reborn:controller"
+    },
+    "title": {
+      "translate": "advancement.mmr.Controller"
+    }
+  },
+  "requirements": [
+    [
+      "controller"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

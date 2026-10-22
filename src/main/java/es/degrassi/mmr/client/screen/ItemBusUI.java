@@ -1,4 +1,6 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
+import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
@@ -11,6 +13,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
 import es.degrassi.mmr.common.data.config.ItemBusConfig;
 import es.degrassi.mmr.common.entity.base.TileItemBus;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
+import net.minecraft.network.chat.Component;
 
 /**
  * LDLib2 replacement for the old {@code ItemBusContainer} + {@code ItemBusScreen} pair.
@@ -47,7 +50,7 @@ public final class ItemBusUI {
     boolean scrolling = slots > SCROLL_THRESHOLD;
     // The visible pane shows 36/cols rows (exactly 36 cells) when scrolling, everything otherwise.
     int visibleRows = scrolling
-        ? Math.max(2, Math.min(MAX_VISIBLE_ROWS, SCROLL_THRESHOLD / cols))
+        ? Math.clamp(SCROLL_THRESHOLD / cols, 2, MAX_VISIBLE_ROWS)
         : rows;
 
     int gridX = ItemBusConfig.get().itemSlotXOffset.get();
@@ -60,16 +63,26 @@ public final class ItemBusUI {
     int hotbarY = playerY + 57;
     int height = hotbarY + MMRMachineUI.SLOT + 7;
 
-    UIElement panel = MMRMachineUI.panelNineSlice(MMRMachineUI.TEX_BACKGROUND, width - 7, height);
+    UIElement panel = MMRMachineUI.panelNineSlice(MMRMachineUI.TEX_BACKGROUND, width - 7, height + 15 + 12);
     if (scrolling) {
-      addScrolledGrid(panel, handler, slots, cols, visibleRows, gridX, gridY);
+      addScrolledGrid(panel, handler, slots, cols, visibleRows, gridX, gridY + 15);
     } else {
-      addPlainGrid(panel, handler, slots, cols, gridX, gridY);
+      addPlainGrid(panel, handler, slots, cols, gridX, gridY + 15);
     }
 
     // Legacy tab spot; with the scrollbar lane it lands just right of the scroller, AE2-like.
-    MMRTabs.autoIoTab(panel, bus, width - TAB_INSET, 0, bus.getIoType().isInput());
-    MMRMachineUI.playerInventory(panel, 8, playerY);
+    new AutoIoTab<>(panel, bus, width - TAB_INSET, 0, bus.getIoType().isInput());
+    // Operator-only fill tab on the left edge (gamemaster/custom permission), input buses only.
+    if (bus.getIoType().isInput()) {
+      FillTab.fillItemTab(panel, holder.player, bus, FillTab.LEFT_TAB_X, 0, bus::getInventory, null);
+    }
+
+    // Vanilla-style title fills the header above the gauges, the legacy (8, 6) caption spot.
+    MMRMachineUI.captionLabel(panel,
+        Component.translatable("modular_machinery_reborn.gui.title.item_bus"), 8, 6);
+
+    MMRMachineUI.inventoryLabel(panel, MMRMachineUI.INVENTORY_X, playerY + 15);
+    MMRMachineUI.playerInventory(panel, MMRMachineUI.INVENTORY_X, playerY + 15 + 12);
     return MMRMachineUI.menu(panel, holder.player);
   }
 
@@ -134,9 +147,13 @@ public final class ItemBusUI {
 
   /**
    * One bus slot with the same 18x18 legacy frame the panel slots use, parented by the caller.
+   *
+   * <p>Binds through {@link MMRBusSlot} so the manual actions keep the legacy semantics (always
+   * takeable from input buses, placeable into output buses) instead of the handler's auto-IO
+   * throughput limits, and so slot writes are direct replacements rather than re-inserts.
    */
   static ItemSlot styledSlot(ItemHandler handler, int index) {
-    ItemSlot slot = new ItemSlot().bind(handler, index);
+    ItemSlot slot = new ItemSlot().bind(new MMRBusSlot(handler, index));
     slot.layout(layout -> {
       layout.width(MMRMachineUI.SLOT);
       layout.height(MMRMachineUI.SLOT);

@@ -25,7 +25,6 @@ import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import java.util.function.Function;
 
 @Getter
-@SuppressWarnings("UnstableApiUsage")
 public class RequirementDurabilityPerTick implements IRequirement<DurabilityComponent, ItemHandler> {
   public static final NamedCodec<RequirementDurabilityPerTick> CODEC = NamedCodec.record(instance -> instance.group(
           NamedCodec.of(Ingredient.CODEC).fieldOf("ingredient").aliases("item").forGetter(req -> req.ingredient),

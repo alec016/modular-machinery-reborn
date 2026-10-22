@@ -7,6 +7,7 @@ import es.degrassi.mmr.common.integration.jei.category.MMRRecipeCategory;
 import es.degrassi.mmr.common.integration.jei.ingredient.CustomIngredientTypes;
 import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Energy;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.util.Utils;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -23,13 +24,12 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class JeiEnergyPerTickComponent extends JeiComponent<Energy, RecipeRequirement<EnergyComponent,
-    RequirementEnergyPerTick, EnergyHandler>> {
+public class JeiEnergyPerTickComponent extends JeiComponent<Energy, RecipeRequirement<EnergyComponent, RequirementEnergyPerTick, SimpleEnergyHandler>> {
   private int width = 16;
   private int height = 52;
   private int recipeTime;
 
-  public JeiEnergyPerTickComponent(RecipeRequirement<EnergyComponent, RequirementEnergyPerTick, EnergyHandler> requirement) {
+  public JeiEnergyPerTickComponent(RecipeRequirement<EnergyComponent, RequirementEnergyPerTick, SimpleEnergyHandler> requirement) {
     super(requirement, 18, 0);
   }
 

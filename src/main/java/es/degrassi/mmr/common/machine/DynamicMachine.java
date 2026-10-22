@@ -102,7 +102,7 @@ public class DynamicMachine {
   }
 
   public Component getName() {
-    String localizationKey = registryName.getNamespace() + "." + registryName.getPath().replaceAll("/", ".");
+    String localizationKey = registryName.getNamespace() + "." + registryName.getPath().replace("/", ".");
     return Component.translatableWithFallback(localizationKey, localizedName.orElse(localizationKey));
   }
 

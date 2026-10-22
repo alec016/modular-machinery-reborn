@@ -2,8 +2,8 @@ package es.degrassi.mmr.common.manager.crafting;
 
 import com.google.common.collect.Lists;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.api.crafting.IProcessor;
 import es.degrassi.mmr.api.crafting.IProcessorTemplate;
 import es.degrassi.mmr.common.data.MMRConfig;
@@ -12,17 +12,12 @@ import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.registration.ProcessorTypeRegistration;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 @Accessors(fluent = true, makeFinal = true)
 public class MachineProcessor implements IProcessor, ISyncableStuff {
@@ -120,31 +115,24 @@ public class MachineProcessor implements IProcessor, ISyncableStuff {
 
   @Override
   public void serialize(ValueOutput output) {
-    CompoundTag nbt = new CompoundTag();
-    ListTag cores = new ListTag();
-    this.cores.forEach(core -> cores.add(core.serialize()));
-    nbt.put("cores", cores);
+    var cores = output.child("cores");
+    for (int i = 0; i < this.cores.size(); i++) {
+      cores.putChild("core%s".formatted(i), this.cores.get(i));
+    }
+    cores.putInt("size", this.cores.size());
   }
 
   @Override
   public void deserialize(ValueInput nbt) {
-    nbt.childrenList("cores").ifPresent(cores -> {
-      var coresList = cores.stream().toList();
-      if(this.cores.size() == coresList.size()) {
-        for(int i = 0; i < this.cores.size(); i++)
-          this.cores.get(i).deserialize(coresList.get(i));
+    nbt.child("cores").ifPresent(cores -> {
+      for (int i = 0; i < cores.getIntOr("size", this.cores.size()); i++) {
+        this.cores.get(i).deserialize(cores.childOrEmpty("core%s".formatted(i)));
       }
     });
   }
 
-  public void deserializeFromValueInput(ValueInput nbt) {
-    if(nbt.child("cores").isPresent()) {
-
-    }
-  }
-
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     this.cores.forEach(core -> core.getStuffToSync(container));
   }
 

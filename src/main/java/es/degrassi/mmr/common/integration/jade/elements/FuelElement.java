@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec2;
@@ -53,10 +54,10 @@ public class FuelElement extends Element {
     int y = (int) (getY() * scale());
     GuiGraphicsExtractor.pose().pushMatrix();
     GuiGraphicsExtractor.pose().scale(1/scale(), 1/scale());
-    GuiGraphicsExtractor.blit(emptyTexture, x, y, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
+    GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
     var calcHeight = (int) (progress * getHeight());
     var offset = getHeight() - calcHeight;
-    GuiGraphicsExtractor.blit(filledTexture, x + 1, y + offset + 1, 0, offset, getWidth(), calcHeight, getWidth(), getHeight());
+    GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, filledTexture, x + 1, y + offset + 1, 0, offset, getWidth(), calcHeight, getWidth(), getHeight());
     GuiGraphicsExtractor.pose().popMatrix();
   }
 

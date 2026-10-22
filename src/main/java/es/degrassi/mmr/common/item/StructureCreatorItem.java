@@ -116,7 +116,7 @@ public class StructureCreatorItem extends Item {
 
   @Override
   public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag tooltipFlag) {
-    tooltip.accept(Component.translatable("modular_machinery_reborn.structure_creator.mode", mode.component()));
+    tooltip.accept(Component.translatable("modular_machinery_reborn.structure_creator.mode", mode.text()));
     if (mode.isBox()) {
       if (isFirst(stack)) {
         tooltip.accept(Component.translatable("modular_machinery_reborn.structure_creator.mode.box.first").withStyle(ChatFormatting.GRAY));

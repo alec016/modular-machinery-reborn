@@ -8,8 +8,12 @@ import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
+import com.lowdragmc.lowdraglib2.gui.ui.data.TextWrap;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Slider;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
 import es.degrassi.mmr.ModularMachineryReborn;
@@ -36,6 +40,15 @@ public final class MMRMachineUI {
   public static final int SLOT = 18;
   /** Standard machine panel width used by every Modular Machinery GUI. */
   public static final int PANEL_WIDTH = 176;
+  /**
+   * Standard panel height: the vanilla inventory grid (label at 72, main rows from 84, hotbar at
+   * 142) ends 159px down, leaving only the classic tight gap above the panel's bottom border.
+   */
+  public static final int PANEL_HEIGHT = 166;
+  /** Standard vanilla inventory spot on the panel (label y, main-grid x/y). */
+  public static final int INVENTORY_LABEL_Y = 72;
+  public static final int INVENTORY_X = 8;
+  public static final int INVENTORY_Y = 84;
 
   /** The legacy dynamic panel sprite: a 16x16 nine-slice (4px borders, sprites/background.png.mcmeta). */
   public static final Identifier TEX_BACKGROUND = ModularMachineryReborn.rl("textures/gui/sprites/background.png");
@@ -48,8 +61,19 @@ public final class MMRMachineUI {
   public static final Identifier TEX_GUICONTROLLER = ModularMachineryReborn.rl("textures/gui/guicontroller.png");
   public static final Identifier TEX_SMALL_SCROLLER = ModularMachineryReborn.rl("textures/gui/sprites/small_scroller.png");
   public static final Identifier TEX_SMALL_SCROLLER_DISABLED = ModularMachineryReborn.rl("textures/gui/sprites/small_scroller_disabled.png");
+  /** Standalone 20x61 black box backing the fluid/energy gauge fills (was the guibar.png crop). */
+  public static final Identifier TEX_TANK_BACKING = ModularMachineryReborn.rl("textures/gui/tank_backing.png");
 
   private MMRMachineUI() {}
+
+  /**
+   * Left coordinate that horizontally centers a block of {@code contentWidth} pixels in the standard
+   * panel. The layout recipe shared by the machine screens: compute the group width from the legacy
+   * relative spacings, then place every member of the group at {@code left + legacyOffset}.
+   */
+  public static int centeredLeft(int contentWidth) {
+    return (PANEL_WIDTH - contentWidth) / 2;
+  }
 
   /** Wraps a machine UI as a menu-backed {@link ModularUI} bound to the player (required for slot syncing). */
   public static ModularUI menu(UIElement root, Player player) {
@@ -200,5 +224,33 @@ public final class MMRMachineUI {
     Label label = new Label();
     label.bind(DataBindingBuilder.componentS2C(text).build());
     return add(panel, label, x, y);
+  }
+
+  /** Adds a static caption drawn on a {@code SpriteButton#spriteButton}-compatible row. */
+  public static Label spriteCaption(UIElement parent, Component text, int x, int y, int width, int height) {
+    Label label = new Label();
+    label.setText(text);
+    label.layout(layout -> {
+      layout.width(width);
+      layout.height(height);
+    });
+    label.textStyle(style -> style.textAlignHorizontal(Horizontal.CENTER).textAlignVertical(Vertical.CENTER));
+    return add(parent, label, x, y);
+  }
+
+  /**
+   * Dress a slider's handle with the small-scroller thumb — the same nine-slice the fill
+   * drawer's scrollbar grabber uses — so the slider reads as a scrollbar. The slider's built-in
+   * track and fill keep their default styling: the thumb carries no scrollbar background.
+   */
+  public static <T extends Slider> T withScrollerThumb(T slider) {
+    slider.handle.buttonStyle(style -> {
+      // Identical nine-slice borders to the drawer scroller thumb (LR 3 px, TB 4 px).
+      var thumb = spriteNineSlice(TEX_SMALL_SCROLLER, 3, 4, 3, 4);
+      style.baseTexture(thumb);
+      style.hoverTexture(thumb);
+      style.pressedTexture(thumb);
+    });
+    return slider;
   }
 }

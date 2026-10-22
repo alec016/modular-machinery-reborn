@@ -6,6 +6,7 @@ import es.degrassi.mmr.common.network.client.CChangeIOSideConfigPacket;
 import es.degrassi.mmr.common.network.client.CCoreButtonClickedPacked;
 import es.degrassi.mmr.common.network.client.CDynamicTooltipEventCallPacket;
 import es.degrassi.mmr.common.network.client.CExperienceButtonClickedPacket;
+import es.degrassi.mmr.common.network.client.CFillHatchRequestPacket;
 import es.degrassi.mmr.common.network.client.CPlaceStructurePacket;
 import es.degrassi.mmr.common.network.client.CRedstoneButtonModeClickedPacket;
 import es.degrassi.mmr.common.network.client.CSetFilterSlotItemPacket;
@@ -83,6 +84,7 @@ public class PacketManager {
     registrar.playToServer(CDynamicTooltipEventCallPacket.TYPE, CDynamicTooltipEventCallPacket.CODEC, CDynamicTooltipEventCallPacket::handle);
     registrar.playToServer(CSetFilterSlotItemPacket.TYPE, CSetFilterSlotItemPacket.CODEC, CSetFilterSlotItemPacket::handle);
     registrar.playToServer(CSetFilterSlotFluidPacket.TYPE, CSetFilterSlotFluidPacket.CODEC, CSetFilterSlotFluidPacket::handle);
+    registrar.playToServer(CFillHatchRequestPacket.TYPE, CFillHatchRequestPacket.CODEC, CFillHatchRequestPacket::handle);
 
     // JEI/Recipe Transfer packet
     if (Mods.isJEILoaded()) {

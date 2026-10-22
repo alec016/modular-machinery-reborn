@@ -5,7 +5,6 @@ import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IAutoOutputEntity;
 import es.degrassi.mmr.common.crafting.MachineRecipe;
-import es.degrassi.mmr.common.crafting.helper.CraftingStatus;
 import es.degrassi.mmr.common.crafting.requirement.RequirementFluid;
 import es.degrassi.mmr.common.crafting.requirement.RequirementFluidPerTick;
 import es.degrassi.mmr.common.crafting.requirement.RequirementItem;
@@ -148,12 +147,12 @@ public class TOPInfoProvider implements IProbeInfoProvider, Function<ITheOneProb
   }
 
   private void showCraftingInfo(MachineControllerEntity tile, IProbeInfo info) {
-    CraftingStatus status = tile.getCraftingStatus();
-    MutableComponent message = status.getUnlocMessage().copy();
-    switch (status.getStatus()) {
-      case CRAFTING -> message.withStyle(ChatFormatting.GREEN);
-      case NO_RECIPE -> message.withStyle(ChatFormatting.GOLD);
-      case MISSING_STRUCTURE, FAILURE -> message.withStyle(ChatFormatting.RED);
+    var status = tile.getStatus();
+    MutableComponent message = status.text().copy();
+    switch (status) {
+      case RUNNING -> message.withStyle(ChatFormatting.GREEN);
+      case IDLE -> message.withStyle(ChatFormatting.GOLD);
+      case MISSING_STRUCTURE, ERRORED, PAUSED -> message.withStyle(ChatFormatting.RED);
     }
     info.mcText(message);
     long runningCores = tile.getProcessor()

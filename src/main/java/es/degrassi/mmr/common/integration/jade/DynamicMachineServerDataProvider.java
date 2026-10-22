@@ -7,6 +7,7 @@ import es.degrassi.mmr.common.crafting.requirement.RequirementFluidPerTick;
 import es.degrassi.mmr.common.crafting.requirement.RequirementItem;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.manager.crafting.MachineProcessorCore;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -31,7 +32,7 @@ public class DynamicMachineServerDataProvider implements IServerDataProvider<Blo
       if (machine.isPaused()) {
         tag.putBoolean("paused", true);
       } else {
-        tag.put("status", machine.getCraftingStatus().serializeNBT(accessor.getLevel().registryAccess()));
+        tag.store("status", MachineStatus.CODEC.codec(), NbtOps.INSTANCE, machine.getStatus());
         var runningCores = machine.getProcessor()
             .cores()
             .stream()

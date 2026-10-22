@@ -45,7 +45,12 @@ public abstract class  JeiComponent<X, R extends RecipeRequirement<?, ?, ?>> imp
 
   @Override
   public void render(GuiGraphicsExtractor guiGraphics, X ingredient) {
-    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture(), -1, -1, 0, uOffset, vOffset, getWidth(), getHeight(), TextureSizeHelper.getWidth(texture()), TextureSizeHelper.getHeight(texture()));
+    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture(),
+        -1, -1,
+        uOffset, vOffset,
+        getWidth(), getHeight(),
+        TextureSizeHelper.getWidth(texture()), TextureSizeHelper.getHeight(texture())
+    );
   }
 
   @Override

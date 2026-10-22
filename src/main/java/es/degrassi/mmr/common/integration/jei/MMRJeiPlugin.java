@@ -146,10 +146,6 @@ public class MMRJeiPlugin implements IModPlugin {
 
   @Override
   public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-    // LEGACY: the extra-area / clickable-area / ghost-ingredient handlers below targeted the
-    // old AbstractContainerScreen UI (BaseScreen, ControllerScreen, FilterSlotComponent), which
-    // has been replaced by the LDLib2 ModularUI screens. JEI still renders the recipes; the
-    // extras of the new screens can be re-registered here once their layout is final.
 }
 
   private static IGuiClickableArea createBasic(

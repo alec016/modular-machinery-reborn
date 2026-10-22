@@ -10,14 +10,16 @@ import es.degrassi.mmr.api.crafting.requirement.IRequirementList;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
+import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
+import es.degrassi.mmr.common.util.MMRLogger;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
-public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, EnergyHandler> {
+public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, SimpleEnergyHandler> {
   public static final NamedMapCodec<RequirementEnergyPerTick> CODEC = NamedCodec.record(instance -> instance.group(
       NamedCodec.longRange(0, Long.MAX_VALUE).fieldOf("amount").forGetter(req -> req.requirementPerTick),
       NamedCodec.enumCodec(IOType.class).fieldOf("mode").forGetter(IRequirement::getMode),
@@ -40,12 +42,12 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, E
   }
 
   @Override
-  public RequirementType<RequirementEnergyPerTick, EnergyComponent, EnergyHandler> getType() {
+  public RequirementType<RequirementEnergyPerTick, EnergyComponent, SimpleEnergyHandler> getType() {
     return RequirementTypeRegistration.ENERGY_PER_TICK.get();
   }
 
   @Override
-  public ComponentType<EnergyHandler> getComponentType() {
+  public ComponentType<SimpleEnergyHandler> getComponentType() {
     return ComponentRegistration.COMPONENT_ENERGY.get();
   }
 
@@ -73,13 +75,18 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, E
     try (var root = Transaction.open(null)) {
       int amount = (int) context.getPerTickIntegerModifiedValue(this.requirementPerTick, this);
       var handler = component.getContainerProvider();
+      var tempMaxExtract = handler.getMaxExtract();
+      handler.setMaxExtract(Long.MAX_VALUE);
       try (var sub = Transaction.open(root)) {
         int canExtract = handler.extract(amount, sub);
+        MMRLogger.INSTANCE.debug("canExtract {}", canExtract);
         if (canExtract == amount) {
           sub.commit();
           root.commit();
+          handler.setMaxExtract(tempMaxExtract);
           return CraftingResult.success();
         }
+        handler.setMaxExtract(tempMaxExtract);
         return CraftingResult.error(Component.translatable("craftcheck.failure.energy.input", requirementPerTick, canExtract));
       }
     }
@@ -89,14 +96,18 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, E
     try (var root = Transaction.open(null)) {
       int amount = (int) context.getPerTickIntegerModifiedValue(this.requirementPerTick, this);
       var handler = component.getContainerProvider();
+      var tempMaxInsert = handler.getMaxInsert();
+      handler.setMaxInsert(Long.MAX_VALUE);
       try (var sub = Transaction.open(root)) {
         int canReceive = handler.insert(amount, sub);
         if (canReceive == amount) {
           sub.commit();
           root.commit();
+          handler.setMaxInsert(tempMaxInsert);
           return CraftingResult.success();
         }
         root.commit();
+        handler.setMaxInsert(tempMaxInsert);
         return CraftingResult.error(Component.translatable(
             "craftcheck.failure.energy.output", requirementPerTick, handler.getCapacityAsLong() - handler.getAmountAsLong()
         ));

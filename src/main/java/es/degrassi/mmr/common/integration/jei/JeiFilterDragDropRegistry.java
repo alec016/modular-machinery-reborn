@@ -1,6 +1,5 @@
 package es.degrassi.mmr.common.integration.jei;
 
-import com.google.common.collect.Maps;
 import es.degrassi.mmr.api.integration.jei.JeiFilterDragDropFactory;
 import es.degrassi.mmr.api.integration.jei.RegisterJeiFilterDragDropEvent;
 import es.degrassi.mmr.client.container.FilterSlotComponent;

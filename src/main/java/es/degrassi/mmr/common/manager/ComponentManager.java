@@ -6,8 +6,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.api.BlockIngredient;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.controller.ControllerAttacheable;
@@ -50,7 +50,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 public class ComponentManager implements ISyncableStuff, ValueIOSerializable {
@@ -358,7 +357,7 @@ public class ComponentManager implements ISyncableStuff, ValueIOSerializable {
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     getFoundComponentsList().stream()
         .filter(c -> c instanceof ISyncableStuff)
         .map(c -> (ISyncableStuff) c)

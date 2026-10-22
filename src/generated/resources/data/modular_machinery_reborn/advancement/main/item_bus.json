@@ -1,0 +1,175 @@
+{
+  "parent": "modular_machinery_reborn:main/controller",
+  "criteria": {
+    "input_big": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_big"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_huge": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_huge"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_ludicrous": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_ludicrous"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_normal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_normal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_reinforced": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_reinforced"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_small": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_small"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "input_tiny": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:inputbus_tiny"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_big": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_big"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_huge": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_huge"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_ludicrous": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_ludicrous"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_normal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_normal"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_reinforced": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_reinforced"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_small": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_small"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "output_tiny": {
+      "conditions": {
+        "items": [
+          {
+            "items": "modular_machinery_reborn:outputbus_tiny"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.mmr.ItemBus.desc"
+    },
+    "icon": {
+      "id": "modular_machinery_reborn:inputbus_ludicrous"
+    },
+    "title": {
+      "translate": "advancement.mmr.ItemBus"
+    }
+  },
+  "requirements": [
+    [
+      "input_tiny",
+      "input_small",
+      "input_normal",
+      "input_reinforced",
+      "input_big",
+      "input_huge",
+      "input_ludicrous",
+      "output_tiny",
+      "output_small",
+      "output_normal",
+      "output_reinforced",
+      "output_big",
+      "output_huge",
+      "output_ludicrous"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

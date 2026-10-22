@@ -1,7 +1,12 @@
 package es.degrassi.mmr.common.manager.crafting;
 
 import es.degrassi.experiencelib.api.codec.NamedCodec;
-import net.minecraft.network.chat.Component;
+import es.degrassi.experiencelib.api.datagen.LocalizationEnum;
+import es.degrassi.experiencelib.data.localization.AutoCollectLang;
+import es.degrassi.mmr.ModularMachineryReborn;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,27 +16,32 @@ import java.util.Locale;
  * An enum of all possible states the machine can be. The machine status is hold by the CraftingManager attached to the
  * MachineTile and is synced automatically when changed.
  */
-public enum MachineStatus implements StringRepresentable {
+@AutoCollectLang(ModularMachineryReborn.MODID)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+public enum MachineStatus implements StringRepresentable, LocalizationEnum {
   /**
    * The machine is searching for a valid multiblock structure.
    */
-  MISSING_STRUCTURE,
+  MISSING_STRUCTURE("Missing structure"),
   /**
    * The machine search for a recipe it can process.
    */
-  IDLE,
+  IDLE("No matching recipe found"),
   /**
    * The machine is processing a recipe.
    */
-  RUNNING,
+  RUNNING("Processing..."),
   /**
    * The machine encountered an error when processing a recipe, usually either a missing input or not space for output.
    */
-  ERRORED,
+  ERRORED(""),
   /**
    * The machine is paused.
    */
-  PAUSED;
+  PAUSED("Paused");
+
+  @Getter
+  private final String englishText;
 
   public static final NamedCodec<MachineStatus> CODEC = NamedCodec.enumCodec(MachineStatus.class);
 
@@ -70,7 +80,8 @@ public enum MachineStatus implements StringRepresentable {
     return toString();
   }
 
-  public Component getUnlocalizedDescription() {
-    return Component.translatable("gui.controller.status." + getSerializedName());
+  @Override
+  public String getTranslationKey() {
+    return "gui.controller.status." + getSerializedName();
   }
 }

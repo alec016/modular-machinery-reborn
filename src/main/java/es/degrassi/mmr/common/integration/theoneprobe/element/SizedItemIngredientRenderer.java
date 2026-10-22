@@ -21,8 +21,6 @@ public class SizedItemIngredientRenderer implements IElement {
   private final SizedIngredient item;
   private final float scale;
   private final CycleTimer timer = new CycleTimer(() -> 1000, true);
-  /*public static final SizedItemIngredientRenderer EMPTY =
-      new SizedItemIngredientRenderer(new SizedIngredient(Ingredient.of(), 1), 1, 0.5f);*/
   private final List<ItemStack> itemList;
   private final float chance;
 
@@ -38,7 +36,7 @@ public class SizedItemIngredientRenderer implements IElement {
   }
 
   public SizedItemIngredientRenderer(RegistryFriendlyByteBuf buffer) {
-    this.item = buffer.readLenientJsonWithCodec(SizedIngredient.NESTED_CODEC);
+    this.item = SizedIngredient.STREAM_CODEC.decode(buffer);
     this.chance = buffer.readFloat();
     this.scale = buffer.readFloat();
     this.itemList = this.item.ingredient().display().resolveForStacks(ContextMap.EMPTY).stream().map(s -> s.copyWithCount(item.count())).toList();
@@ -84,7 +82,7 @@ public class SizedItemIngredientRenderer implements IElement {
 
   @Override
   public void toBytes(RegistryFriendlyByteBuf buffer) {
-    buffer.writeJsonWithCodec(SizedIngredient.NESTED_CODEC, this.item);
+    SizedIngredient.STREAM_CODEC.encode(buffer, this.item);
     buffer.writeFloat(this.chance);
     buffer.writeFloat(this.scale);
   }

@@ -2,9 +2,8 @@ package es.degrassi.mmr.common.entity;
 
 import com.google.common.collect.Maps;
 import es.degrassi.experiencelib.api.capability.IContentsListener;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
-import es.degrassi.experiencelib.api.network.syncable.LongSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.BasicFuelHandler;
 import es.degrassi.mmr.api.capability.IFuelHandler;
@@ -16,7 +15,6 @@ import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
-import es.degrassi.mmr.api.network.syncable.IOSideConfigSyncable;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.FuelTankSize;
 import es.degrassi.mmr.common.data.MMRConfig;
@@ -57,7 +55,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -269,10 +266,10 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(LongSyncable.create(getFuelHandler()::getFuel, getFuelHandler()::setFuel));
-    container.accept(LongSyncable.create(getFuelHandler()::getMaxFuel, getFuelHandler()::setMaxFuel));
-    container.accept(IOSideConfigSyncable.create(this::getConfig, this.config::set));
+  public void getStuffToSync(SyncableList container) {
+    container.syncLong(getFuelHandler()::getFuel, getFuelHandler()::setFuel);
+    container.syncLong(getFuelHandler()::getMaxFuel, getFuelHandler()::setMaxFuel);
+    container.sync(IOSideConfig.class, this::getConfig, this.config::set);
   }
 
   @Override

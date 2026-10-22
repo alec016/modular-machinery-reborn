@@ -456,6 +456,8 @@ final class PtBrLocalization extends LocalizationProvider {
     add(mm(gui("title.parallel_hatch")), "Escotilha Paralela");
     add(mm(gui("title.fuel_tank")), "Fuel Tank");
     add(mm(gui("title.redstone_port")), "Redstone Port");
+    add(mm(gui("title.experience_hatch")), "Experience Hatch");
+    add(mm(gui("title.durability_hatch")), "Durability Hatch");
     add(mmr(gui("button.back")), "Voltar");
     add(mmr(gui("button.close")), "Fechar");
     add(mmr(gui("button.page.next")), "Próxima Página");
@@ -540,10 +542,10 @@ final class PtBrLocalization extends LocalizationProvider {
     add(gui("controller.status.redstone_stopped"), "Máquina parada por sinal de redstone");
     add(gui("controller.status.paused"), "Pausado");
     add(gui("controller.status.missing_structure"), "Faltando estrutura");
-    add(gui("controller.status.no_recipe"), "Nenhuma receita correspondente encontrada");
-    add(gui("controller.status.failure"), "");
-    add(gui("controller.status.crafting"), "Processando...");
-    add(gui("controller.status.crafting.progress"), "Progresso: %s");
+    add(gui("controller.status.idle"), "Nenhuma receita correspondente encontrada");
+    add(gui("controller.status.errored"), "");
+    add(gui("controller.status.running"), "Processando...");
+    add(gui("controller.status.running.progress"), "Progresso: %s");
     add(mmr("core.active.true"), "O núcleo pode executar receitas");
     add(mmr("core.active.false"), "O núcleo não pode executar receitas");
     add(mmr("core.number"), "Número do núcleo: %s");

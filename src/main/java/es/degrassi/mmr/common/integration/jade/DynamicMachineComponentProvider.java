@@ -3,10 +3,10 @@ package es.degrassi.mmr.common.integration.jade;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.common.crafting.helper.CraftingStatus;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.integration.jade.elements.SizedFluidIngredientElement;
 import es.degrassi.mmr.common.integration.jade.elements.SizedItemIngredientElement;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -14,8 +14,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import snownee.jade.api.BlockAccessor;
@@ -45,12 +43,17 @@ public class DynamicMachineComponentProvider implements IBlockComponentProvider 
           return;
         }
         if (tag.contains("status")) {
-          CraftingStatus status = CraftingStatus.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, accessor.getLevel().registryAccess(), tag.getCompound("status").orElseGet(CompoundTag::new)), accessor.getLevel().registryAccess());
-          MutableComponent message = status.getUnlocMessage().copy();
-          switch (status.getStatus()) {
-            case CRAFTING -> message.withStyle(ChatFormatting.GREEN);
-            case NO_RECIPE -> message.withStyle(ChatFormatting.GOLD);
-            case MISSING_STRUCTURE, FAILURE -> message.withStyle(ChatFormatting.RED);
+          MachineStatus status = tag.read(
+              "status",
+              MachineStatus.CODEC.codec(),
+              NbtOps.INSTANCE
+          ).orElse(MachineStatus.MISSING_STRUCTURE);
+
+          MutableComponent message = status.text().copy();
+          switch (status) {
+            case RUNNING -> message.withStyle(ChatFormatting.GREEN);
+            case IDLE -> message.withStyle(ChatFormatting.GOLD);
+            case MISSING_STRUCTURE, ERRORED, PAUSED -> message.withStyle(ChatFormatting.RED);
           }
           tooltip.add(message);
         }

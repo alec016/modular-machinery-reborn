@@ -1,138 +1,107 @@
 package es.degrassi.mmr.client.screen.popup;
 
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import com.lowdragmc.lowdraglib2.client.font.LDFonts;
+import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
+import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollDisplay;
+import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollerMode;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
+import com.lowdragmc.lowdraglib2.utils.TextUtilities;
+import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.widget.buttons.ScrollingTextButton;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 
-/**
- * LEGACY UI - replaced by the LDLib2 {@code ModularUI} screens in {@code es.degrassi.mmr.client.screen.*UI}.
- *
- * This type is kept as an empty shell so that legacy references still resolve; the original
- * implementation is commented out below for reference. Nothing here is registered any more
- * (menus are opened through {@code BlockUIMenuType.openUI}).
- */
-public class ConfirmationPopup<T extends AbstractContainerMenu> {}
+import javax.annotation.Nullable;
+import java.util.List;
 
-// ==== original implementation, commented out ====
-// package es.degrassi.mmr.client.screen.popup;
-//
-// import es.degrassi.mmr.client.screen.widget.StringButton;
-// import net.minecraft.ChatFormatting;
-// import net.minecraft.client.Minecraft;
-// import net.minecraft.client.gui.Font;
-// import net.minecraft.client.gui.components.Button;
-// import net.minecraft.client.gui.components.MultiLineTextWidget;
-// import net.minecraft.client.gui.components.StringWidget;
-// import net.minecraft.client.gui.layouts.GridLayout;
-// import net.minecraft.network.chat.Component;
-// import net.minecraft.network.chat.MutableComponent;
-// import net.minecraft.world.inventory.AbstractContainerMenu;
-// import org.jetbrains.annotations.Nullable;
-//
-// import java.util.ArrayList;
-// import java.util.Arrays;
-// import java.util.List;
-//
-// public class ConfirmationPopup<T extends AbstractContainerMenu> extends PopupScreen<T> {
-//
-//   public Component CONFIRM = Component.translatable("mmr.gui.popup.confirm").withStyle(ChatFormatting.GREEN);
-//   public Component CANCEL = Component.translatable("mmr.gui.popup.cancel").withStyle(ChatFormatting.RED);
-//
-//   private final Runnable onConfirm;
-//   private final List<Component> text = new ArrayList<>();
-//   private Component title;
-//   @Nullable
-//   private Runnable onCancel;
-//
-//   private boolean closeButton = false;
-//
-//   public ConfirmationPopup(BasePopupScreen<T> parent, int xSize, int ySize,
-//                            Runnable onConfirm) {
-//     super(parent, xSize, ySize);
-//     this.onConfirm = onConfirm;
-//     this.onCancel = null;
-//   }
-//
-//   public ConfirmationPopup<T> addCloseButton() {
-//     this.closeButton = true;
-//     return this;
-//   }
-//
-//   public ConfirmationPopup<T> confirmText(Component confirmText) {
-//     CONFIRM = confirmText;
-//     return this;
-//   }
-//
-//   public ConfirmationPopup<T> cancelText(Component cancelText) {
-//     CANCEL = cancelText;
-//     return this;
-//   }
-//
-//   public ConfirmationPopup<T> cancelCallback(Runnable callback) {
-//     this.onCancel = callback;
-//     return this;
-//   }
-//
-//   public ConfirmationPopup<T> title(Component title) {
-//     this.title = title;
-//     return this;
-//   }
-//
-//   public ConfirmationPopup<T> text(Component... components) {
-//     this.text.addAll(Arrays.asList(components));
-//     return this;
-//   }
-//
-//   public void confirm() {
-//     this.onConfirm.run();
-//     this.parent.closePopup(this);
-//   }
-//
-//   public void cancel() {
-//     if (this.onCancel != null)
-//       this.onCancel.run();
-//     this.parent.closePopup(this);
-//   }
-//
-//   @Override
-//   protected void init() {
-//     super.init();
-//     Font font = Minecraft.getInstance().font;
-//     GridLayout layout = new GridLayout(this.x, this.y).columnSpacing(10);
-//     GridLayout.RowHelper row = layout.createRowHelper(2);
-//     row.defaultCellSetting().padding(5).alignHorizontallyCenter();
-//
-//     if (closeButton)
-//       row.addChild(
-//           Button
-//               .builder(Component.literal("X"), b -> this.parent.closePopup(this))
-//               .bounds(
-//                   0,
-//                   0,
-//                   20,
-//                   20
-//               )
-//               .build(builder -> new StringButton(builder, true).setTooltips(Component.translatable("mmr.gui.button.close"))),
-//           2,
-//           row.newCellSettings().alignHorizontallyRight()
-//       );
-//
-//     if (this.title != null)
-//       row.addChild(new StringWidget(this.xSize, 10, title, font).alignCenter(), 2);
-//
-//     if (!this.text.isEmpty()) {
-//       MutableComponent text = Component.empty();
-//       for (Component component : this.text)
-//         text.append("\n").append(component);
-//       MultiLineTextWidget textWidget = new MultiLineTextWidget(text, font).setCentered(true).setMaxWidth(this.xSize - 10);
-//       row.addChild(textWidget, 2, row.newCellSettings().alignHorizontallyLeft());
-//     }
-//
-//     row.addChild(Button.builder(CONFIRM, b -> this.confirm()).bounds(0, 0, 75, 20).build(builder -> new StringButton(builder, true)),
-//         row.newCellSettings().alignHorizontallyLeft());
-//     row.addChild(Button.builder(CANCEL, b -> this.cancel()).bounds(0, 0, 75, 20).build(builder -> new StringButton(builder, true)),
-//         row.newCellSettings().alignHorizontallyLeft());
-//     layout.arrangeElements();
-//     layout.visitWidgets(this::addRenderableWidget);
-//     this.ySize = layout.getHeight() + 5;
-//   }
-// }
-//
+public final class ConfirmationPopup extends BasePopup {
+
+  private static final int SCROLLER_GUTTER = 11;
+  private static final float LINE_HEIGHT = 10f;
+  private static final int BOTTOM_CHROME = 30;
+
+  public ConfirmationPopup(UIElement parent, int width, int minHeight,
+                           @Nullable Component title, List<Component> text,
+                           @Nullable Component confirmText, @Nullable Component cancelText,
+                           @Nullable Runnable onConfirm, @Nullable Runnable onCancel,
+                           boolean closeButton) {
+    super(width, computeHeight(width, minHeight, title, text, closeButton));
+    int y = 5;
+    if (closeButton) {
+      addCloseButton();
+      y = 25;
+    }
+    if (title != null) {
+      popupLabel(title, 0, y, width);
+      y += 20;
+    }
+    if (!text.isEmpty()) {
+      int wrapWidth = width - 10 - SCROLLER_GUTTER;
+      addScrollingText(joined(text), y, wrapWidth, height - BOTTOM_CHROME - y);
+    }
+    ScrollingTextButton.scrollingButton(contentContainer,
+        confirmText == null ? CONFIRM : confirmText, 5, height - 25, 75, 20,
+        event -> {
+          if (onConfirm != null) {
+            onConfirm.run();
+          }
+          close();
+        });
+    ScrollingTextButton.scrollingButton(contentContainer,
+        cancelText == null ? CANCEL : cancelText, 5 + 75 + 10, height - 25, 75, 20,
+        event -> {
+          if (onCancel != null) {
+            onCancel.run();
+          }
+          close();
+        });
+    show(parent);
+  }
+
+  private static Component joined(List<Component> text) {
+    MutableComponent joined = Component.empty();
+    for (Component line : text) {
+      joined.append("\n").append(line);
+    }
+    return joined;
+  }
+
+  private static int computeHeight(int width, int minHeight,
+                                   @Nullable Component title, List<Component> text, boolean closeButton) {
+    int top = 5;
+    if (closeButton) {
+      top = 25;
+    }
+    if (title != null) {
+      top += 20;
+    }
+    int lines = text.isEmpty() ? 0
+        : TextUtilities.computeFormattedLines(LDFonts.font(), joined(text), 9f, width - 10 - SCROLLER_GUTTER).size();
+    int desired = top + (int) Math.ceil(lines * LINE_HEIGHT - 1) + BOTTOM_CHROME;
+    int cap = Minecraft.getInstance().getWindow().getGuiScaledHeight() * 2 / 3;
+    return Mth.clamp(desired, minHeight, Math.max(minHeight, cap));
+  }
+
+  private void addScrollingText(Component joinedText, int top, int wrapWidth, int viewportHeight) {
+    ScrollerView scroller = new ScrollerView();
+    scroller.lss("width", wrapWidth + SCROLLER_GUTTER).lss("height", viewportHeight);
+    MMRMachineUI.add(contentContainer, scroller, 5, top);
+    scroller.getScrollerViewStyle().mode(ScrollerMode.VERTICAL).verticalScrollDisplay(ScrollDisplay.AUTO).scrollerViewStyle(4);
+    scroller.viewPort.layout(layout -> layout.paddingAll(0));
+    scroller.viewPort.style(style -> style.background(IGuiTexture.EMPTY));
+    scroller.verticalScroller.lss("margin-left", 4).lss("width", 7);
+    scroller.verticalScroller.scrollContainer.style(style ->
+        style.background(MMRMachineUI.spriteNineSlice(MMRMachineUI.TEX_SMALL_SCROLLER_DISABLED, 3, 4, 3, 4)));
+    scroller.verticalScroller.scrollBar.buttonStyle(style -> {
+      var thumb = MMRMachineUI.spriteNineSlice(MMRMachineUI.TEX_SMALL_SCROLLER, 3, 4, 3, 4);
+      style.baseTexture(thumb);
+      style.hoverTexture(thumb);
+      style.pressedTexture(thumb);
+    });
+    popupLabel(scroller.viewContainer, joinedText, 0, 0, wrapWidth);
+  }
+}

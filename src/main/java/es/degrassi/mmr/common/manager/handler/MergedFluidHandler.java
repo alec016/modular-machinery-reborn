@@ -1,6 +1,6 @@
 package es.degrassi.mmr.common.manager.handler;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -89,7 +89,7 @@ public class MergedFluidHandler extends FluidHandler {
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     // Each source block entity already registers its own tank syncables.
   }
 

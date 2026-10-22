@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import es.degrassi.experiencelib.api.ExperienceResource;
 import es.degrassi.experiencelib.api.capability.ExperienceLibCapabilities;
 import es.degrassi.experiencelib.api.capability.IExperienceHandler;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.experiencelib.transfer.SimpleExperienceHandler;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
@@ -18,7 +18,6 @@ import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
-import es.degrassi.mmr.api.network.syncable.IOSideConfigSyncable;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.ExperienceHatchSize;
 import es.degrassi.mmr.common.entity.ExperienceInputHatchEntity;
@@ -28,6 +27,7 @@ import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.ExperienceComponent;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
+import es.degrassi.mmr.common.network.server.component.SUpdateExperienceComponentPacket;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmr.common.util.Utils;
 import lombok.Getter;
@@ -53,7 +53,6 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public abstract class ExperienceHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<ExperienceComponent>,
     ControllerAccessible, TextureableMachineEntity, CapabilityInventoryEntity<IExperienceHandler>, ITickEntity, IServerTickEntity, ISyncableStuff,
@@ -209,6 +208,14 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
             controller.getProcessor().setMachineInventoryChanged();
           }
         });
+        // Live UI sync: every server-side change (manual XP buttons, bottle conversion, operator
+        // fill, auto-IO) sends the experience sync packet, the same dedicated packet every other
+        // component keeps (the block-entity update tag alone does not carry the tank amount, so a
+        // bare markForUpdate left the UI bar stale until the next world load).
+        if (getLevel() instanceof ServerLevel level && prevAmount != this.amount) {
+          PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(getBlockPos()),
+              new SUpdateExperienceComponentPacket(this.amount, getBlockPos()));
+        }
       }
     };
   }
@@ -345,8 +352,8 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(IOSideConfigSyncable.create(this::getConfig, this.config::set));
+  public void getStuffToSync(SyncableList container) {
+    container.sync(IOSideConfig.class, this::getConfig, this.config::set);
     experienceTank.getStuffToSync(container);
   }
 

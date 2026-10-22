@@ -2,14 +2,10 @@ package es.degrassi.mmr.common.entity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mojang.logging.LogUtils;
-import es.degrassi.experiencelib.api.network.ISyncable;
+import com.lowdragmc.lowdraglib2.syncdata.holder.blockentity.ISyncPersistRPCBlockEntity;
+import com.lowdragmc.lowdraglib2.syncdata.storage.FieldManagedStorage;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
-import es.degrassi.experiencelib.api.network.syncable.ComponentSyncable;
-import es.degrassi.experiencelib.api.network.syncable.EnumSyncable;
-import es.degrassi.experiencelib.api.network.syncable.IdentifierSyncable;
-import es.degrassi.experiencelib.api.network.syncable.IntegerSyncable;
-import es.degrassi.experiencelib.api.network.syncable.NbtSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.client.machine.SoundManagerEntity;
 import es.degrassi.mmr.api.controller.ComponentMapper;
@@ -21,10 +17,8 @@ import es.degrassi.mmr.api.entity.ColorableMachineEntity;
 import es.degrassi.mmr.api.entity.IClientTickEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
-import es.degrassi.mmr.api.network.syncable.CorePopupSyncable;
 import es.degrassi.mmr.client.integration.athena.model.controller.ControllerBakedModel;
 import es.degrassi.mmr.client.integration.athena.model.controller.ControllerData;
-import es.degrassi.mmr.common.crafting.helper.CraftingStatus;
 import es.degrassi.mmr.common.crafting.modifier.ModifierReplacement;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.base.BlockEntityRestrictedTick;
@@ -50,10 +44,10 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -66,6 +60,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -80,7 +75,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static es.degrassi.mmr.ModularMachineryReborn.CONTROLLERS;
@@ -88,27 +82,44 @@ import static es.degrassi.mmr.ModularMachineryReborn.CONTROLLERS;
 @Getter
 @Setter
 @ParametersAreNonnullByDefault
-public class MachineControllerEntity extends BlockEntityRestrictedTick implements ComponentMapper, ISyncableStuff, IServerTickEntity, IClientTickEntity,
-    SoundManagerEntity, IMultiblockController {
-  @Setter
-  private CraftingStatus craftingStatus = CraftingStatus.MISSING_STRUCTURE;
+public class MachineControllerEntity extends BlockEntityRestrictedTick implements ComponentMapper, ISyncableStuff, IServerTickEntity,
+    IClientTickEntity, SoundManagerEntity, IMultiblockController, ISyncPersistRPCBlockEntity {
+  private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
+  /*@Persisted
+  @DescSynced*/
   private boolean isPaused = false;
+  /*@RequireRerender
+  @DescSynced*/
   private boolean formed = false;
+  /*@Persisted
+  @DescSynced*/
   private Identifier id = DynamicMachine.DUMMY.getRegistryName();
+  /*@Persisted
+  @RequireRerender
+  @DescSynced*/
   private MachineStatus status = MachineStatus.IDLE;
+  /*@Persisted
+  @DescSynced*/
   private Component errorMessage = Component.empty();
+  /*@Persisted
+  @DescSynced*/
   private final ComponentList errorInfo = new ComponentList();
+  /*@Persisted
+  @DescSynced*/
   private final ComponentManager componentManager;
+  /*@Persisted
+  @DescSynced*/
   private final MachineProcessor processor;
   private int lastFocus;
   private SoundManager soundManager;
   private final Int2ObjectMap<List<MachineProcessorCore>> pages = new Int2ObjectArrayMap<>();
 
-  private final long tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
+  private final long tickOffset;
   private long lastCheckTick;
 
   public MachineControllerEntity(BlockPos pos, BlockState state) {
     super(EntityRegistration.CONTROLLER.get(), pos, state);
+    this.tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
     this.componentManager = new ComponentManager(this);
     this.processor = new MachineProcessor(this);
   }
@@ -142,15 +153,18 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     if (this.status != status) {
       this.componentManager.getFoundComponentsList().forEach(component -> component.onStatusChanged(this.status, status, message));
       this.status = status;
-      this.errorMessage = message;
+      if (status.isErrored() && !Component.empty().equals(message))
+        this.errorMessage = message;
+      else if (!status.isErrored()) this.errorMessage = message;
       clearInfoErrors();
-      setCraftingStatus(craftingByMachine(status));
+      getErrorInfo().add(message);
       setChanged();
       if (this.getLevel() instanceof ServerLevel sl) {
         BlockPos pos = this.getBlockPos();
         sl.updateNeighborsAt(pos, this.getBlockState().getBlock());
         PacketDistributor.sendToPlayersTrackingChunk(sl, ChunkPos.containing(pos), new SUpdateCraftingStatusPacket(this.status, pos));
       }
+      broadcastChanges();
     }
   }
 
@@ -158,32 +172,11 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
   public void setChanged() {
     if(this.level != null)
       this.level.blockEntityChanged(this.worldPosition);
-  }
-
-  private CraftingStatus craftingByMachine(MachineStatus status) {
-    return switch (status) {
-      case IDLE -> CraftingStatus.NO_RECIPE;
-      case PAUSED -> craftingStatus;
-      case ERRORED -> CraftingStatus.failure(errorMessage);
-      case RUNNING -> CraftingStatus.working();
-      case MISSING_STRUCTURE -> CraftingStatus.MISSING_STRUCTURE;
-    };
+    broadcastChanges();
   }
 
   public void setStatus(MachineStatus status) {
     this.setStatus(status, Component.empty());
-  }
-
-  public void setStatus(CraftingStatus status) {
-    switch(status.getStatus()) {
-      case MISSING_STRUCTURE -> this.status = MachineStatus.MISSING_STRUCTURE;
-      case NO_RECIPE -> this.status = MachineStatus.IDLE;
-      case CRAFTING -> this.status = MachineStatus.RUNNING;
-      case FAILURE -> this.status = MachineStatus.ERRORED;
-    }
-    if (isPaused()) {
-      this.status = MachineStatus.PAUSED;
-    }
   }
 
   @Override
@@ -258,6 +251,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     } catch (ComponentNotFoundException e) {
       ModularMachineryReborn.LOGGER.error(e.getMessage());
     }
+    broadcastChanges();
   }
 
   @Override
@@ -267,6 +261,9 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     if (getLevel() instanceof ServerLevel serverLevel && !getFoundMachine().isDummy()) {
       MMRWorldSavedData.getOrCreate(serverLevel).removeAsyncLogic(this);
       MMRWorldSavedData.getOrCreate(serverLevel).removeMapping(this);
+    }
+    if (getLevel() instanceof ServerLevel) {
+      getStuffToSync().clear();
     }
     super.setRemoved();
   }
@@ -320,12 +317,11 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
   @SneakyThrows
   protected void loadAdditional(ValueInput compound) {
     super.loadAdditional(compound);
-    this.craftingStatus = CraftingStatus.deserialize(compound.childOrEmpty("status"), compound.lookup());
+    setStatus(compound.read("status", MachineStatus.CODEC.codec()).orElse(MachineStatus.MISSING_STRUCTURE));
     compound.readChild("craftingManager", this.processor);
     this.isPaused = compound.getBooleanOr("isPaused", false);
     this.id = Identifier.parse(compound.getStringOr("machine", ""));
     setMachine(id);
-    setStatus(craftingStatus);
     if (getLevel() instanceof ServerLevel) {
       onBlockStateChanged(getBlockPos(), getBlockState());
     }
@@ -334,9 +330,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
   @Override
   protected void saveAdditional(ValueOutput compound) {
     super.saveAdditional(compound);
-    if (getLevel() != null) {
-      compound.store("status", CompoundTag.CODEC, craftingStatus.serializeNBT(getLevel().registryAccess()));
-    }
+    compound.store("status", MachineStatus.CODEC.codec(), status);
     compound.putString("machine", id.toString());
     compound.putChild("craftingManager", processor);
     compound.putChild("componentManager", componentManager);
@@ -361,25 +355,18 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     if (this.getLevel() == null)
       return;
     getErrorInfo().getStuffToSync(container);
     processor.getStuffToSync(container);
     componentManager.getStuffToSync(container);
-    RegistryAccess registries = this.getLevel().registryAccess();
-    container.accept(IdentifierSyncable.create(() -> id, s -> id = s));
-    container.accept(IntegerSyncable.create(() -> lastFocus, i -> lastFocus = i));
-    container.accept(NbtSyncable.create(
-        () -> craftingStatus.serializeNBT(registries),
-        s -> craftingStatus = CraftingStatus.deserialize(
-            TagValueInput.create(new ProblemReporter.ScopedCollector(LogUtils.getLogger()), registries, s),
-            registries
-        )
-    ));
-    container.accept(EnumSyncable.create(this::getStatus, this::setStatus));
-    container.accept(ComponentSyncable.create(() -> this.errorMessage, err -> this.errorMessage = err));
-    container.accept(CorePopupSyncable.create(() -> {
+    container.syncId(() -> id, s -> id = s);
+    container.syncInt(() -> lastFocus, i -> lastFocus = i);
+    container.syncEnum(this::getStatus, this::setStatus);
+    container.syncComponent(() -> Optional.ofNullable(this.errorMessage).orElseGet(Component::empty),
+        err -> this.errorMessage = err);
+    container.sync(CorePopup.class, () -> {
       int maxCores = getProcessor().getMaxCores();
       Map<String, List<CompoundTag>> pages = new HashMap<>();
       this.pages.forEach((page, list) -> pages.put(String.valueOf(page),
@@ -394,7 +381,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
         }).toList();
         this.pages.put(Integer.parseInt(page), list);
       });
-    }));
+    });
   }
 
   public SoundType getInteractionSound() {
@@ -422,6 +409,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
           onStructureUnformed();
         }
       }
+      broadcastChanges();
     }
   }
 
@@ -430,12 +418,12 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
   }
 
   public void onStructureFormed() {
-      formed = true;
-      setStatus(MachineStatus.IDLE);
-      componentManager.updateComponents();
-      try {
-        ComponentManager.cache.get(this).forEach(this::tryColorize);
-      } catch (ExecutionException ignored) {}
+    formed = true;
+    setStatus(MachineStatus.IDLE);
+    componentManager.updateComponents();
+    try {
+      ComponentManager.cache.get(this).forEach(this::tryColorize);
+    } catch (ExecutionException ignored) {}
   }
 
   private List<Component> getStructureErrors() {
@@ -493,35 +481,38 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     errorInfo.clear();
   }
 
-  public static class ComponentList implements ISyncableStuff {
+  public static class ComponentList implements ISyncableStuff, ValueIOSerializable {
     private final Set<Component> components;
-    private Component unified;
+    private Component unified = Component.empty();
     protected ComponentList() {
       this.components = Sets.newHashSet();
     }
 
     @Override
-    public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-      var component = components
-          .stream()
-          .collect(Component::empty, MutableComponent::append, MutableComponent::append);
-      if (components.isEmpty()) {
-        component = null;
-      }
-      var finalComponent = Optional.ofNullable(component).orElse(Component.empty());
-      container.accept(ComponentSyncable.create(
-          () -> finalComponent,
-          c -> unified = Objects.equals(c, Component.empty()) ? null : c
-      ));
+    public void getStuffToSync(SyncableList container) {
+      container.syncComponent(
+          this::get,
+          this::set
+      );
+    }
+
+    private void set(Component c) {
+      this.unified = c;
+    }
+
+    private Component calcComponent() {
+      return stream().collect(Component::empty, MutableComponent::append, MutableComponent::append);
     }
 
     public void add(Component component) {
+      if (component.equals(Component.empty())) return;
       this.components.add(component);
+      this.unified = unified.copy().append(component);
     }
 
     public void clear() {
       this.components.clear();
-      this.unified = null;
+      this.unified = Component.empty();
     }
 
     public Stream<Component> stream() {
@@ -529,11 +520,31 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     }
 
     public boolean isEmpty() {
-      return unified == null && components.isEmpty();
+      return unified.equals(Component.empty()) && components.isEmpty();
     }
 
     public Component get() {
-      return Optional.ofNullable(unified).orElse(Component.empty());
+      if (unified.equals(Component.empty())) {
+        this.unified = calcComponent();
+      }
+      return unified;
+    }
+
+    @Override
+    public void serialize(ValueOutput output) {
+      var components = this.components.toArray(Component[]::new);
+      for (int i = 0; i < components.length; i++) {
+        output.store("component%s".formatted(i), ComponentSerialization.CODEC, components[i]);
+      }
+    }
+
+    @Override
+    public void deserialize(ValueInput input) {
+      var length = components.size();
+      clear();
+      for (int i = 0; i < length; i++) {
+        add(input.read("component%s".formatted(i), ComponentSerialization.CODEC).orElse(Component.empty()));
+      }
     }
   }
 }

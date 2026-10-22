@@ -458,6 +458,8 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(mm(gui("title.parallel_hatch")), "并行处理仓");
     add(mm(gui("title.fuel_tank")), "Fuel Tank");
     add(mm(gui("title.redstone_port")), "Redstone Port");
+    add(mm(gui("title.experience_hatch")), "经验仓");
+    add(mm(gui("title.durability_hatch")), "耐久仓");
     add(mmr(gui("button.back")), "返回");
     add(mmr(gui("button.close")), "关闭");
     add(mmr(gui("button.page.next")), "下一页");
@@ -542,10 +544,10 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(gui("controller.status.redstone_stopped"), "机器因红石信号停止工作");
     add(gui("controller.status.paused"), "暂停");
     add(gui("controller.status.missing_structure"), "结构不完整");
-    add(gui("controller.status.no_recipe"), "没有相匹配的配方");
-    add(gui("controller.status.failure"), "");
-    add(gui("controller.status.crafting"), "工作中...");
-    add(gui("controller.status.crafting.progress"), "处理中: %s");
+    add(gui("controller.status.idle"), "没有相匹配的配方");
+    add(gui("controller.status.errored"), "");
+    add(gui("controller.status.running"), "工作中...");
+    add(gui("controller.status.running.progress"), "处理中: %s");
     add(mmr("core.active.true"), "当前核心能为配方工作");
     add(mmr("core.active.false"), "当前核心不能能为配方工作");
     add(mmr("core.number"), "核心编号: %s");

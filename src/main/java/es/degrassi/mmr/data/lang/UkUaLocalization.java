@@ -501,6 +501,8 @@ final class UkUaLocalization extends LocalizationProvider {
     add(mm(gui("title.parallel_hatch")), "Люк паралельності");
     add(mm(gui("title.fuel_tank")), "Паливний бак");
     add(mm(gui("title.redstone_port")), "Порт редстоуну");
+    add(mm(gui("title.experience_hatch")), "Люк досвіду");
+    add(mm(gui("title.durability_hatch")), "Люк міцності");
     add(mmr(gui("button.back")), "Назад");
     add(mmr(gui("button.close")), "Закрити");
     add(mmr(gui("button.page.next")), "Наступна сторінка");
@@ -585,10 +587,10 @@ final class UkUaLocalization extends LocalizationProvider {
     add(gui("controller.status.redstone_stopped"), "Машину зупинено сигналом редстоуну.");
     add(gui("controller.status.paused"), "Пауза");
     add(gui("controller.status.missing_structure"), "Відсутня структура");
-    add(gui("controller.status.no_recipe"), "Відповідного рецепту не знайдено");
-    add(gui("controller.status.failure"), "");
-    add(gui("controller.status.crafting"), "Обробка...");
-    add(gui("controller.status.crafting.progress"), "Прогрес: %s");
+    add(gui("controller.status.idle"), "Відповідного рецепту не знайдено");
+    add(gui("controller.status.errored"), "");
+    add(gui("controller.status.running"), "Обробка...");
+    add(gui("controller.status.running.progress"), "Прогрес: %s");
     add(mmr("core.active.true"), "Ядро може виконувати рецепти");
     add(mmr("core.active.false"), "Ядро не може виконувати рецепти");
     add(mmr("core.number"), "Номер ядра: %s");

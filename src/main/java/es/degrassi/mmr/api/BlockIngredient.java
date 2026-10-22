@@ -13,6 +13,7 @@ import com.mojang.serialization.DataResult;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +31,6 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -262,10 +262,16 @@ public class BlockIngredient implements IIngredient<PartialBlockState, BlockInWo
   }
 
   public List<ItemStack> getNonTagStacks(int amount) {
-    return insertedStates
+    var provided = insertedStates
         .stream()
         .map(PartialBlockState::getBlockState)
         .map(BlockState::getBlock)
+        .toList();
+    var items = not
+        ? BuiltInRegistries.BLOCK.stream().filter(i -> provided.stream().noneMatch(p -> p.equals(i))).toList()
+        : provided;
+    return items
+        .stream()
         .map(b -> b instanceof LiquidBlock lb ? lb.fluid.getBucket() : b.asItem())
         .map(Item::getDefaultInstance)
         .map(stack -> stack.copyWithCount(amount))
@@ -273,8 +279,14 @@ public class BlockIngredient implements IIngredient<PartialBlockState, BlockInWo
   }
 
   public List<ItemStack> getTagStacks(int amount) {
+    List<TagKey<Block>> tags = not
+        ? BuiltInRegistries.BLOCK.getTags()
+            .filter(named -> insertedTags.contains(named.key()))
+            .map(HolderSet.Named::key)
+            .toList()
+        : insertedTags;
     return Lists.newArrayList(
-        insertedTags
+        tags
             .stream()
             .flatMap(TagUtil::getBlocks)
             .map(b -> b instanceof LiquidBlock lb ? lb.fluid.getBucket() : b.asItem())

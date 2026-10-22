@@ -1,5 +1,12 @@
 package es.degrassi.mmr.common.entity.base;
 
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import es.degrassi.experiencelib.api.network.ISyncableHandler;
+import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.Syncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
+import es.degrassi.mmr.api.entity.InitializableEntity;
 import es.degrassi.mmr.common.util.IEntitySynchronizable;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,23 +21,57 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @ParametersAreNonnullByDefault
-public class BlockEntitySynchronized extends BlockEntity implements IEntitySynchronizable {
+public class BlockEntitySynchronized extends BlockEntity implements IEntitySynchronizable, ISyncableHandler, InitializableEntity {
   private static final String REQUEST_UPDATE_KEY = "requestModelUpdate";
   private static final String IN_STRUCTURE_KEY = "inStructure";
   private boolean requestModelUpdate = false;
   private boolean inStructure = false;
+  protected final List<Syncable<?>> stuffToSync = new ArrayList<>();
+  protected final SyncableList list = new SyncableList(stuffToSync);
+  @Persisted
+  @DescSynced
+  private boolean initialized = false;
 
   public BlockEntitySynchronized(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
     super(type, pos, blockState);
   }
 
+  public void init() {
+    if (isInitialized()) return;
+    if (this instanceof ISyncableStuff stuff) {
+      stuff.getStuffToSync(list);
+    }
+  }
+
+  @Override
+  public void onLoad() {
+    super.onLoad();
+    init();
+  }
+
+  @Override
+  public void setChanged() {
+    super.setChanged();
+    broadcastChanges();
+  }
+
   @Override
   protected void loadAdditional(ValueInput nbt) {
     super.loadAdditional(nbt);
+    // The sync table must be rebuilt AFTER deserialization: components only exist once the
+    // entity data has been read. Building it before that left client-side tables shorter than
+    // the ones the server indexes its data with — the experiencelib sync_data handler then
+    // crashed with IndexOutOfBounds (Index 1 out of bounds for length 1) on every sync.
+    stuffToSync.clear();
+    if (this instanceof ISyncableStuff stuff) {
+      stuff.getStuffToSync(list);
+    }
     requestModelUpdate = nbt.getBooleanOr(REQUEST_UPDATE_KEY, false);
     inStructure = nbt.getBooleanOr(IN_STRUCTURE_KEY, false);
   }
@@ -57,5 +98,10 @@ public class BlockEntitySynchronized extends BlockEntity implements IEntitySynch
     setRequestModelUpdate(false);
     getLevel().setBlockAndUpdate(getBlockPos(), getBlockState());
     setChanged();
+  }
+
+  @Override
+  public BlockEntity getEntity() {
+    return this;
   }
 }

@@ -23,7 +23,6 @@ public class SizedItemIngredientElement extends Element {
   private final SizedIngredient item;
   private final float scale;
   private final CycleTimer timer = new CycleTimer(() -> 1000, true);
-  public static final SizedItemIngredientElement EMPTY = new SizedItemIngredientElement(new SizedIngredient(Ingredient.of(Items.AIR), 1), 1, 0.5f);
   private final List<ItemStack> itemList;
   private final float chance;
 
@@ -43,7 +42,7 @@ public class SizedItemIngredientElement extends Element {
     return of(stack, chance, 1.0F);
   }
   public static SizedItemIngredientElement of(SizedIngredient stack, float chance, float scale) {
-    return stack.ingredient().isEmpty() ? EMPTY : new SizedItemIngredientElement(stack, chance, scale);
+    return new SizedItemIngredientElement(stack, chance, scale);
   }
 
   public Vec2 getSize() {

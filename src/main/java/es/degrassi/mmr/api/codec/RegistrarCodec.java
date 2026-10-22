@@ -3,16 +3,13 @@ package es.degrassi.mmr.api.codec;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import es.degrassi.experiencelib.ExperienceLib;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
-import es.degrassi.experiencelib.api.network.DataType;
-import es.degrassi.experiencelib.api.network.IData;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
 import es.degrassi.mmr.common.crafting.ComponentType;
-import es.degrassi.mmr.common.util.EmptyRequirementType;
 import es.degrassi.mmr.common.crafting.requirement.RequirementType;
 import es.degrassi.mmr.common.machine.MachineHatchType;
+import es.degrassi.mmr.common.util.EmptyRequirementType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -40,7 +37,6 @@ public class RegistrarCodec<V> implements NamedCodec<V> {
   public static final NamedCodec<ComponentType<?>> COMPONENT = of(ModularMachineryReborn.getComponentRegistrar(), true);
   public static final NamedCodec<EmptyRequirementType> EMPTY_REQUIREMENT_TYPE = of(ModularMachineryReborn.getEmptyRequirementTypeRegistrar(), true);
   public static final NamedCodec<MachineHatchType> HATCH_TYPE = of(ModularMachineryReborn.getMachineHatchTypeRegistrar(), true);
-  public static final NamedCodec<DataType<? extends IData<?>, ?>> DATA = of(ExperienceLib.dataRegistrar(), false);
 
   public static final NamedCodec<Identifier> MMR_LOC_CODEC = NamedCodec.STRING.comapFlatMap(
     s -> {

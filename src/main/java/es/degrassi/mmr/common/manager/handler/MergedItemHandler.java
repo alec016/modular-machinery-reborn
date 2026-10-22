@@ -1,6 +1,6 @@
 package es.degrassi.mmr.common.manager.handler;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
@@ -93,7 +93,7 @@ public class MergedItemHandler extends ItemHandler {
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
+  public void getStuffToSync(SyncableList container) {
     // Each source block entity already registers its own inventory syncables.
   }
 

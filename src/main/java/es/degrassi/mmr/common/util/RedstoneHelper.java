@@ -37,8 +37,8 @@ public class RedstoneHelper {
         yield Mth.clamp(Math.round(15F * (cur / cap)), 0, 15);
       }
       case EnergyHatchEntity entity -> {
-        float cap = entity.getMaxEnergy();
-        float cur = entity.getCurrentEnergy();
+        float cap = entity.getEnergyHandler().getCapacityAsLong();
+        float cur = entity.getEnergyHandler().getAmountAsLong();
         yield Mth.clamp(Math.round(15F * (cur / cap)), 0, 15);
       }
       case ExperienceHatchEntity entity -> {

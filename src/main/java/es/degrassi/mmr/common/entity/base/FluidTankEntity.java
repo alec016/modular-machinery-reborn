@@ -2,8 +2,8 @@ package es.degrassi.mmr.common.entity.base;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
@@ -17,7 +17,6 @@ import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.api.handler.FilterConverterRegistry;
-import es.degrassi.mmr.api.network.syncable.IOSideConfigSyncable;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.FluidHatchSize;
 import es.degrassi.mmr.common.entity.FluidInputHatchEntity;
@@ -71,7 +70,6 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -441,7 +439,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(IOSideConfigSyncable.create(this::getConfig, this.config::set));
+  public void getStuffToSync(SyncableList container) {
+    container.sync(IOSideConfig.class, this::getConfig, this.config::set);
   }
 }

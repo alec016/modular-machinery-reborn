@@ -14,6 +14,11 @@ public interface ITickEntity {
     if (getLevel().isClientSide() && this instanceof IClientTickEntity ce) {
       ce.doClientTick();
     } else if (!getLevel().isClientSide() && this instanceof IServerTickEntity se) {
+      if (this instanceof InitializableEntity entity && !entity.isInitialized()) {
+        entity.setInitialized(true);
+        entity.init();
+        return;
+      }
       se.doRestrictedTick();
     }
   }

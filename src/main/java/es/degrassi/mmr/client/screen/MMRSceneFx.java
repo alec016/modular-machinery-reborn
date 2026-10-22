@@ -1,4 +1,8 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.api.entity.ColorableMachineEntity;
+import es.degrassi.mmr.client.screen.widget.tabs.SideScene;
+import es.degrassi.mmr.common.block.base.BlockDynamicColor;
+import es.degrassi.mmr.common.data.Config;
 
 import com.lowdragmc.lowdraglib2.client.scene.WorldSceneRenderer;
 import com.lowdragmc.lowdraglib2.client.shader.LDLibRenderPipelines;
@@ -13,12 +17,17 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Matrix4f;
 
+import javax.annotation.Nullable;
+
 /**
- * World-space drawing helpers for the auto-IO {@link MMRTabs.SideScene}: colored face tints for
+ * World-space drawing helpers for the auto-IO {@link SideScene}: colored face tints for
  * the auto-IO enabled sides and the translucent ghost render of the machine's surrounding blocks.
  *
  * <p>The tints reuse the very pipeline of LDLib2's own select overlay (see
@@ -30,7 +39,7 @@ import org.joml.Matrix4f;
  * <p>Client-only: the helpers build client model mappings, so they are only ever touched from the
  * client side (the SideScene constructor guards it).
  */
-final class MMRSceneFx {
+public final class MMRSceneFx {
 
   /**
    * Face tint pipeline: the LDLib2 select overlay's pipeline, wrapped into our own RenderType so
@@ -51,9 +60,9 @@ final class MMRSceneFx {
   private static final float GHOST_ALPHA = 0.5f;
 
   /** Auto-IO enabled face tints: blue = auto input, orange = auto output (additive over the block). */
-  static final float[] INPUT_TINT = {0f, 0.42f, 1f};
-  static final float[] OUTPUT_TINT = {1f, 0.48f, 0f};
-  static final float TINT_ALPHA = 0.5f;
+  public static final float[] INPUT_TINT = {0f, 0.42f, 1f};
+  public static final float[] OUTPUT_TINT = {1f, 0.48f, 0f};
+  public static final float TINT_ALPHA = 0.5f;
 
   private MMRSceneFx() {}
 
@@ -61,7 +70,7 @@ final class MMRSceneFx {
    * A wrapped {@link RenderTypes#translucentMovingBlock()} consumer with the ghost color
    * multiplier applied: block quads pushed through it blend at {@link #GHOST_ALPHA}.
    */
-  static WorldSceneRenderer.VertexConsumerWrapper ghostBuffer(MultiBufferSource bufferSource) {
+  public static WorldSceneRenderer.VertexConsumerWrapper ghostBuffer(MultiBufferSource bufferSource) {
     var wrapper = new WorldSceneRenderer.VertexConsumerWrapper(
         bufferSource.getBuffer(RenderTypes.translucentMovingBlock()));
     wrapper.setColorMultiplier(1f, 1f, 1f, GHOST_ALPHA);
@@ -72,7 +81,7 @@ final class MMRSceneFx {
    * Tessellates one ghost block (a real-world {@code BlockState} at a dummy-world position) into
    * the ghost buffer. Same call pattern as the scene's own block compilation.
    */
-  static void tesselateGhost(ModelBlockRenderer renderer, BlockStateModelSet models,
+  public static void tesselateGhost(ModelBlockRenderer renderer, BlockStateModelSet models,
                              BlockAndTintGetter region, VertexConsumer buffer,
                              BlockPos pos, BlockState state) {
     renderer.tesselateBlock(
@@ -89,7 +98,7 @@ final class MMRSceneFx {
    * ({@link RenderUtils#renderBlockOverLay}): translate to the block's center first and emit
    * center-relative corners, so these quads are glued to the same faces the overlay covers.
    */
-  static void drawFaceTint(MultiBufferSource bufferSource, BlockPos pos, Direction face,
+  public static void drawFaceTint(MultiBufferSource bufferSource, BlockPos pos, Direction face,
                            float r, float g, float b, float a) {
     VertexConsumer buffer = bufferSource.getBuffer(FACE_TINT);
     var pose = new PoseStack();

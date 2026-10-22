@@ -21,6 +21,7 @@ import es.degrassi.mmr.client.model.controller.ControllerModelLoader;
 import es.degrassi.mmr.client.model.hatch.HatchModelLoader;
 import es.degrassi.mmr.client.util.FluidRenderer;
 import es.degrassi.mmr.common.block.base.BlockDynamicColor;
+import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.DurabilityHatchEntity;
 import es.degrassi.mmr.common.entity.FuelTankEntity;
@@ -60,7 +61,6 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
@@ -257,6 +257,11 @@ public class ModularMachineryRebornClient {
         if (tile instanceof ColorableMachineEntity machineTile) {
           return machineTile.getMachineColor();
         }
+        // Preview worlds (the auto-IO scene and the EMI/JEI multiblock render) carry plain
+        // BlockStates without any block entity: without this fallback the tint source yields -1
+        // and the preview keeps the raw untinted texture instead of the machine color — the same
+        // fallback BlockMachineComponent#getColorMultiplier already uses.
+        return Config.machineColor;
       }
     }
     return -1;
@@ -346,19 +351,6 @@ public class ModularMachineryRebornClient {
 
   public void registerItemModel(Item item) {
     itemModelsToRegister.add(item);
-  }
-
-  @SubscribeEvent
-  public void registerMenuScreens(final RegisterMenuScreensEvent event) {
-    /*event.register(ContainerRegistration.CONTROLLER.get(), ControllerScreen::new);
-    event.register(ContainerRegistration.ENERGY_HATCH.get(), EnergyHatchScreen::new);
-    event.register(ContainerRegistration.FLUID_HATCH.get(), FluidHatchScreen::new);
-    event.register(ContainerRegistration.ITEM_BUS.get(), ItemBusScreen::new);
-    event.register(ContainerRegistration.ITEM_DURABILITY_HATCH.get(), ItemDurabilityScreen::new);
-    event.register(ContainerRegistration.EXPERIENCE_HATCH.get(), ExperienceHatchScreen::new);
-    event.register(ContainerRegistration.PARALLEL_HATCH.get(), ParallelHatchScreen::new);
-    event.register(ContainerRegistration.FUEL_TANK.get(), FuelTankScreen::new);
-    event.register(ContainerRegistration.REDSTONE_PORT.get(), RedstonePortScreen::new);*/
   }
 
   public static MachineControllerEntity getClientSideMachineControllerEntity(BlockPos pos) {

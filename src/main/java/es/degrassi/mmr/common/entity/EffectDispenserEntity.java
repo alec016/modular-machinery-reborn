@@ -1,18 +1,17 @@
 package es.degrassi.mmr.common.entity;
 
-import es.degrassi.experiencelib.api.network.ISyncable;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
-import es.degrassi.experiencelib.api.network.syncable.BooleanSyncable;
+import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.EffectHandler;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
-import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
-import es.degrassi.mmr.common.block.prop.EffectDispenserSize;
-import es.degrassi.mmr.common.entity.base.ColorableMachineComponentEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
+import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
+import es.degrassi.mmr.common.block.prop.EffectDispenserSize;
+import es.degrassi.mmr.common.entity.base.ColorableMachineComponentEntity;
 import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.EffectComponent;
 import es.degrassi.mmr.common.manager.crafting.MachineStatus;
@@ -26,16 +25,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Setter
 @ParametersAreNonnullByDefault
@@ -173,8 +171,8 @@ public class EffectDispenserEntity extends ColorableMachineComponentEntity imple
   }
 
   @Override
-  public void getStuffToSync(Consumer<ISyncable<?, ?>> container) {
-    container.accept(BooleanSyncable.create(handler::isApplyingEffect, handler::setApplyingEffect));
+  public void getStuffToSync(SyncableList container) {
+    container.syncBool(handler::isApplyingEffect, handler::setApplyingEffect);
   }
 
   public boolean isApplyingEffect() {
