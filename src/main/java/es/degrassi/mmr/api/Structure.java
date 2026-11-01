@@ -16,16 +16,21 @@ import es.degrassi.mmr.data.tags.MMRTags;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
@@ -127,9 +132,11 @@ public class Structure {
         for (PartialBlockState state : ingredient.getAll()) {
           if (state.equals(PartialBlockState.AIR) || state.equals(PartialBlockState.ANY)) continue blockSearch;
           ItemStack blockToRemove2 = new ItemStack(state.getBlockState().getBlock());
+          if (state.isFluid()) blockToRemove2 = new ItemStack(state.getBlockState().getFluidState().getType().getBucket());
           if (!ingredient.isNot() && player.getInventory().contains(blockToRemove2)) {
             int slot = player.getInventory().findSlotMatchingItem(blockToRemove2);
             player.getInventory().removeItem(slot, 1);
+            if (blockToRemove2.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(blockToRemove2.getCraftingRemainder().create());
             player.containerMenu.broadcastChanges();
             player.inventoryMenu.slotsChanged(player.getInventory());
             setBlock(level, worldPos, state);
@@ -138,13 +145,26 @@ public class Structure {
           } else if (ingredient.isNot()) {
             for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
               ItemStack stack = player.getInventory().getItem(i);
-              if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BlockItem bi) {
-                player.getInventory().removeItem(i, 1);
-                player.containerMenu.broadcastChanges();
-                player.inventoryMenu.slotsChanged(player.getInventory());
-                setBlock(level, worldPos, new PartialBlockState(bi.getBlock()));
-                placed = true;
-                break;
+              if (state.isFluid()) {
+                if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BucketItem bi) {
+                  player.getInventory().removeItem(i, 1);
+                  if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
+                  player.containerMenu.broadcastChanges();
+                  player.inventoryMenu.slotsChanged(player.getInventory());
+                  setBlock(level, worldPos, new PartialBlockState(bi.getContent().defaultFluidState().createLegacyBlock().getBlock()));
+                  placed = true;
+                  break;
+                }
+              } else {
+                if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BlockItem bi) {
+                  player.getInventory().removeItem(i, 1);
+                  if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
+                  player.containerMenu.broadcastChanges();
+                  player.inventoryMenu.slotsChanged(player.getInventory());
+                  setBlock(level, worldPos, new PartialBlockState(bi.getBlock()));
+                  placed = true;
+                  break;
+                }
               }
             }
             break;
@@ -184,8 +204,39 @@ public class Structure {
       BlockInWorld info = new BlockInWorld(level, worldPos, false);
       if (info.getState().isAir()) continue;
       if (info.getEntity() instanceof MachineControllerEntity) continue;
-      if (ingredient.test(info)) level.destroyBlock(worldPos.immutable(), !isCreative);
+      if (ingredient.test(info)) {
+        if (!info.getState().getFluidState().isEmpty() && info.getState().getFluidState().isSource()) {
+          var removed = false;
+          for (var i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (!player.getInventory().getItem(i).is(Items.BUCKET)) continue;
+            ItemStack toAdd = new ItemStack(info.getState().getFluidState().getType().getBucket());
+            player.getInventory().removeItem(i, 1);
+            spawnItem(level, toAdd, direction, worldPos.immutable().getCenter());
+            removed = true;
+            break;
+          }
+          if (removed) {
+            level.setBlockAndUpdate(worldPos.immutable(), Blocks.AIR.defaultBlockState());
+            continue;
+          }
+        }
+        level.destroyBlock(worldPos.immutable(), !isCreative);
+      }
     }
+  }
+
+  private static void spawnItem(Level level, ItemStack stack, Direction facing, Position position) {
+    double d0 = position.x();
+    double d1 = position.y();
+    double d2 = position.z();
+    if (facing.getAxis() == Direction.Axis.Y) {
+      d1 -= 0.125F;
+    } else {
+      d1 -= 0.15625F;
+    }
+
+    ItemEntity itementity = new ItemEntity(level, d0, d1, d2, stack);
+    level.addFreshEntity(itementity);
   }
 
   private static void setBlock(Level world, BlockPos pos, PartialBlockState state) {
