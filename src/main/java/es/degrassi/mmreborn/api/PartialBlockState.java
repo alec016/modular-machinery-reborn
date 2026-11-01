@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -100,6 +101,10 @@ public class PartialBlockState implements Predicate<BlockInWorld> {
 
   public PartialBlockState(Block block) {
     this(block.defaultBlockState(), new ArrayList<>(), null);
+  }
+
+  public boolean isFluid() {
+    return !blockState.getFluidState().isEmpty() && blockState.getFluidState().isSource();
   }
 
   public PartialBlockState copy() {
