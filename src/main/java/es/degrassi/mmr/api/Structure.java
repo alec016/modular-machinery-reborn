@@ -12,6 +12,7 @@ import es.degrassi.mmr.common.crafting.modifier.ModifierReplacement;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.DynamicMachine;
+import es.degrassi.mmr.common.util.Comparators;
 import es.degrassi.mmr.common.util.TaskDelayer;
 import es.degrassi.mmr.data.tags.MMRTags;
 import lombok.Getter;
@@ -44,7 +45,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,12 +82,7 @@ public class Structure {
     Map<BlockPos, BlockIngredient> ordered = blocks
         .entrySet()
         .stream()
-        .sorted(Comparator.comparing(entry -> entry
-            .getValue()
-            .getAll()
-            .stream()
-            .anyMatch(PartialBlockState::isFluid)
-        ))
+        .sorted(Comparators.STRUCTURE_COMPARATOR)
         .collect(Collectors.toMap(
             Map.Entry::getKey,
             Map.Entry::getValue,
@@ -223,31 +218,40 @@ public class Structure {
     Map<BlockPos, BlockIngredient> blocks = machine.getPattern().getBlocks(direction);
     BlockPos.MutableBlockPos worldPos = new BlockPos.MutableBlockPos();
     AtomicInteger delay = new AtomicInteger(0);
-    for (BlockPos pos : blocks.keySet()) {
+    List<BlockPos> ordered = blocks
+        .entrySet()
+        .stream()
+        .sorted(Comparators.STRUCTURE_COMPARATOR.reversed())
+        .map(Map.Entry::getKey)
+        .toList();
+    for (BlockPos pos : ordered) {
       BlockIngredient ingredient = blocks.get(pos);
       worldPos.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
       BlockInWorld info = new BlockInWorld(level, worldPos, false);
       if (info.getState().isAir()) continue;
       if (info.getEntity() instanceof MachineControllerEntity) continue;
       if (ingredient.test(info)) {
-        if (!info.getState().getFluidState().isEmpty() && info.getState().getFluidState().isSource()) {
-          var removed = false;
-          for (var i = 0; i < player.getInventory().getContainerSize(); i++) {
-            if (!player.getInventory().getItem(i).is(Items.BUCKET)) continue;
-            ItemStack toAdd = new ItemStack(info.getState().getFluidState().getType().getBucket());
-            player.getInventory().removeItem(i, 1);
-            spawnItem(level, toAdd, direction, worldPos.immutable().getCenter());
-            removed = true;
-            break;
-          }
-          if (isCreative || removed) level.setBlockAndUpdate(worldPos.immutable(), Blocks.AIR.defaultBlockState());
-        } else  {
-          TaskDelayer.enqueue(delay.getAndAdd(MMRConfig.get().delayOperation.get()), () -> {
-            var wp = new BlockPos.MutableBlockPos();
-            wp.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
+        TaskDelayer.enqueue(delay.getAndAdd(MMRConfig.get().delayOperation.get()), () -> {
+          var wp = new BlockPos.MutableBlockPos();
+          wp.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
+          if (!info.getState().getFluidState().isEmpty() && info.getState().getFluidState().isSource()) {
+            var removed = false;
+            for (var i = 0; i < player.getInventory().getContainerSize(); i++) {
+              if (!player.getInventory().getItem(i).is(Items.BUCKET)) continue;
+              ItemStack toAdd = new ItemStack(info.getState().getFluidState().getType().getBucket());
+              player.getInventory().removeItem(i, 1);
+              spawnItem(level, toAdd, direction, wp.immutable().getCenter());
+              removed = true;
+              break;
+            }
+            if (removed) {
+              level.setBlockAndUpdate(wp.immutable(), Blocks.AIR.defaultBlockState());
+              level.playSound(null, wp.immutable(), SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
+            }
+          } else  {
             level.destroyBlock(wp.immutable(), !isCreative);
-          });
-        }
+          }
+        });
       }
     }
   }
