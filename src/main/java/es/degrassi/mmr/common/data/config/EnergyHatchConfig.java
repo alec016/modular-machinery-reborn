@@ -21,22 +21,22 @@ public class EnergyHatchConfig {
     return INSTANCE;
   }
 
-  public final ModConfigSpec.ConfigValue<Integer> TINY_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> TINY_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> SMALL_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> SMALL_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> NORMAL_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> NORMAL_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> REINFORCED_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> REINFORCED_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> BIG_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> BIG_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> HUGE_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> HUGE_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_energy_transferRate;
-  public final ModConfigSpec.ConfigValue<Integer> ULTIMATE_energy_size;
-  public final ModConfigSpec.ConfigValue<Integer> ULTIMATE_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> TINY_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> TINY_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> SMALL_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> SMALL_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> NORMAL_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> NORMAL_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> REINFORCED_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> REINFORCED_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> BIG_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> BIG_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> HUGE_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> HUGE_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> LUDICROUS_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> LUDICROUS_energy_transferRate;
+  public final ModConfigSpec.ConfigValue<Long> ULTIMATE_energy_size;
+  public final ModConfigSpec.ConfigValue<Long> ULTIMATE_energy_transferRate;
   public final ModConfigSpec.ConfigValue<Boolean> energy_displayFETooltip;
   public final ModConfigSpec.ConfigValue<Boolean> energy_displayIC2EUTooltip;
   public final ModConfigSpec.ConfigValue<EnergyDisplayUtil.EnergyType> energy_type;
@@ -45,70 +45,66 @@ public class EnergyHatchConfig {
       builder.push(EnergyHatchSize.TINY.getSerializedName());
       TINY_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.TINY.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.TINY.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       TINY_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.TINY.defaultConfigurationTransferLimit, 1, Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.TINY.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.SMALL.getSerializedName());
       SMALL_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.SMALL.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.SMALL.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       SMALL_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.SMALL.defaultConfigurationTransferLimit, 1,
-              Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.SMALL.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.NORMAL.getSerializedName());
       NORMAL_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.NORMAL.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.NORMAL.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       NORMAL_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.NORMAL.defaultConfigurationTransferLimit, 1,
-              Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.NORMAL.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.REINFORCED.getSerializedName());
       REINFORCED_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.REINFORCED.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.REINFORCED.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       REINFORCED_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.REINFORCED.defaultConfigurationTransferLimit, 1,
-              Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.REINFORCED.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.BIG.getSerializedName());
       BIG_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.BIG.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.BIG.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       BIG_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.BIG.defaultConfigurationTransferLimit, 1, Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.BIG.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.HUGE.getSerializedName());
       HUGE_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.HUGE.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.HUGE.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       HUGE_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.HUGE.defaultConfigurationTransferLimit, 1, Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.HUGE.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.LUDICROUS.getSerializedName());
       LUDICROUS_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.LUDICROUS.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.LUDICROUS.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       LUDICROUS_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.LUDICROUS.defaultConfigurationTransferLimit, 1,
-              Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.LUDICROUS.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push(EnergyHatchSize.ULTIMATE.getSerializedName());
       ULTIMATE_energy_size = builder
           .comment("Energy storage size of the energy hatch.")
-          .defineInRange("size", EnergyHatchSize.ULTIMATE.defaultConfigurationEnergy, 1, Integer.MAX_VALUE);
+          .defineInRange("size", EnergyHatchSize.ULTIMATE.defaultConfigurationEnergy, 1, Long.MAX_VALUE);
       ULTIMATE_energy_transferRate = builder
           .comment("Defines the transfer limit for RF/FE things. \nIC2's transfer limit is defined by the voltage tier.")
-          .defineInRange("transfer_rate", EnergyHatchSize.ULTIMATE.defaultConfigurationTransferLimit, 1, Integer.MAX_VALUE);
+          .defineInRange("transfer_rate", EnergyHatchSize.ULTIMATE.defaultConfigurationTransferLimit, 1, Long.MAX_VALUE);
       builder.pop();
       builder.push("Display");
       this.energy_displayFETooltip = builder

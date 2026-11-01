@@ -41,11 +41,15 @@ public class MMRConfig {
   public final ConfigValue<Boolean> sendReplaceMessage;
   public final ConfigValue<Boolean> sendMissingBlockMessage;
   public final ConfigValue<Boolean> sendErrorMessage;
+  public final ConfigValue<Integer> delayOperation;
   public final ConfigValue<Integer> maxVeinNumber;
   public final ConfigValue<Boolean> forceAir;
 
   public final ConfigValue<Integer> structureRenderTime;
   public final ConfigValue<Integer> blockTagCycleTime;
+  public final ConfigValue<Integer> hatchAreaLineColor;
+  public final ConfigValue<Integer> hatchAreaFillColor;
+  public final ConfigValue<Integer> structureCreatorColor;
   public final ConfigValue<String> machineDirectory;
   public final ConfigValue<List<String>> modelFolders;
 
@@ -76,7 +80,7 @@ public class MMRConfig {
           .define("log_debug_structure", false);
       this.logDebugRecipe = builder
           .comment("If true and debugLevel is DEBUG or ALL, this will log the full parsed recipe in the modular_machinery_reborn/mmr.log file")
-          .define("logDebugRecipe", true);
+          .define("logDebugRecipe", false);
       builder.pop();
     }
     // Achievements
@@ -125,6 +129,10 @@ public class MMRConfig {
     // STRUCTURE
     {
       builder.push("Structure");
+      this.delayOperation = builder
+          .comment("Defines the amount in ticks between a place or break operation (block)")
+          .comment("for the auto placer and auto breaker. Default: 5 ticks (1/4 s)")
+          .defineInRange("delay", 5, 1, Integer.MAX_VALUE);
       this.shouldReplace = builder
           .comment("Defines if it should break and place the non-matching blocks on trying to place structure. Default: true")
           .define("should_replace", true);
@@ -154,6 +162,15 @@ public class MMRConfig {
       this.blockTagCycleTime = builder
           .comment("The time in milliseconds each blocks will be shown\nwhen using a block tag in a structure.")
           .defineInRange("block_tag_cycle_time", 1000, 1, Integer.MAX_VALUE);
+      this.hatchAreaLineColor = builder
+          .comment("ARGB color of the hatch area (radius) outline\nshown by the radio preview button.")
+          .defineInRange("hatch_area_line_color", 0xFFFFFFFF, Integer.MIN_VALUE, Integer.MAX_VALUE);
+      this.hatchAreaFillColor = builder
+          .comment("ARGB color used to fill the hatch area (radius)\ncube faces. Keep the alpha translucent so the\nworld stays visible through the preview.")
+          .defineInRange("hatch_area_fill_color", 0x40FFFFFF, Integer.MIN_VALUE, Integer.MAX_VALUE);
+      this.structureCreatorColor = builder
+          .comment("ARGB color of the structure creator/template\nselected block outlines.")
+          .defineInRange("structure_creator_color", 0xFFFF0000, Integer.MIN_VALUE, Integer.MAX_VALUE);
       builder.pop();
     }
     // DIRECTORIES

@@ -20,59 +20,59 @@ public class ExperienceHatchConfig {
     return INSTANCE;
   }
 
-  public final ModConfigSpec.ConfigValue<Integer> TINY_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> SMALL_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> NORMAL_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> REINFORCED_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> BIG_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> HUGE_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_experience_size;
-  public final ModConfigSpec.ConfigValue<Integer> VACUUM_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> TINY_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> SMALL_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> NORMAL_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> REINFORCED_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> BIG_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> HUGE_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> LUDICROUS_experience_size;
+  public final ModConfigSpec.ConfigValue<Long> VACUUM_experience_size;
 
   public ExperienceHatchConfig(ModConfigSpec.Builder builder) {
     builder.push(ExperienceHatchSize.TINY.getSerializedName());
     TINY_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.TINY.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.TINY.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.SMALL.getSerializedName());
     SMALL_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.SMALL.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.SMALL.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.NORMAL.getSerializedName());
     NORMAL_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.NORMAL.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.NORMAL.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.REINFORCED.getSerializedName());
     REINFORCED_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.REINFORCED.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.REINFORCED.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.BIG.getSerializedName());
     BIG_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.BIG.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.BIG.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.HUGE.getSerializedName());
     HUGE_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.HUGE.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.HUGE.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.LUDICROUS.getSerializedName());
     LUDICROUS_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.LUDICROUS.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.LUDICROUS.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
     builder.push(ExperienceHatchSize.VACUUM.getSerializedName());
     VACUUM_experience_size = builder
         .comment("Defines the Experience Hatch")
-        .defineInRange("capacity", ExperienceHatchSize.VACUUM.defaultCapacity, 1, Integer.MAX_VALUE);
+        .defineInRange("capacity", ExperienceHatchSize.VACUUM.defaultCapacity, 1, Long.MAX_VALUE);
     builder.pop();
   }
 
-  public int experienceSize(ExperienceHatchSize size) {
+  public long experienceSize(ExperienceHatchSize size) {
     return switch (size) {
       case TINY -> TINY_experience_size.get();
       case SMALL -> SMALL_experience_size.get();

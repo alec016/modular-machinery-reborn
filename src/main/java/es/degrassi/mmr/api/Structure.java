@@ -12,6 +12,7 @@ import es.degrassi.mmr.common.crafting.modifier.ModifierReplacement;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.DynamicMachine;
+import es.degrassi.mmr.common.util.TaskDelayer;
 import es.degrassi.mmr.data.tags.MMRTags;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -31,6 +34,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
@@ -40,8 +44,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Getter
 public class Structure {
@@ -71,124 +79,141 @@ public class Structure {
     BlockState blockState = level.getBlockState(controllerPos);
     Direction facing = blockState.getValue(BlockStateProperties.HORIZONTAL_FACING);
     Map<BlockPos, BlockIngredient> blocks = withModifiers ? structure.getBlocks(facing) : structure.getBlocksFiltered(facing);
-    BlockPos.MutableBlockPos worldPos = new BlockPos.MutableBlockPos();
-    blockSearch:
-    for (BlockPos pos : blocks.keySet()) {
-      BlockIngredient ingredient = blocks.get(pos);
-      if (
-          ingredient.equals(BlockIngredient.AIR) ||
-              ingredient.equals(BlockIngredient.ANY)
-      ) {
-        continue;
-      } else if (ingredient.getAll().stream().anyMatch(state ->
-          state.equals(PartialBlockState.AIR) ||
-              state.equals(PartialBlockState.ANY) ||
-              state.getBlockState().isAir()
-      )) {
-        ingredient = new BlockIngredient(ingredient.getId(), ingredient.insertedTags, ingredient.insertedStates.stream().filter(state ->
-            !state.equals(PartialBlockState.AIR) &&
-                !state.equals(PartialBlockState.ANY) &&
-                !state.getBlockState().isAir()
-        ).toList());
-      }
-      if (ingredient.getAll().isEmpty()) continue;
-      worldPos.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
-      BlockInWorld info = new BlockInWorld(level, worldPos, false);
-      BlockInWorld finalInfo = info;
-      if (!info.getState().isAir() && !ingredient.test(finalInfo)) {
-        if (isCreative) level.destroyBlock(worldPos, false);
-        else {
-          if (MMRConfig.get().shouldReplace.get()) {
-            if (finalInfo.getState().is(MMRTags.Blocks.REPLACEABLE)) {
-              level.destroyBlock(worldPos, true);
-              if (MMRConfig.get().sendReplaceMessage.get()) {
-                player.sendSystemMessage(Component.translatable(
-                    "mmr.place.replace",
-                    finalInfo.getState().getBlock().getName(),
-                    "X:" + worldPos.getX() + " Y:" + worldPos.getY() + " Z:" + worldPos.getZ()
-                ));
-              }
-              info = new BlockInWorld(level, worldPos, false);
-            }
-          } else {
-            if (MMRConfig.get().sendErrorMessage.get()) {
-              player.sendSystemMessage(
-                  Component.translatable(
-                      "mmr.place.non_air",
+    Map<BlockPos, BlockIngredient> ordered = blocks
+        .entrySet()
+        .stream()
+        .sorted(Comparator.comparing(entry -> entry
+            .getValue()
+            .getAll()
+            .stream()
+            .anyMatch(PartialBlockState::isFluid)
+        ))
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (a, b) -> a,
+            LinkedHashMap::new
+        ));
+    AtomicInteger ticks = new AtomicInteger(0);
+    for (BlockPos pos : ordered.keySet()) {
+      TaskDelayer.enqueue(ticks.getAndAdd(MMRConfig.get().delayOperation.get()), () -> {
+        BlockPos.MutableBlockPos worldPos = new BlockPos.MutableBlockPos();
+        BlockIngredient ingredient = blocks.get(pos);
+        if (
+            ingredient.equals(BlockIngredient.AIR) ||
+                ingredient.equals(BlockIngredient.ANY)
+        ) {
+          return;
+        } else if (ingredient.getAll().stream().anyMatch(state ->
+            state.equals(PartialBlockState.AIR) ||
+                state.equals(PartialBlockState.ANY) ||
+                state.getBlockState().isAir()
+        )) {
+          ingredient = new BlockIngredient(ingredient.getId(), ingredient.insertedTags, ingredient.insertedStates.stream().filter(state ->
+              !state.equals(PartialBlockState.AIR) &&
+                  !state.equals(PartialBlockState.ANY) &&
+                  !state.getBlockState().isAir()
+          ).toList());
+        }
+        if (ingredient.getAll().isEmpty()) return;
+        worldPos.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
+        BlockInWorld info = new BlockInWorld(level, worldPos, false);
+        BlockInWorld finalInfo = info;
+        if (!info.getState().isAir() && !ingredient.test(finalInfo)) {
+          if (isCreative) level.destroyBlock(worldPos, false);
+          else {
+            if (MMRConfig.get().shouldReplace.get()) {
+              if (finalInfo.getState().is(MMRTags.Blocks.REPLACEABLE)) {
+                level.destroyBlock(worldPos, true);
+                if (MMRConfig.get().sendReplaceMessage.get()) {
+                  player.sendSystemMessage(Component.translatable(
+                      "mmr.place.replace",
                       finalInfo.getState().getBlock().getName(),
                       "X:" + worldPos.getX() + " Y:" + worldPos.getY() + " Z:" + worldPos.getZ()
-                  )
-              );
-            }
-          }
-        }
-      }
-      if (!isCreative) {
-        boolean placed = false;
-        if (!info.getState().isAir()) {
-          if (!MMRConfig.get().shouldReplace.get()) continue;
-          if (!level.getBlockState(worldPos).is(MMRTags.Blocks.REPLACEABLE)) continue;
-        }
-        for (PartialBlockState state : ingredient.getAll()) {
-          if (state.equals(PartialBlockState.AIR) || state.equals(PartialBlockState.ANY)) continue blockSearch;
-          ItemStack blockToRemove2 = new ItemStack(state.getBlockState().getBlock());
-          if (state.isFluid()) blockToRemove2 = new ItemStack(state.getBlockState().getFluidState().getType().getBucket());
-          if (!ingredient.isNot() && player.getInventory().contains(blockToRemove2)) {
-            int slot = player.getInventory().findSlotMatchingItem(blockToRemove2);
-            player.getInventory().removeItem(slot, 1);
-            if (blockToRemove2.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(blockToRemove2.getCraftingRemainder().create());
-            player.containerMenu.broadcastChanges();
-            player.inventoryMenu.slotsChanged(player.getInventory());
-            setBlock(level, worldPos, state);
-            placed = true;
-            break;
-          } else if (ingredient.isNot()) {
-            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-              ItemStack stack = player.getInventory().getItem(i);
-              if (state.isFluid()) {
-                if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BucketItem bi) {
-                  player.getInventory().removeItem(i, 1);
-                  if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
-                  player.containerMenu.broadcastChanges();
-                  player.inventoryMenu.slotsChanged(player.getInventory());
-                  setBlock(level, worldPos, new PartialBlockState(bi.getContent().defaultFluidState().createLegacyBlock().getBlock()));
-                  placed = true;
-                  break;
+                  ));
                 }
-              } else {
-                if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BlockItem bi) {
-                  player.getInventory().removeItem(i, 1);
-                  if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
-                  player.containerMenu.broadcastChanges();
-                  player.inventoryMenu.slotsChanged(player.getInventory());
-                  setBlock(level, worldPos, new PartialBlockState(bi.getBlock()));
-                  placed = true;
-                  break;
-                }
+                info = new BlockInWorld(level, worldPos, false);
+              }
+            } else {
+              if (MMRConfig.get().sendErrorMessage.get()) {
+                player.sendSystemMessage(
+                    Component.translatable(
+                        "mmr.place.non_air",
+                        finalInfo.getState().getBlock().getName(),
+                        "X:" + worldPos.getX() + " Y:" + worldPos.getY() + " Z:" + worldPos.getZ()
+                    )
+                );
               }
             }
-            break;
           }
         }
-        if (!placed && MMRConfig.get().sendErrorMessage.get())
-          player.sendSystemMessage(
-              Component.translatable(
-                  "mmr.place.no_item",
-                  ingredient.getString(),
-                  "X:" + worldPos.getX() + " Y:" + worldPos.getY() + " Z:" + worldPos.getZ(),
-                  ingredient.getString()
-              )
-          );
-        continue;
-      }
-      if (worldPos.equals(controllerPos)) continue;
-      if (ingredient.isNot()) {
-        BlockIngredient finalIngredient = ingredient;
-        var filtered = BuiltInRegistries.BLOCK.stream().filter(b -> finalIngredient.getAll().stream().noneMatch(s -> s.getBlockState().is(b))).toList();
-        setBlock(level, worldPos, new PartialBlockState(filtered.get(random.nextInt(0, filtered.size()))));
-      } else {
-        setBlock(level, worldPos, ingredient.getAll().get(random.nextInt(0, ingredient.getAll().size())));
-      }
+        if (!isCreative) {
+          boolean placed = false;
+          if (!info.getState().isAir()) {
+            if (!MMRConfig.get().shouldReplace.get()) return;
+            if (!level.getBlockState(worldPos).is(MMRTags.Blocks.REPLACEABLE)) return;
+          }
+          for (PartialBlockState state : ingredient.getAll()) {
+            if (state.equals(PartialBlockState.AIR) || state.equals(PartialBlockState.ANY)) return;
+            ItemStack blockToRemove2 = new ItemStack(state.getBlockState().getBlock());
+            if (state.isFluid()) blockToRemove2 = new ItemStack(state.getBlockState().getFluidState().getType().getBucket());
+            if (!ingredient.isNot() && player.getInventory().contains(blockToRemove2)) {
+              int slot = player.getInventory().findSlotMatchingItem(blockToRemove2);
+              player.getInventory().removeItem(slot, 1);
+              if (blockToRemove2.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(blockToRemove2.getCraftingRemainder().create());
+              player.containerMenu.broadcastChanges();
+              player.inventoryMenu.slotsChanged(player.getInventory());
+              setBlock(level, worldPos, state);
+              placed = true;
+              break;
+            } else if (ingredient.isNot()) {
+              for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemStack stack = player.getInventory().getItem(i);
+                if (state.isFluid()) {
+                  if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BucketItem bi) {
+                    player.getInventory().removeItem(i, 1);
+                    if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
+                    player.containerMenu.broadcastChanges();
+                    player.inventoryMenu.slotsChanged(player.getInventory());
+                    setBlock(level, worldPos, new PartialBlockState(bi.getContent().defaultFluidState().createLegacyBlock().getBlock()));
+                    placed = true;
+                    break;
+                  }
+                } else {
+                  if (!stack.is(blockToRemove2.getItem()) && stack.getItem() instanceof BlockItem bi) {
+                    player.getInventory().removeItem(i, 1);
+                    if (stack.getCraftingRemainder() != null) player.getInventory().placeItemBackInInventory(stack.getCraftingRemainder().create());
+                    player.containerMenu.broadcastChanges();
+                    player.inventoryMenu.slotsChanged(player.getInventory());
+                    setBlock(level, worldPos, new PartialBlockState(bi.getBlock()));
+                    placed = true;
+                    break;
+                  }
+                }
+              }
+              break;
+            }
+          }
+          if (!placed && MMRConfig.get().sendErrorMessage.get())
+            player.sendSystemMessage(
+                Component.translatable(
+                    "mmr.place.no_item",
+                    ingredient.getString(),
+                    "X:" + worldPos.getX() + " Y:" + worldPos.getY() + " Z:" + worldPos.getZ(),
+                    ingredient.getString()
+                )
+            );
+          return;
+        }
+        if (worldPos.equals(controllerPos)) return;
+        if (ingredient.isNot()) {
+          BlockIngredient finalIngredient = ingredient;
+          var filtered = BuiltInRegistries.BLOCK.stream().filter(b -> finalIngredient.getAll().stream().noneMatch(s -> s.getBlockState().is(b))).toList();
+          setBlock(level, worldPos, new PartialBlockState(filtered.get(random.nextInt(0, filtered.size()))));
+        } else {
+          setBlock(level, worldPos, ingredient.getAll().get(random.nextInt(0, ingredient.getAll().size())));
+        }
+      });
     }
   }
 
@@ -197,10 +222,10 @@ public class Structure {
     Direction direction = level.getBlockState(controllerPos).getValue(BlockStateProperties.HORIZONTAL_FACING);
     Map<BlockPos, BlockIngredient> blocks = machine.getPattern().getBlocks(direction);
     BlockPos.MutableBlockPos worldPos = new BlockPos.MutableBlockPos();
+    AtomicInteger delay = new AtomicInteger(0);
     for (BlockPos pos : blocks.keySet()) {
       BlockIngredient ingredient = blocks.get(pos);
-      worldPos.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(),
-          pos.getZ() + controllerPos.getZ());
+      worldPos.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
       BlockInWorld info = new BlockInWorld(level, worldPos, false);
       if (info.getState().isAir()) continue;
       if (info.getEntity() instanceof MachineControllerEntity) continue;
@@ -215,12 +240,14 @@ public class Structure {
             removed = true;
             break;
           }
-          if (removed) {
-            level.setBlockAndUpdate(worldPos.immutable(), Blocks.AIR.defaultBlockState());
-            continue;
-          }
+          if (isCreative || removed) level.setBlockAndUpdate(worldPos.immutable(), Blocks.AIR.defaultBlockState());
+        } else  {
+          TaskDelayer.enqueue(delay.getAndAdd(MMRConfig.get().delayOperation.get()), () -> {
+            var wp = new BlockPos.MutableBlockPos();
+            wp.set(pos.getX() + controllerPos.getX(), pos.getY() + controllerPos.getY(), pos.getZ() + controllerPos.getZ());
+            level.destroyBlock(wp.immutable(), !isCreative);
+          });
         }
-        level.destroyBlock(worldPos.immutable(), !isCreative);
       }
     }
   }
@@ -241,6 +268,9 @@ public class Structure {
 
   private static void setBlock(Level world, BlockPos pos, PartialBlockState state) {
     world.setBlockAndUpdate(pos, state.getBlockState());
+    SoundType soundType = state.getBlockState().getSoundType(world, pos, null);
+    if (state.isFluid()) world.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS);
+    else world.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS);
     BlockEntity tile = world.getBlockEntity(pos);
     if (tile != null && state.getNbt() != null && !state.getNbt().isEmpty()) {
       CompoundTag nbt = state.getNbt().copy();
