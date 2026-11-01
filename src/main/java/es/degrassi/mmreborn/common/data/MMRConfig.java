@@ -68,7 +68,7 @@ public class MMRConfig {
           .define("log_debug_structure", false);
       this.logDebugRecipe = builder
           .comment("If true and debugLevel is DEBUG or ALL, this will log the full parsed recipe in the modular_machinery_reborn/mmr.log file")
-          .define("logDebugRecipe", true);
+          .define("logDebugRecipe", false);
       builder.pop();
     }
     //GENERAL
