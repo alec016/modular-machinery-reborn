@@ -24,19 +24,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Port of the 1.21.1 {@code es.degrassi.mmreborn.client.model.controller.ControllerBakedModel},
- * the fallback the controller routes to when CTM is disabled or the machine defines custom
- * controller models (see {@code MachineModelLocation}) — in 1.21.1 the model was resolved per
- * {@code ModelData} (state / standalone / MRL with properties) and rotated to the machine facing.
- *
- * <p>26.1: the runtime source is the controller entity's
- * {@code es.degrassi.mmr.client.integration.athena.model.controller.ControllerData} (the same
- * {@code DynamicMachine#getControllerModel(status)} source), resolved against the standalone
- * bake registry — the default chain plus the machine's config-folder models, including their
- * facing rotations ({@link ModularMachineryRebornClient#modelKey}). Locations that parse to a
- * {@link BlockState} render through the baked block-state model set as before.
- */
 public class ControllerBakedModel implements DynamicBlockStateModel {
 
   public static final ControllerBakedModel INSTANCE = new ControllerBakedModel();
@@ -47,7 +34,7 @@ public class ControllerBakedModel implements DynamicBlockStateModel {
   private static final Identifier DEFAULT_CONTROLLER_RL = ModularMachineryReborn.rl("default/controller");
 
   private @Nullable BlockStateModel delegate(@Nullable BlockAndTintGetter level, BlockPos pos, @Nullable BlockState state) {
-    ModelData modelData = level != null && level instanceof IBlockGetterExtension extension
+    ModelData modelData = level instanceof IBlockGetterExtension extension
         ? extension.getModelData(pos)
         : ModelData.EMPTY;
     ControllerData data = modelData != ModelData.EMPTY

@@ -11,8 +11,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SoundRegistration {
   public static final DeferredRegister<SoundEvent> SOUND_REG = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, ModularMachineryReborn.MODID);
-  public static DeferredHolder<SoundEvent, SoundEvent> WRENCH_FAIL = SOUND_REG.register("wrench_fail", () -> makeSound("wrench_fail"));
-  public static DeferredHolder<SoundEvent, SoundEvent> WRENCH_SUCCESS = SOUND_REG.register("wrench_success", () -> makeSound("wrench_success"));
+  public static final DeferredHolder<SoundEvent, SoundEvent> WRENCH_FAIL = SOUND_REG.register("wrench_fail", () -> makeSound("wrench_fail"));
+  public static final DeferredHolder<SoundEvent, SoundEvent> WRENCH_SUCCESS = SOUND_REG.register("wrench_success", () -> makeSound("wrench_success"));
 
   static SoundEvent makeSound(String name) {
     return SoundEvent.createVariableRangeEvent(ModularMachineryReborn.rl(name));

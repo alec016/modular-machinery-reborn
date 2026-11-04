@@ -8,6 +8,7 @@ import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
@@ -48,7 +49,7 @@ import java.util.Map;
 
 @Getter
 public abstract class TileItemBus extends TileInventory implements MachineComponentEntity<ItemComponent>, ControllerAccessible, TextureableMachineEntity, ITickEntity,
-    IServerTickEntity, ISyncableStuff, IAutoEntity<ResourceHandler<ItemResource>>, ISideConfigComponent<IOSideMode> {
+    IServerTickEntity, ISyncableStuff, IAutoEntity<ResourceHandler<ItemResource>>, ISideConfigComponent<IOSideMode>, EntityMenuHolder {
   @Nullable private BlockPos controllerPos;
   private ItemBusSize size;
   private IOType ioType;

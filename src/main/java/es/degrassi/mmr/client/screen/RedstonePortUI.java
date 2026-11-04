@@ -1,4 +1,5 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.SpriteButton;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
@@ -15,21 +16,9 @@ import es.degrassi.mmr.common.network.client.CRedstoneButtonModeClickedPacket;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
-/**
- * LDLib2 replacement for the old {@code RedstonePortContainer} + {@code RedstonePortScreen} pair.
- *
- * <p>176x166 nine-slice panel ({@code sprites/background.png}), the vanilla title caption at
- * (8, 6) and the legacy {@code EnumButton} — now centered under the caption instead of hugging the
- * panel's left edge: a {@code StringButton} whose label is the current mode (live, through the
- * entity's {@code StringSyncable}) clicking over to the next mode. The vanilla inventory caption
- * and grid fill the lower half, like the other machine screens. A click keeps the old behaviour — {@code entity.setMode(v)} client prediction plus the
- * real {@code CRedstoneButtonModeClickedPacket} — and re-arms the {@code mmr.gui.tooltip.button.enum.
- * cycle} hover tooltip with the next mode, exactly like the old {@code EnumButton#getTooltips}.
- */
 public final class RedstonePortUI {
 
   private static final int BUTTON_WIDTH = 48;
-  /** Centered in the standard panel (user preference; legacy parity put it at the left edge). */
   private static final int BUTTON_X = MMRMachineUI.centeredLeft(BUTTON_WIDTH);
   private static final int BUTTON_Y = 25;
 
@@ -44,7 +33,6 @@ public final class RedstonePortUI {
 
     Button modeButton = SpriteButton.spriteButton(
         panel, Component.empty(), BUTTON_X, BUTTON_Y, BUTTON_WIDTH, 20, null);
-    // The EnumButton label lives inside the button and follows the synced mode value.
     Label modeText = new Label();
     modeText.bind(DataBindingBuilder.componentS2C(() -> modeName(entity.getMode())).build());
     modeText.layout(layout -> layout.widthPercent(100).heightPercent(100));
@@ -55,7 +43,6 @@ public final class RedstonePortUI {
 
     modeButton.setOnClick(event -> {
       IOType next = nextMode(entity.getMode());
-      // Legacy prediction: flip the local value right away, then ask the server.
       entity.setMode(next);
       ClientPacketDistributor.sendToServer(new CRedstoneButtonModeClickedPacket(next, entity.getBlockPos()));
     });
@@ -67,7 +54,6 @@ public final class RedstonePortUI {
     return MMRMachineUI.menu(panel, holder.player);
   }
 
-  /** The legacy {@code EnumButton.getNextValue}: INPUT and OUTPUT cycle. */
   private static IOType nextMode(IOType current) {
     return current.isInput() ? IOType.OUTPUT : IOType.INPUT;
   }
@@ -76,7 +62,6 @@ public final class RedstonePortUI {
     return Component.translatable("mmr.gui.tooltip.redstone.button.mode." + mode.getSerializedName());
   }
 
-  /** The legacy {@code EnumButton#getTooltips}: one line, the next mode's name. */
   private static Component cycleTip(IOType next) {
     return Component.translatable("mmr.gui.tooltip.button.enum.cycle", modeName(next));
   }

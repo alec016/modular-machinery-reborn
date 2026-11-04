@@ -2,39 +2,31 @@ package es.degrassi.mmr.common.block;
 
 import com.mojang.serialization.MapCodec;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
+import es.degrassi.mmr.common.block.base.SizedBlockHatch;
 import lombok.Getter;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
 @Getter
-public class BlockCasing extends BlockMachineComponent {
-  private final CasingType casingType;
-  public static final MapCodec<BlockMachineComponent> CODEC = simpleCodec((props) -> new BlockMachineComponent(props) {});
-  public BlockCasing(Properties id, CasingType type) {
+public class BlockCasing extends BlockMachineComponent implements SizedBlockHatch<BlockCasing.CasingType> {
+  private final CasingType size;
+  public BlockCasing(Properties id, CasingType size) {
     super(id);
-    this.casingType = type;
+    this.size = size;
   }
 
   @Override
-  protected MapCodec<? extends Block> codec() {
-    return CODEC;
+  protected MapCodec<BlockCasing> codec() {
+    return BlockCodecs.CASING.mapCodec();
   }
 
   @Override
   protected boolean skipRendering(BlockState state, BlockState adjacentState, Direction direction) {
     if (adjacentState.getBlock() instanceof BlockCasing bc && state.getBlock() instanceof BlockCasing bc1 && adjacentState.getRenderShape() == state.getRenderShape()) {
-      return bc.getCasingType() == bc1.getCasingType();
+      return bc.getSize() == bc1.getSize();
     }
     return super.skipRendering(state, adjacentState, direction);
   }
@@ -48,7 +40,7 @@ public class BlockCasing extends BlockMachineComponent {
     CIRCUITRY;
 
     @Override
-    public @NotNull String getSerializedName() {
+    public String getSerializedName() {
       return name().toLowerCase();
     }
 

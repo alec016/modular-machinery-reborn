@@ -25,19 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * Port of the 1.21.1
- * {@code es.degrassi.mmreborn.client.integration.athena.model.controller.ControllerBakedModel}.
- *
- * <p>Runtime machine data arrives through {@code ModelData} exactly like before: the controller
- * block entity still populates {@code ControllerBakedModel.DATA} (see
- * {@code MachineControllerEntity#getModelData} with {@link ControllerData}), and the 26.1 chunk
- * renderer exposes it via {@code IBlockGetterExtension#getModelData(BlockPos)} on the level passed
- * to {@code collectParts}.
- *
- * <p>Custom machine models (or disabled CTM) fall back to
- * {@code es.degrassi.mmr.client.model.controller.ControllerBakedModel}, as in 1.21.1.
- */
 public class ControllerBakedModel implements MMRBakedModel {
 
   public static final ModelProperty<ControllerData> DATA = new ModelProperty<>();
@@ -61,7 +48,6 @@ public class ControllerBakedModel implements MMRBakedModel {
     return this.model;
   }
 
-  /** 1.21.1 parity: the controller only exposes the overlay on its horizontal facing. */
   @Override
   public boolean addOverlay(Direction direction, @Nullable BlockState state) {
     if (!MMRBakedModel.super.addOverlay(direction, state)) return false;
@@ -72,16 +58,13 @@ public class ControllerBakedModel implements MMRBakedModel {
   @Override
   public void collectParts(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state,
                            @NotNull RandomSource random, @NotNull List<BlockStateModelPart> parts) {
-    ModelData modelData = level instanceof IBlockGetterExtension extension
-        ? extension.getModelData(pos)
-        : ModelData.EMPTY;
+    ModelData modelData = level.getModelData(pos);
     ControllerData data = modelData.get(DATA);
     if (data == null) {
       data = new ControllerData(DynamicMachine.DUMMY, null, MachineStatus.MISSING_STRUCTURE);
     }
 
-    // 1.21.1 parity: custom models or CTM disabled route to the legacy controller model.
-    if (data.hasCustomModel() || !state.getValue(BlockMachineComponent.CONNECT_TEXTURES)) {
+    if (data.hasCustomModel() || !BlockMachineComponent.connectsTextures(state)) {
       es.degrassi.mmr.client.model.controller.ControllerBakedModel.INSTANCE.collectParts(level, pos, state, random, parts);
       return;
     }

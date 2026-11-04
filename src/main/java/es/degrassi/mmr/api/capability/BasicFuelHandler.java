@@ -36,36 +36,33 @@ public class BasicFuelHandler implements IFuelHandler {
 
   @Override
   public boolean burn(long amount) {
-    //If the machine have sufficient fuel, just burn it and return true
     if (this.fuel >= amount) {
       removeFuel(amount);
       return true;
     }
 
-    //If the machine still don't have the required fuel amount return false, the fuel requirement will error
     return false;
   }
 
   @Override
   public void tryBurnItem(FuelValues fuelValues) {
-    // The legacy per-slot ItemSlot view (es.degrassi.mmr.common.manager.handler.slot) was removed;
-    // iterate the ResourceHandler<ItemResource> slots by index instead.
-    for (int i = 0; i < inventory.size(); i++) {
-      ItemStack stack = inventory.getStack(i);
-      if (stack.isEmpty()) continue;
-      long fuel = fuelValues.burnDuration(stack);
-      if (fuel <= 0 || !hasSpace(fuel)) continue;
+    ItemStack stack = inventory.getStack(0);
+    if (stack.isEmpty()) return;
+    long fuel = fuelValues.burnDuration(stack);
+    if (fuel <= 0 || !hasSpace(fuel)) return;
 
+    var remainder = stack.get(DataComponents.USE_REMAINDER);
+    if (remainder != null) {
+      ItemStack remainderStack = remainder.convertInto().create();
+      if (!inventory.canPlaceOutput(1, remainderStack)) return;
       addFuel(fuel);
-      var remainder = stack.get(DataComponents.USE_REMAINDER);
-      if (remainder != null) {
-        inventory.set(i, inventory.getResourceFrom(remainder.convertInto().create()), 1);
-      } else {
-        inventory.set(i, inventory.getResourceFrom(stack), stack.getCount() - 1);
-      }
-      setChanged();
-      return;
+      inventory.set(0, inventory.getResourceFrom(stack), stack.getCount() - 1);
+      inventory.addToOutputs(remainderStack, 1);
+    } else {
+      addFuel(fuel);
+      inventory.set(0, inventory.getResourceFrom(stack), stack.getCount() - 1);
     }
+    setChanged();
   }
 
   @Override

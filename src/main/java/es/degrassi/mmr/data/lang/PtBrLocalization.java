@@ -2,6 +2,15 @@ package es.degrassi.mmr.data.lang;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import es.degrassi.mmr.api.client.CoreActionTypeTexts;
+import es.degrassi.mmr.api.client.ExperienceButtonTypeTexts;
+import es.degrassi.mmr.client.screen.widget.buttons.ButtonsTexts;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
+import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.data.advancements.AdvancementTexts;
@@ -17,6 +26,52 @@ final class PtBrLocalization extends LocalizationProvider {
   protected void addEnums() {
     addEnum(AdvancementTexts.class, v -> switch (v) {
       default -> v.getEnglishText();
+    });
+    addEnum(MachineStatus.class, v -> switch (v) {
+      case PAUSED -> "Pausado";
+      case MISSING_STRUCTURE -> "Faltando estrutura";
+      case IDLE -> "Nenhuma receita correspondente encontrada";
+      case RUNNING -> "Processando...";
+      default -> v.getEnglishText();
+    });
+    addEnum(IOType.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(StructureCreatorItemMode.class, v -> switch (v) {
+      case SINGLE -> "Único";
+      case BOX -> "Caixa";
+      case VEIN -> "Proximidad (Veta)";
+    });
+    addEnum(TabTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(EnergyDisplayUtil.EnergyType.class);
+    addEnum(GaugesTexts.class, v -> switch (v) {
+      case fluidHatchEmpty -> "Vazio";
+      default -> v.getEnglishText();
+    });
+    addEnum(ButtonsTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(ExperienceButtonTypeTexts.class, v -> switch (v) {
+      case EXTRACT_1 -> "Extrair 1 Nível";
+      case EXTRACT_10 -> "Extrair 10 Níveis";
+      case EXTRACT_ALL -> "Extrair Todos os Níveis";
+      case INSERT_1 -> "Inserir 1 Nível";
+      case INSERT_10 -> "Inserir 10 Níveis";
+      case INSERT_ALL -> "Inserir Todos os Níveis";
+    });
+    addVariantEnum(CoreActionTypeTexts.class, (a, v) -> switch (a) {
+      case ADD -> "Adicionar " + switch (v) {
+        case SINGLE -> "1 núcleo ativo";
+        case SHIFT -> "10 núcleos ativos";
+        case CONTROL -> "todos os núcleos ativos";
+      };
+      case REMOVE -> "Remover " + switch (v) {
+        case SINGLE -> "1 núcleo ativo";
+        case SHIFT -> "10 núcleos ativos";
+        case CONTROL -> "todos os núcleos ativos menos 1";
+      };
     });
   }
 
@@ -343,23 +398,16 @@ final class PtBrLocalization extends LocalizationProvider {
     add(tooltip("experiencehatch.tank.levels"), "%s / %s níveis");
     add(tooltip("experiencehatch.tank.info"), "Pode conter %s pontos de XP");
 
-    add(tooltip("energy.type.fe"), "FE");
-    add(tooltip("energy.type.ic2_eu"), "EU");
-    add(tooltip("energy.type.gt_eu"), "EU");
-
     add(tooltip("constructtool.creative"), "Ferramenta Criativa de Estrutura para JSON");
 
     add(tooltip("itembus.slot"), "1 Slot");
     add(tooltip("itembus.slots"), "%s Slots");
 
-    add(tooltip("fluidhatch.empty"), "Vazio");
     add(tooltip("fluidhatch.fluid"), "[Fluido]");
     add(tooltip("fluidhatch.gas"), "[Gás]");
-    add(tooltip("fluidhatch.tank"), "%smB / %smB");
     add(tooltip("fluidhatch.tank.gas"), "%s / %s");
     add(tooltip("fluidhatch.tank.info"), "Pode conter %s mB");
 
-    add(tooltip("energyhatch.charge"), "%s / %s %s");
     add(tooltip("energyhatch.storage"), "Armazena %s FE");
     add(tooltip("energyhatch.out.transfer"), "Transfere %s FE por tick");
     add(tooltip("energyhatch.in.accept"), "Aceita %s FE por tick");
@@ -368,7 +416,6 @@ final class PtBrLocalization extends LocalizationProvider {
     add(tooltip("blueprint"), "Clique em qualquer controlador de máquina para mostrar a estrutura");
 
     add(tooltip("fueltank.storage"), "Can store %s burntime (ticks)");
-    add(tooltip("fuel_tank.tank"), "%s / %s ticks");
 
     add(tooltip("effectdispenser.interdimensional"), "Gives effects interdimensionally");
     add(tooltip("effectdispenser.radius"), "Gives effects in a radius of %s blocks around this block");
@@ -463,16 +510,9 @@ final class PtBrLocalization extends LocalizationProvider {
     add(mmr(gui("button.page.next")), "Próxima Página");
     add(mmr(gui("button.page.prev")), "Página Anterior");
     add(mm(gui("core_button")), "Mostrar informações sobre os núcleos");
-    add(mmr(gui("element.experience.tooltip")), "%s / %s");
     add(mmr(gui("element.experience.tooltip.input")), "Requer: %s / %s");
     add(mmr(gui("element.experience.tooltip.output")), "Produz: %s / %s");
     add(mmr(gui("element.experience.level")), "%s nível(is)");
-    add(mmr(gui(tooltip("experience.button.extract_1"))), "Extrair 1 Nível");
-    add(mmr(gui(tooltip("experience.button.extract_10"))), "Extrair 10 Níveis");
-    add(mmr(gui(tooltip("experience.button.extract_all"))), "Extrair Todos os Níveis");
-    add(mmr(gui(tooltip("experience.button.insert_1"))), "Inserir 1 Nível");
-    add(mmr(gui(tooltip("experience.button.insert_10"))), "Inserir 10 Níveis");
-    add(mmr(gui(tooltip("experience.button.insert_all"))), "Inserir Todos os Níveis");
     add(mm(gui("structure_placer_button")), "Clique para tentar posicionar a estrutura");
     add(mm(gui("structure_breaker_button")), "Clique para quebrar a estrutura atual");
     add(mmr(gui("structure.break")), "Você tem certeza de que deseja quebrar a estrutura atual?");
@@ -510,9 +550,6 @@ final class PtBrLocalization extends LocalizationProvider {
     add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Pressione [%s] com o item na mão (SEM GUI) para mudar de modo");
     add(mm("structure_creator.mode.change"), "Modo alterado de %s para %s");
-    add(mm("structure_creator.mode.single"), "Único");
-    add(mm("structure_creator.mode.box"), "Caixa");
-    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Selecione o primeiro canto");
     add(mm("structure_creator.mode.box.second"), "Selecione o segundo canto");
     add(mm("structure_creator.mode"), "Modo Atual: %s");
@@ -540,21 +577,10 @@ final class PtBrLocalization extends LocalizationProvider {
     add(gui("controller.status"), "Status: ");
     add(gui("controller.error.info"), "Error Info: ");
     add(gui("controller.status.redstone_stopped"), "Máquina parada por sinal de redstone");
-    add(gui("controller.status.paused"), "Pausado");
-    add(gui("controller.status.missing_structure"), "Faltando estrutura");
-    add(gui("controller.status.idle"), "Nenhuma receita correspondente encontrada");
-    add(gui("controller.status.errored"), "");
-    add(gui("controller.status.running"), "Processando...");
     add(gui("controller.status.running.progress"), "Progresso: %s");
     add(mmr("core.active.true"), "O núcleo pode executar receitas");
     add(mmr("core.active.false"), "O núcleo não pode executar receitas");
     add(mmr("core.number"), "Número do núcleo: %s");
     add(mmr(gui("core.button")), "Clique para mostrar informações sobre o núcleo número %s");
-    add(mmr(gui(tooltip("core.action.button.single.add"))), "Adicionar 1 núcleo ativo");
-    add(mmr(gui(tooltip("core.action.button.single.remove"))), "Remover 1 núcleo ativo");
-    add(mmr(gui(tooltip("core.action.button.shift.add"))), "Adicionar 10 núcleos ativos");
-    add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Remover 10 núcleos ativos");
-    add(mmr(gui(tooltip("core.action.button.control.add"))), "Adicionar todos os núcleos ativos");
-    add(mmr(gui(tooltip("core.action.button.control.remove"))), "Remover todos os núcleos ativos menos 1");
   }
 }

@@ -50,7 +50,7 @@ public class HatchBlockModel implements MMRAthenaBlockModel {
     if (CtmUtils.checkRelative(level, state, pos, direction)) return List.of();
 
     final CtmState ctm = CtmState.from(level, state, pos, direction, CtmUtils.check(level, state, pos, direction,
-        (other, self) -> connectTo.test(other, self) && other.getValue(BlockMachineComponent.CONNECT_TEXTURES) && self.getValue(BlockMachineComponent.CONNECT_TEXTURES)));
+        (other, self) -> connectTo.test(other, self) && BlockMachineComponent.connectsTextures(other) && BlockMachineComponent.connectsTextures(self)));
 
     if (ctm.allTrue()) return List.of(MMRAthenaQuad.withSprite(materials.getTexture(direction, 1), 4));
 

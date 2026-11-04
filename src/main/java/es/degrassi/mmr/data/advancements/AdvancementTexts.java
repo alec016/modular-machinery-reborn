@@ -7,7 +7,7 @@ import lombok.Getter;
 
 import java.util.Locale;
 
-@AutoCollectLang(ModularMachineryReborn.MODID)
+@AutoCollectLang(value = ModularMachineryReborn.MODID, lang = "en_us")
 public enum AdvancementTexts implements LocalizationEnum {
   Root("Modular Machinery Reborn"),
   RootDesc("When processing needs more infrastructure."),

@@ -1,5 +1,6 @@
 package es.degrassi.mmr.common.crafting.modifier;
 
+import es.degrassi.experiencelib.api.codec.EnumCodec;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
 import es.degrassi.mmr.common.crafting.requirement.RequirementType;
@@ -27,7 +28,7 @@ public interface IRecipeModifier<
     ADDITION,
     MULTIPLICATION;
 
-    public static final NamedCodec<OPERATION> CODEC = NamedCodec.enumCodec(OPERATION.class);
+    public static final NamedCodec<OPERATION> CODEC = EnumCodec.of(OPERATION.class, "Operation");
 
     public static OPERATION value(String value) {
       return valueOf(value.toUpperCase(Locale.ROOT));

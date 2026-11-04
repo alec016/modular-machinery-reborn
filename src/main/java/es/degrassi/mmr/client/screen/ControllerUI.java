@@ -3,17 +3,17 @@ package es.degrassi.mmr.client.screen;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lowdragmc.lowdraglib2.client.font.LDFonts;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
-import com.lowdragmc.lowdraglib2.gui.ui.utils.KeyState;
 import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollDisplay;
 import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollerMode;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
+import com.lowdragmc.lowdraglib2.gui.ui.utils.KeyState;
+import com.mojang.blaze3d.platform.InputConstants;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.BlockIngredient;
 import es.degrassi.mmr.api.client.Icon;
@@ -21,6 +21,7 @@ import es.degrassi.mmr.api.client.machine.TooltipUse;
 import es.degrassi.mmr.client.item.MMRItemTooltipComponent;
 import es.degrassi.mmr.client.screen.popup.ConfirmationPopup;
 import es.degrassi.mmr.client.screen.popup.CoreGridPopup;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.tabs.TopTab;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
@@ -31,10 +32,12 @@ import es.degrassi.mmr.common.network.client.CBreakStructurePacket;
 import es.degrassi.mmr.common.network.client.CPlaceStructurePacket;
 import es.degrassi.mmr.common.util.CycleTimer;
 import es.degrassi.mmr.common.util.Mods;
+import es.degrassi.mmr.common.util.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -51,10 +54,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.concurrent.atomic.AtomicReference;
 
+// TODO: if only one core remove the cores tab and add all info inside the screen rendering directly with outputs
+//  like jade/ToP
 public final class ControllerUI {
 
   private ControllerUI() {}
@@ -92,6 +97,8 @@ public final class ControllerUI {
   private static void buildTopTabs(UIElement panel, MachineControllerEntity controller) {
     BlockPos pos = controller.getBlockPos();
     int[] next = {0};
+    var blocks = controller.getFoundMachine().getPattern().getBlocks(Direction.NORTH).size();
+    int delay = MMRConfig.get().delayOperation.get();
     new TopTab(panel, TopTab.TOP_TAB_PITCH * next[0]++, -TopTab.TOP_TAB_HEIGHT,
         () -> new ItemStack(Items.STRUCTURE_BLOCK),
         () -> placerTooltips(controller),
@@ -100,7 +107,13 @@ public final class ControllerUI {
         () -> new ItemStack(Items.DIAMOND_PICKAXE),
         () -> List.of(Component.translatable("modular_machinery_reborn.gui.structure_breaker_button")),
         event -> new ConfirmationPopup(panel, 180, 84, null,
-            List.of(Component.translatable("mmr.gui.structure.break"), Component.empty(), Component.empty()),
+            List.of(
+                Component.translatable("mmr.gui.structure.break"),
+                UITexts.breakPlaceTime.text(
+                    Utils.format(blocks * delay),
+                    Utils.decimalFormat(blocks * delay / 20f)
+                )
+            ),
             null, null,
             () -> ClientPacketDistributor.sendToServer(
                 new CBreakStructurePacket(machine(controller), pos)),
@@ -223,7 +236,7 @@ public final class ControllerUI {
             map.put(component, s2);
           });
       map.forEach((c, stacks) -> {
-        if (c != null && !stacks.isEmpty()) {
+        if (!stacks.isEmpty()) {
           MMRItemTooltipComponent component = new MMRItemTooltipComponent(stacks, ITEM_CYCLE);
           component.setComponent(Component.translatable(
               "modular_machinery_reborn.controller.required.block",
@@ -253,7 +266,7 @@ public final class ControllerUI {
           });
       if (!modifierMap.isEmpty()) {
         modifierMap.forEach((c, stacks) -> {
-          if (c != null && !stacks.isEmpty()) {
+          if (!stacks.isEmpty()) {
             MMRItemTooltipComponent component = new MMRItemTooltipComponent(stacks, ITEM_CYCLE);
             component.setComponent(Component.translatable(
                 "modular_machinery_reborn.controller.required.block",
@@ -272,21 +285,37 @@ public final class ControllerUI {
 
   private static void openPlacerPopups(UIElement panel, MachineControllerEntity controller,
                                        Identifier machine, BlockPos pos) {
-    AtomicReference<Runnable> openFirst = new AtomicReference<>();
+    var pattern = ModularMachineryReborn.MACHINES.get(machine).getPattern();
+    var with = pattern.getBlocks(Direction.NORTH).size();
+    var without = pattern.getBlocksFiltered(Direction.NORTH).size();
+    int delay = MMRConfig.get().delayOperation.get();
+    AtomicReference<Runnable> openFirst = new AtomicReference<>(() -> {});
     openFirst.set(() -> new ConfirmationPopup(panel, 180, 84, null,
         List.of(Component.translatable("mmr.gui.structure.place.modifier")),
         Component.translatable("mmr.gui.structure.place.confirm.modifier"),
         Component.translatable("mmr.gui.structure.place.cancel.modifier"),
         // "with modifiers" needs its own confirmation before the packet leaves.
         () -> new ConfirmationPopup(panel, 180, 84, null,
-            List.of(Component.translatable("mmr.gui.structure.place.modifier.true")),
+            List.of(
+                Component.translatable("mmr.gui.structure.place.modifier.true"),
+                UITexts.breakPlaceTime.text(
+                    Utils.format(with * delay),
+                    Utils.decimalFormat(with * delay / 20f)
+                )
+            ),
             null, null,
             () -> ClientPacketDistributor.sendToServer(new CPlaceStructurePacket(machine, pos, true)),
             openFirst.get(),
             true),
         // So does "without modifiers": same two-step flow for the other action.
         () -> new ConfirmationPopup(panel, 180, 84, null,
-            List.of(Component.translatable("mmr.gui.structure.place.modifier.false")),
+            List.of(
+                Component.translatable("mmr.gui.structure.place.modifier.false"),
+                UITexts.breakPlaceTime.text(
+                    Utils.format(without * delay),
+                    Utils.decimalFormat(without * delay / 20f)
+                )
+            ),
             null, null,
             () -> ClientPacketDistributor.sendToServer(new CPlaceStructurePacket(machine, pos, false)),
             openFirst.get(),

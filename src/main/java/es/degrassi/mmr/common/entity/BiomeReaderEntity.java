@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
-public class BiomeReaderEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<BiomeComponent>, TextureableMachineEntity {
+public class BiomeReaderEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<BiomeComponent>, TextureableMachineEntity, EntityMenuHolder {
   private Identifier baseTexture;
   private Identifier overlayTexture;
   private static final Identifier defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_biome_reader");

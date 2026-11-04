@@ -4,7 +4,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.manager.crafting.MachineProcessorCore;

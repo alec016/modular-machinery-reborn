@@ -3,7 +3,8 @@ package es.degrassi.mmr.client.screen.widget.gauges;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.NumberFormats;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -30,13 +31,17 @@ public final class FluidTankGauge extends Gauge {
     long capacity = tank.getCapacityAsLong(index, FluidResource.EMPTY);
     int amount;
     if (content.getAmount() <= 0) {
-      text.add(Component.translatable("tooltip.fluidhatch.empty"));
+      text.add(GaugesTexts.fluidHatchEmpty.text());
       amount = 0;
     } else {
       text.add(content.getHoverName());
       amount = content.getAmount();
     }
-    text.add(Component.translatable("tooltip.fluidhatch.tank", String.valueOf(amount), String.valueOf(capacity)));
+    // Above a thousand the amount is shown in buckets, so the number stays readable.
+    text.add(GaugesTexts.fluidHatchTankBuckets.text(
+        NumberFormats.fluidAmount(amount), NumberFormats.fluidAmount(capacity)));
+    text.add(GaugesTexts.fluidHatchTank.text(
+        NumberFormats.grouped(amount), NumberFormats.grouped(capacity)));
     return text;
   }
 

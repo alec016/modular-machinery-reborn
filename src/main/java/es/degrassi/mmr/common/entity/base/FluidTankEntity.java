@@ -1,7 +1,6 @@
 package es.degrassi.mmr.common.entity.base;
 
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.util.Pair;
 import es.degrassi.experiencelib.api.network.ISyncableStuff;
 import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
@@ -10,6 +9,7 @@ import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.CapabilityInventoryEntity;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.FiltereableEntity;
 import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
@@ -28,19 +28,16 @@ import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.manager.handler.UpdateValueListener;
 import es.degrassi.mmr.common.network.server.SUpdateFilterInvPacket;
-import es.degrassi.mmr.common.network.server.SUpdateFluidFilterPacket;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateFluidComponentPacket;
+import es.degrassi.mmr.common.network.server.component.SUpdateItemComponentPacket;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmr.common.util.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -76,8 +73,8 @@ import java.util.Optional;
 public abstract class FluidTankEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<FluidComponent>, ControllerAccessible,
     TextureableMachineEntity, CapabilityInventoryEntity<ResourceHandler<FluidResource>>, ITickEntity, IServerTickEntity,
     ISyncableStuff, IAutoEntity<ResourceHandler<FluidResource>>, ISideConfigComponent<IOSideMode>,
-    FiltereableEntity<FluidResource, Fluid> {
-  private FluidHandler tank;
+    FiltereableEntity<FluidResource, Fluid>, EntityMenuHolder {
+  private final FluidHandler tank;
   private IOType ioType;
   private FluidHatchSize hatchSize;
   @Nullable
@@ -88,16 +85,13 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   @Getter
   private static final Identifier defaultBaseTexture = ModularMachineryReborn.rl("block/casing_plain");
 
-  @Getter
   private final ItemHandler capabilityInventory;
-  @Getter
   private final ItemHandler filterInventory;
 
   private final long tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
   private long lastCheckTick;
   private final Map<Direction, BlockCapabilityCache<ResourceHandler<FluidResource>, Direction>> neighbourStorages = Maps.newEnumMap(Direction.class);
 
-  @Getter
   private final IOSideConfig config;
 
   @Nullable
@@ -105,6 +99,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
 
   private final UpdateValueListener<FluidStack> listener;
   private final UpdateValueListener<ItemStack> filterListener;
+  private final UpdateValueListener<ItemStack> capabilityItemListener;
 
   protected FluidTankEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, FluidHatchSize size,
                            IOType ioType) {
@@ -133,17 +128,18 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
         }
       });
     };
-
     this.filterListener = (slot, stack) -> {
       stack = filterInventory.getStack(slot);
       if (!getLevel().isClientSide()) {
+        setChanged();
         if (stack.isEmpty()) {
           setFilter(FluidResource.EMPTY);
           return;
         }
-        var fluidCap = stack.getCapability(getCapability(), null);
+        var fluidCap = stack.getCapability(getCapability(), ItemAccess.forStack(stack));
         if (fluidCap != null) {
-          var fluidCandidate = fluidCap.getResource(0).toStack(1);
+          // The container's content as a resource of this hatch's filter type (FluidResource).
+          var fluidCandidate = fluidCap.getResource(0);
           if (fluidCandidate.isEmpty()) {
             setFilter(FluidResource.EMPTY);
             filterInventory.setStack(0, Items.BUCKET.getDefaultInstance());
@@ -155,20 +151,37 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
             stack = FilterConverterRegistry.convertBack(fluidCandidate);
             filterInventory.setStack(slot, stack);
             PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), ChunkPos.containing(getBlockPos()), new SUpdateFilterInvPacket(getBlockPos(), stack));
-            this.setFilter(FluidResource.of(fluidCandidate));
+            this.setFilter(fluidCandidate);
             return;
           }
         }
         var hasConverter = FilterConverterRegistry.hasConverter(stack);
         var value = FilterConverterRegistry.convert(stack);
-        if (hasConverter && value instanceof FluidStack fs) {
-          setFilter(FluidResource.of(fs));
+        // The filter type of this hatch is the resource type (FluidResource), the converted value is
+        // a resource as well - never a stack. Anything that does not convert to this hatch's filter
+        // type is not a valid filter and leaves the current filter untouched.
+        if (hasConverter && value instanceof FluidResource resource) {
+          setFilter(resource);
         }
+      }
+    };
+    this.capabilityItemListener = (slot, stack) -> {
+      getControllerPosSet().forEach(p -> {
+        if (getLevel() == null) return;
+        if (getLevel().isClientSide()) return;
+        if (getLevel().getBlockEntity(p) instanceof MachineControllerEntity controller) {
+          controller.getProcessor().setMachineInventoryChanged();
+        }
+      });
+      if (getLevel() instanceof ServerLevel level) {
+        PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(getBlockPos()),
+            new SUpdateItemComponentPacket(slot, capabilityInventory.getStack(slot), getBlockPos()));
       }
     };
 
     this.tank.setListener(listener);
     filterInventory.setListener(filterListener);
+    this.capabilityInventory.setListener(capabilityItemListener);
   }
 
   @Override
@@ -187,31 +200,37 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   @Override
   public void setFilter(@Nullable FluidResource filter) {
     this.filter = filter == null || filter.isEmpty() ? null : filter;
-    this.tank.setFilter(s -> this.filter == null || this.filter == FluidResource.EMPTY || (
-        this.filter.is(s.getFluid()) && s.getComponents().stream().allMatch(type -> this.filter.has(type.type()))
-    ));
-    if (getLevel() != null && !getLevel().isClientSide())
-      PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) getLevel(), ChunkPos.containing(getBlockPos()),
-        new SUpdateFluidFilterPacket(getBlockPos(), Optional.ofNullable(filter).orElse(FluidResource.EMPTY)));
+    this.tank.setFilter(this::acceptsFilter);
+    if (getLevel() != null && !getLevel().isClientSide()) {
+      // The filter travels with the entity's own sync data (see getStuffToSync), so the clients
+      // pick it up with the next sync tick.
+      setChanged();
+    }
+  }
+
+  /**
+   * Whether a resource passes the current filter: an empty filter accepts everything, otherwise
+   * the fluid must match and the resource may not require components the filter does not have.
+   */
+  private boolean acceptsFilter(FluidResource candidate) {
+    if (this.filter == null || this.filter.isEmpty()) {
+      return true;
+    }
+    if (!candidate.getFluid().equals(this.filter.getFluid())) {
+      return false;
+    }
+    return candidate.getComponents().keySet().stream()
+        .allMatch(type -> this.filter.getComponents().has(type));
   }
 
   @Override
-  public CompoundTag serializeFilter(HolderLookup.Provider provider) {
-    return (CompoundTag) FluidResource.OPTIONAL_CODEC.encodeStart(
-        provider.createSerializationContext(NbtOps.INSTANCE),
-        getFilter()
-    )
-    .result()
-    .orElse(new CompoundTag());
+  public void serializeFilter(ValueOutput output) {
+    output.store("filter", FluidResource.OPTIONAL_CODEC, getFilter());
   }
 
   @Override
-  public void deserializeFilter(CompoundTag tag, HolderLookup.Provider provider) {
-    var possibleFilter = FluidResource.OPTIONAL_CODEC.decode(provider.createSerializationContext(NbtOps.INSTANCE), tag)
-        .map(Pair::getFirst)
-        .result()
-        .orElse(FluidResource.EMPTY);
-    setFilter(possibleFilter);
+  public void deserializeFilter(ValueInput input) {
+    setFilter(input.read("filter", FluidResource.OPTIONAL_CODEC).orElse(FluidResource.EMPTY));
   }
 
   @Override
@@ -240,49 +259,61 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   @Override
   public void tickInventory() {
     if (!shouldTickInventory()) return;
-    capabilityInventory.forEach((slot, index) -> {
-      if (slot.isEmpty()) return;
-      Optional.ofNullable(slot.getCapability(getCapability(), ItemAccess.forStack(slot))).ifPresent(cap -> {
-        if (ioType == IOType.NONE) return;
-        if (ioType.isInput()) {
-          if (getTank().isFull()) return;
-          if (slot.getItem() instanceof BucketItem bucket) {
-            try (var tx = Transaction.open(null)) {
-              if (bucket.content.isSame(Fluids.EMPTY)) return;
-              int simulatedInsert = getTank().insert(FluidResource.of(bucket.content), FluidType.BUCKET_VOLUME, tx);
-              if (simulatedInsert < FluidType.BUCKET_VOLUME) return;
-              capabilityInventory.setStack(index, new ItemStack(Items.BUCKET));
-              tx.commit();
-            }
-          } else {
-            try (var tx = Transaction.open(null)) {
-              ResourceHandlerUtil.moveStacking(cap, getTank(),
-                  resource -> getFilter().isEmpty() || resource.equals(getFilter()), Integer.MAX_VALUE, tx);
-              tx.commit();
-            }
+    int inputSlots = capabilityInventory.getInputSlotCount();
+    for (int index = 0; index < inputSlots; index++) {
+      ItemStack slot = capabilityInventory.getStack(index);
+      if (slot.isEmpty()) continue;
+      var cap = slot.getCapability(getCapability(), ItemAccess.forStack(slot));
+      if (cap == null || ioType == IOType.NONE) continue;
+      if (ioType.isInput()) {
+        if (getTank().isFull()) continue;
+        if (slot.getItem() instanceof BucketItem bucket) {
+          try (var tx = Transaction.open(null)) {
+            if (bucket.content.isSame(Fluids.EMPTY)) continue;
+            int simulatedInsert = getTank().insert(FluidResource.of(bucket.content), FluidType.BUCKET_VOLUME, tx);
+            if (simulatedInsert < FluidType.BUCKET_VOLUME) continue;
+            ItemStack emptyBucket = new ItemStack(Items.BUCKET);
+            if (!capabilityInventory.canPlaceOutput(1, emptyBucket)) continue;
+            tx.commit();
+            capabilityInventory.extractFromInputs(slot, 1);
+            capabilityInventory.addToOutputs(emptyBucket, 1);
           }
-        } else if (ioType.isOutput()) {
-          if (this.getTank().isEmpty()) return;
-          if (slot.getItem() instanceof BucketItem bucket) {
-            try (var tx = Transaction.open(null)) {
-              if (!bucket.content.isSame(Fluids.EMPTY)) return;
-              var stack = ResourceHandlerUtil.extractFirst(getTank(), _ -> true, FluidType.BUCKET_VOLUME, tx);
-              if (stack == null || stack.isEmpty() || stack.resource().isEmpty() ||stack.amount() < FluidType.BUCKET_VOLUME) return;
-              ItemStack fluidStack = BuiltInRegistries.ITEM.stream()
-                  .filter(item -> item instanceof BucketItem b && b.content.isSame(stack.resource().getFluid()))
-                  .findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
-              capabilityInventory.setStack(index, fluidStack);
-              tx.commit();
-            }
-          } else {
-            try (var tx = Transaction.open(null)) {
-              ResourceHandlerUtil.moveStacking(getTank(), cap, _ -> true, Integer.MAX_VALUE, tx);
-              tx.commit();
+        } else {
+          try (var tx = Transaction.open(null)) {
+            ResourceHandlerUtil.moveStacking(cap, getTank(),
+                resource -> acceptsFilter(resource), Integer.MAX_VALUE, tx);
+            tx.commit();
+          }
+          if (cap.getAmountAsLong(0) == 0) capabilityInventory.moveToOutputs(index);
+        }
+      } else if (ioType.isOutput()) {
+        if (this.getTank().isEmpty()) continue;
+        if (slot.getItem() instanceof BucketItem bucket) {
+          try (var tx = Transaction.open(null)) {
+            if (!bucket.content.isSame(Fluids.EMPTY)) continue;
+            var stack = ResourceHandlerUtil.extractFirst(getTank(), _ -> true, FluidType.BUCKET_VOLUME, tx);
+            if (stack == null || stack.isEmpty() || stack.resource().isEmpty() ||stack.amount() < FluidType.BUCKET_VOLUME) continue;
+            ItemStack fluidStack = BuiltInRegistries.ITEM.stream()
+                .filter(item -> item instanceof BucketItem b && b.content.isSame(stack.resource().getFluid()))
+                .findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
+            if (fluidStack.isEmpty() || !capabilityInventory.canPlaceOutput(1, fluidStack)) continue;
+            tx.commit();
+            capabilityInventory.extractFromInputs(slot, 1);
+            capabilityInventory.addToOutputs(fluidStack, 1);
+          }
+        } else {
+          try (var tx = Transaction.open(null)) {
+            ResourceHandlerUtil.moveStacking(getTank(), cap, _ -> true, Integer.MAX_VALUE, tx);
+            tx.commit();
+          }
+          if (!getTank().isEmpty()) {
+            try (var check = Transaction.open(null)) {
+              if (cap.insert(0, getTank().getResource(0), 1, check) == 0) capabilityInventory.moveToOutputs(index);
             }
           }
         }
-      });
-    });
+      }
+    }
   }
 
   @Override
@@ -305,15 +336,18 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
 
   @Override
   protected void loadAdditional(ValueInput input) {
+    input.readChild("filterInventory", filterInventory);
+    if (filterInventory.getStack(0).isEmpty()) {
+      filterInventory.setStack(0, Items.BUCKET.getDefaultInstance());
+    }
+    this.tank.setListener(listener);
+    this.filterInventory.setListener(filterListener);
+    this.capabilityInventory.setListener(capabilityItemListener);
     super.loadAdditional(input);
     this.ioType = IOType.getByString(input.getString("ioType").orElseThrow());
     this.hatchSize = FluidHatchSize.value(input.getString("size").orElseThrow());
     input.readChild("tank", tank);
     input.readChild("capInventory", capabilityInventory);
-    input.readChild("filterInventory", filterInventory);
-    if (filterInventory.getStack(0).isEmpty()) {
-      filterInventory.setStack(0, Items.BUCKET.getDefaultInstance());
-    }
     input.getLong("controllerPos").ifPresent(v -> this.controllerPos = BlockPos.of(v));
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fluid" + ioType.getSerializedName() + "hatch_" + hatchSize.getSerializedName());
 
@@ -322,9 +356,6 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
 
 
     input.readChild("config", config);
-
-    this.tank.setListener(listener);
-    this.filterInventory.setListener(filterListener);
   }
 
   @Override
@@ -441,5 +472,7 @@ public abstract class FluidTankEntity extends ColorableMachineComponentEntity im
   @Override
   public void getStuffToSync(SyncableList container) {
     container.sync(IOSideConfig.class, this::getConfig, this.config::set);
+    container.sync(FluidResource.class, this::getFilter, this::setFilter);
+    filterInventory.getStuffToSync(container);
   }
 }

@@ -1,6 +1,9 @@
 package es.degrassi.mmr.common.manager.handler;
 
 import es.degrassi.experiencelib.api.network.SyncableList;
+import es.degrassi.mmr.api.codec.BigStackCodecs;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
@@ -9,9 +12,20 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.Objects;
 
+@Setter
+@Getter
 public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
+  /**
+   * Set while the grid of this handler is still compiling on the client: the fill tab is blocked
+   * until the pane is complete. The slot level lock (see MMRBusSlot) is what actually keeps the
+   * items out, that one lives on the menu and dies with it.
+   */
+  private boolean compiling;
+
   public ItemHandler(int size, long capacity, long maxIn, long maxOut, Direction... accessibleSides) {
-    super(size, capacity, maxIn, maxOut, ItemStack.EMPTY, ItemStack.OPTIONAL_CODEC, accessibleSides);
+    // The big stack codec keeps the amount of a slot above the vanilla limits (a bus with a
+    // capacity of 10k items per slot would not be savable otherwise).
+    super(size, capacity, maxIn, maxOut, ItemStack.EMPTY, BigStackCodecs.OPTIONAL.codec(), accessibleSides);
   }
 
   @Override
@@ -47,40 +61,27 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return itemStack.count() >= getCapacity(0, ItemResource.of(itemStack));
   }
 
-  /* ------------------------------------------------------------------
-   * Machine-side helpers.
-   *
-   * The legacy implementation exposed per-slot views ({@code es.degrassi.mmr.common.manager.handler.slot.ItemSlot})
-   * with input/output classification and "…BypassLimit" operations. That package was removed on purpose;
-   * the same behaviour is provided here on top of the transfer API, iterating slots by index.
-   *
-   * In the new model a handler only ever holds input slots (input buses, fuel tanks, durability hatches)
-   * or output slots (output buses), so "inputs"/"outputs" collapse to "all slots", and the machine-side
-   * operations bypass maxIn/maxOut exactly like the old *BypassLimit methods did.
-   * ------------------------------------------------------------------ */
-
-  /** True when {@code stack} could be added to slot {@code index} (filter + stacking rules). */
+  /**
+   * Whether a slot can still take the given stack. The handler's capacity is the authority: the
+   * item's own maximum stack size is a vanilla per-item limit and must not cap a handler that is
+   * configured for more (a bus with a capacity of 10k per slot, for example).
+   */
   public boolean canPlaceOutput(int index, ItemStack stack) {
     ItemResource resource = ItemResource.of(stack);
-    if (!isValid(index, resource)) return false;
+    if (!acceptsInternally(index, resource)) return false;
     ItemStack slotStack = getStack(index);
     if (slotStack.isEmpty()) return true;
     if (!ItemStack.isSameItemSameComponents(slotStack, stack)) return false;
-    return slotStack.count() < Math.min(stack.getMaxStackSize(), getCapacity(index, resource));
+    return slotStack.count() < getCapacity(index, resource);
   }
 
-  /**
-   * Inserts into any slot bypassing the external maxIn limit. Returns the amount actually inserted.
-   * Writes go through {@link #set}, so the per-slot change listeners (update packets to tracking
-   * players) fire like with any transactional write — plain {@code stacks.set} would mutate the
-   * storage silently and leave every listener and client copy stale until the next full sync.
-   */
   public int addToOutputs(ItemStack stack, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
+      if (!isOutputSlot(i)) continue;
       if (!canPlaceOutput(i, stack)) continue;
       ItemStack slotStack = getStack(i);
-      int capacity = Math.min(getCapacity(i, ItemResource.of(stack)), stack.getMaxStackSize());
+      int capacity = getCapacity(i, ItemResource.of(stack));
       int maxInsert = Math.min(capacity - slotStack.count(), remaining);
       if (maxInsert <= 0) continue;
       set(i, ItemResource.of(stack), slotStack.count() + maxInsert);
@@ -89,10 +90,25 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return amount - remaining;
   }
 
-  /** Extracts matching items bypassing the external maxOut limit. Returns the amount actually extracted. */
+  public int addToInputs(ItemStack stack, int amount) {
+    int remaining = amount;
+    for (int i = 0; i < size() && remaining > 0; i++) {
+      if (!isInputSlot(i)) continue;
+      if (!canPlaceOutput(i, stack)) continue;
+      ItemStack slotStack = getStack(i);
+      int capacity = getCapacity(i, ItemResource.of(stack));
+      int maxInsert = Math.min(capacity - slotStack.count(), remaining);
+      if (maxInsert <= 0) continue;
+      set(i, ItemResource.of(stack), slotStack.count() + maxInsert);
+      remaining -= maxInsert;
+    }
+    return amount - remaining;
+  }
+
   public int extractFromInputs(ItemStack stack, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
+      if (!isInputSlot(i)) continue;
       ItemStack slotStack = getStack(i);
       if (slotStack.isEmpty() || !ItemStack.isSameItemSameComponents(slotStack, stack)) continue;
       int maxExtract = Math.min(slotStack.count(), remaining);
@@ -103,12 +119,27 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return amount - remaining;
   }
 
+  public boolean moveToOutputs(int index) {
+    ItemStack stack = getStack(index);
+    if (stack.isEmpty() || isOutputSlot(index)) return false;
+    int moved = addToOutputs(stack, stack.getCount());
+    if (moved <= 0) return false;
+    if (moved >= stack.getCount()) {
+      set(index, ItemResource.EMPTY, 0);
+    } else {
+      set(index, ItemResource.of(stack), stack.getCount() - moved);
+    }
+    return true;
+  }
+
   public int getSpaceForItem(ItemStack stack) {
     int space = 0;
     for (int i = 0; i < size(); i++) {
+      if (!isInputSlot(i)) continue;
       if (!canPlaceOutput(i, stack)) continue;
       ItemStack slotStack = getStack(i);
-      int capacity = Math.min(getCapacity(i, ItemResource.of(stack)), stack.getMaxStackSize());
+      // The handler's capacity is the limit, not the item's own maximum stack size.
+      int capacity = getCapacity(i, ItemResource.of(stack));
       space += slotStack.isEmpty() ? capacity : capacity - slotStack.count();
     }
     return Math.max(space, 0);
@@ -125,7 +156,6 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return amount;
   }
 
-  /** Vanilla comparator-style fill level of the whole inventory (0-15). */
   public int calcRedstoneFromInventory() {
     int filled = 0;
     float total = 0.0F;
@@ -139,8 +169,6 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     total = total / (float) size();
     return Mth.floor(total * 14.0F) + (filled > 0 ? 1 : 0);
   }
-
-  /* ---- durability helpers (durability hatch) ---- */
 
   public int getDurabilityAmount(ItemStack stack) {
     int amount = 0;
@@ -195,7 +223,6 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     }
   }
 
-  /** Same item ignoring the damage component (legacy semantics of the old ItemHandler.isSameItem). */
   private static boolean isSameItem(ItemStack toTest, ItemStack ingredient) {
     if (toTest.getItem() != ingredient.getItem()) return false;
     for (var type : ingredient.getComponents().keySet()) {
@@ -205,10 +232,6 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return true;
   }
 
-  /**
-   * Builds a live view over several handlers (legacy {@code mergeBuild} shared the underlying slot
-   * objects so that mutations still hit the source block entities; a plain copy would desynchronise them).
-   */
   public static ItemHandler mergeBuild(ItemHandler... inventories) {
     return new MergedItemHandler(inventories);
   }

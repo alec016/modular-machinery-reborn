@@ -18,11 +18,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -75,8 +75,7 @@ public class ColorableMachineComponentEntity extends BlockEntitySynchronized imp
   protected void loadAdditional(ValueInput nbt) {
     super.loadAdditional(nbt);
     if (this instanceof FiltereableEntity<?, ?> entity) {
-      nbt.read(FiltereableEntity.FILTER_KEY, net.minecraft.nbt.CompoundTag.CODEC)
-          .ifPresent(tag -> entity.deserializeFilter(tag, nbt.lookup()));
+      entity.deserializeFilter(nbt.childOrEmpty(FiltereableEntity.FILTER_KEY));
     }
     definedColor = nbt.getIntOr("casingColor", Config.machineColor);
   }
@@ -85,7 +84,7 @@ public class ColorableMachineComponentEntity extends BlockEntitySynchronized imp
   protected void saveAdditional(ValueOutput nbt) {
     super.saveAdditional(nbt);
     if (this instanceof FiltereableEntity<?, ?> entity && getLevel() != null) {
-      nbt.store(FiltereableEntity.FILTER_KEY, net.minecraft.nbt.CompoundTag.CODEC, entity.serializeFilter(getLevel().registryAccess()));
+      entity.serializeFilter(nbt.child(FiltereableEntity.FILTER_KEY));
     }
     nbt.putInt("casingColor", this.definedColor);
   }

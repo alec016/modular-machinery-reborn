@@ -1,7 +1,7 @@
 package es.degrassi.mmr.mixin;
 
 import es.degrassi.mmr.api.controller.IMultiblockController;
-import es.degrassi.mmr.api.controller.MMRWorldSavedData;
+import es.degrassi.mmr.api.save.MultiblockWorldSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -34,7 +34,7 @@ public abstract class LevelMixin implements LevelAccessor {
   private @Nullable ChunkAccess mmr$maybeGetChunkAsync(int chunkX, int chunkZ) {
     if (this.isClientSide()) return null;
     if (Thread.currentThread() == this.thread) return null;
-    if (!MMRWorldSavedData.isThreadService()) return null;
+    if (!MultiblockWorldSavedData.isThreadService()) return null;
     if (!this.getChunkSource().hasChunk(chunkX, chunkZ)) return null;
 
     return this.getChunkSource().getChunkNow(chunkX, chunkZ);
@@ -67,7 +67,7 @@ public abstract class LevelMixin implements LevelAccessor {
                                             CallbackInfo ci) {
     if (!(((Object) this) instanceof ServerLevel serverLevel)) return;
 
-    MMRWorldSavedData mwsd = MMRWorldSavedData.getOrCreate(serverLevel);
+    MultiblockWorldSavedData mwsd = MultiblockWorldSavedData.getOrCreate(serverLevel);
     Set<IMultiblockController> defensiveCopy = new HashSet<>(mwsd.getControllersInChunk(chunk.getPos()));
     for (IMultiblockController structure : defensiveCopy) {
       if (structure.getController() == null || !structure.self().isFormed()) {

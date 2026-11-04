@@ -27,31 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Re-implementation of the 1.21.1 {@code es.degrassi.mmreborn.client.integration.athena.model.MMRBakedModel}
- * on the 26.1 {@code BlockStateModel}/{@code BlockStateModelPart} dispatch.
- *
- * <p>The old interface was a default-heavy {@code IDynamicBakedModel}: all shared logic (CTM quad baking,
- * culled/unculled bucket split, overlay injection, particle/flags) lived there and every concrete baked
- * model only supplied its own quads source. This port keeps exactly that shape, adapted to 26.1's
- * part-bucket rendering. Textures are stored as {@link Material.Baked} maps, matching the Athena 4.7.3
- * {@code BlockStateModelMaterialInfo} semantics.
- */
 public interface MMRBakedModel extends BlockStateModel {
   Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
 
-  /** Baked materials keyed by texture index (0 = particle), Athena 4.7.3 parity. */
   Int2ObjectMap<Material.Baked> getTextures();
 
-  /** The per-direction CTM material map (the 1.21.1 {@code ConnectedTextureMap}). */
   MMRMaterialMap getMaterialMap();
 
   MMRAthenaBlockModel getModel();
 
-  /**
-   * Parity of the 1.21.1 {@code MMRBakedModel#bakeQuads(List, Direction)} (always baked with
-   * {@code BlockModelRotation.X0_Y0}, the identity rotation).
-   */
   default List<BakedQuad> bakeQuads(List<MMRAthenaQuad> quads, Direction direction) {
     List<BakedQuad> bakedQuads = new ArrayList<>(quads.size());
     for (MMRAthenaQuad quad : quads) {
@@ -62,20 +46,11 @@ public interface MMRBakedModel extends BlockStateModel {
     return bakedQuads;
   }
 
-  /**
-   * 1.21.1 parity: casing models inject the overlay unconditionally per direction; the hatch and
-   * controller models only on the horizontal-facing side (see their overrides).
-   */
   default boolean addOverlay(Direction direction, @Nullable BlockState state) {
     MMRMaterialMap map = getMaterialMap();
     return map != null && map.getTexture(direction, 5) != 0;
   }
 
-  /**
-   * Parity of the 1.21.1 {@code getModelData(...)} split (and Athena 4.7.3's
-   * {@code createGeometryKey}): quads are separated into a per-direction culled bucket, and one
-   * combined unculled bucket keyed under {@code null}.
-   */
   static NullableEnumMap<Direction, Map<Direction, List<MMRAthenaQuad>>> buildGeometryKey(
       BlockAndTintGetter level, BlockPos pos, BlockState state, MMRAthenaBlockModel model) {
     AppearanceAndTintGetter getter = new WrappedGetter(level);
@@ -119,7 +94,6 @@ public interface MMRBakedModel extends BlockStateModel {
     return materialFlags(getTextures());
   }
 
-  /** Athena parity of {@code BlockStateModelMaterialInfo#getParticle}. */
   static Material.Baked particle(@NotNull Int2ObjectMap<Material.Baked> materials) {
     if (materials.containsKey(0)) return materials.get(0);
     return new Material.Baked(
@@ -128,7 +102,6 @@ public interface MMRBakedModel extends BlockStateModel {
     );
   }
 
-  /** Athena parity of {@code BlockStateModelMaterialInfo#getFlags}. */
   static @BakedQuad.MaterialFlags int materialFlags(@NotNull Int2ObjectMap<Material.Baked> materials) {
     int flags = 0;
     for (Material.Baked material : materials.values()) {
@@ -147,11 +120,6 @@ public interface MMRBakedModel extends BlockStateModel {
     return quad.tint() == -1 ? null : new TintProvider.Index(quad.tint());
   }
 
-  /**
-   * Part for blocks placed in the world: mirrors the old {@code getQuads(state, side, rand, data, type)}
-   * CTM path, where the per-side culled buckets were kept separate and the overlay was injected per
-   * entry ({@code withSprite(5, -0.0001F, -1)}).
-   */
   final class CTMPart implements BlockStateModelPart {
     private final MMRBakedModel model;
     private final Map<Direction, List<BakedQuad>> cache = new HashMap<>();
@@ -198,11 +166,6 @@ public interface MMRBakedModel extends BlockStateModel {
     }
   }
 
-  /**
-   * Part without world context (no {@code ModelData}, no neighbourhood to evaluate): mirrors the old
-   * data-less {@code getQuads} path where the defaults were produced directly from the block model
-   * ({@code getDefaultQuads(side, null)}).
-   */
   final class DefaultPart implements BlockStateModelPart {
     private final MMRBakedModel model;
     private final Map<Direction, List<BakedQuad>> cache = new HashMap<>();

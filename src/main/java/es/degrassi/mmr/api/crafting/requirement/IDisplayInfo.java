@@ -108,7 +108,6 @@ public interface IDisplayInfo {
   /**
    * Called when the player click the requirement icon in the jei recipe gui.
    */
-  // TODO: modify to use new syntax
   interface ClickAction {
     /**
      * @param machine The machine that will process the recipe.

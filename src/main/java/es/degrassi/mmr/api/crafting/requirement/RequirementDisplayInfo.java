@@ -64,7 +64,6 @@ public class RequirementDisplayInfo implements IDisplayInfo {
     return this.clickAction != null;
   }
 
-  // TODO: modify this to use new syntax
   public boolean handleClick(DynamicMachine machine, MachineRecipe recipe, int button) {
     if (hasClickAction()) {
       this.clickAction.handleClick(machine, recipe, button);

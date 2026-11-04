@@ -8,7 +8,8 @@ import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.lowdragmc.lowdraglib2.gui.util.UISoundUtils;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.common.util.TextureSizeHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,14 +25,13 @@ import java.util.function.Supplier;
  */
 public class TopTab extends TabElement {
 
-  /** Legacy tab sizes: {@code base_tab_top.png} 28x27. */
-  public static final int TOP_TAB_WIDTH = 28;
-  public static final int TOP_TAB_HEIGHT = 27;
-  /** Consecutive tab pitch of the legacy {@code TabGroupWidget} top strip. */
-  public static final int TOP_TAB_PITCH = 28;
-
   public static final Identifier TEX_TAB_TOP = ModularMachineryReborn.rl("textures/gui/widget/base_tab_top.png");
   public static final Identifier TEX_TAB_TOP_HOVERED = ModularMachineryReborn.rl("textures/gui/widget/base_tab_hovered_top.png");
+
+  public static final int TOP_TAB_WIDTH = TextureSizeHelper.getWidth(TEX_TAB_TOP); // should be 28
+  public static final int TOP_TAB_HEIGHT = TextureSizeHelper.getHeight(TEX_TAB_TOP); // should be 27
+  /** Consecutive tab pitch of the legacy {@code TabGroupWidget} top strip. */
+  public static final int TOP_TAB_PITCH = TOP_TAB_WIDTH;
 
   /**
    * Adds a top tab at {@code (x, y)}. This overload draws an atlas icon instead of an item.

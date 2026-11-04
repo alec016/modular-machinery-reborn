@@ -2,6 +2,7 @@ package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -30,10 +31,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Getter
 @Setter
 @ParametersAreNonnullByDefault
-public class ParallelHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<ParallelComponent>, ControllerAccessible, TextureableMachineEntity {
+public class ParallelHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<ParallelComponent>, ControllerAccessible,
+    TextureableMachineEntity, EntityMenuHolder {
   @Nullable
   private BlockPos controllerPos;
-  protected ParallelHatchSize size;
+  protected final ParallelHatchSize size;
   private ParallelComponent component;
   private Identifier baseTexture;
   private Identifier overlayTexture;
@@ -80,7 +82,6 @@ public class ParallelHatchEntity extends ColorableMachineComponentEntity impleme
   @Override
   protected void loadAdditional(ValueInput input) {
     super.loadAdditional(input);
-    size = ParallelHatchSize.value(input.getString("size").orElseThrow());
     this.component = new ParallelComponent(size);
     input.getLong("controllerPos").ifPresent(value -> this.controllerPos = BlockPos.of(value));
     input.getInt("cores").ifPresent(this::setCores);

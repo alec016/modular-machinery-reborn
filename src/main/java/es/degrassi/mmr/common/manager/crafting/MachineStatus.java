@@ -16,8 +16,8 @@ import java.util.Locale;
  * An enum of all possible states the machine can be. The machine status is hold by the CraftingManager attached to the
  * MachineTile and is synced automatically when changed.
  */
-@AutoCollectLang(ModularMachineryReborn.MODID)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@AutoCollectLang(value = ModularMachineryReborn.MODID, lang = "en_us")
 public enum MachineStatus implements StringRepresentable, LocalizationEnum {
   /**
    * The machine is searching for a valid multiblock structure.

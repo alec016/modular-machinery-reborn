@@ -30,10 +30,10 @@ public enum EnergyHatchSize implements EnumRepresentable, ConfigLoaded {
   public long maxEnergy;
   public long transferLimit;
 
-  public final int defaultConfigurationEnergy;
-  public final int defaultConfigurationTransferLimit;
+  public final long defaultConfigurationEnergy;
+  public final long defaultConfigurationTransferLimit;
 
-  EnergyHatchSize(int maxEnergy, int transferLimit) {
+  EnergyHatchSize(long maxEnergy, long transferLimit) {
     this.defaultConfigurationEnergy = maxEnergy;
     this.defaultConfigurationTransferLimit = transferLimit;
   }

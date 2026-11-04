@@ -1,13 +1,14 @@
 package es.degrassi.mmr.api.handler;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.neoforged.fml.ModLoader;
 
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilterRendererRegistry {
-  private FilterRendererRegistry() {}
-
   private static Map<Object, FilterRendererFactory> renderers;
 
   public static void init() {
@@ -24,7 +25,7 @@ public class FilterRendererRegistry {
     return renderers.get(item);
   }
 
-  public static <T> void render(T from, GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y) {
-    getRenderer(from).render(GuiGraphicsExtractor, x, y);
+  public static <T> void render(T from, GUIContext context, float x, float y) {
+    getRenderer(from).render(context, x, y);
   }
 }

@@ -12,14 +12,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Base of the LDLib2 rebuilds of the legacy tab widgets ({@code TabWidget}, {@code TopTabWidget},
- * {@code RightTabWidget}, {@code AutoTabWidget}). The tab plates are the original MMR sprites and
- * the auto-IO panel drives the same server-side side configuration as the old packets.
- */
 abstract class TabElement extends UIElement {
   protected final Supplier<ItemStack> icon;
-  /** Lines may hold plain {@link Component}s and {@link net.minecraft.world.inventory.tooltip.TooltipComponent}s. */
   protected final Supplier<List<Object>> tooltips;
   @Nullable
   protected Icon spriteIcon;
@@ -28,8 +22,6 @@ abstract class TabElement extends UIElement {
     this.icon = icon;
     this.tooltips = tooltips;
     addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
-      // The legacy tabs forwarded the icon button's tooltips; the UI resolves them per frame
-      // with a direct HOVER_TOOLTIPS dispatch on the hovered element.
       List<?> lines = this.tooltips == null ? null : this.tooltips.get();
       if (lines != null && !lines.isEmpty()) {
         event.hoverTooltips = HoverTooltips.create(lines.toArray());

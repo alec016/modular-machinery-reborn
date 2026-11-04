@@ -51,6 +51,6 @@ public abstract class TileInventory extends ColorableMachineComponentEntity impl
 
   @Override
   public void addDrops(List<ItemStack> drops) {
-    this.inventory.forEach(stack -> drops.add(stack.copy()));
+    this.inventory.forEach(stack -> drops.addAll(split(stack)));
   }
 }

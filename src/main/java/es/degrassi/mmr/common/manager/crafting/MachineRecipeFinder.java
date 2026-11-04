@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+// TODO: maybe this in async thread?
 public class MachineRecipeFinder {
 
   private final MachineControllerEntity tile;

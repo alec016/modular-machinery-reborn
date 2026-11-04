@@ -2,6 +2,15 @@ package es.degrassi.mmr.data.lang;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import es.degrassi.mmr.api.client.CoreActionTypeTexts;
+import es.degrassi.mmr.api.client.ExperienceButtonTypeTexts;
+import es.degrassi.mmr.client.screen.widget.buttons.ButtonsTexts;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
+import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.data.advancements.AdvancementTexts;
@@ -17,6 +26,52 @@ final class RuRuLocalization extends LocalizationProvider {
   protected void addEnums() {
     addEnum(AdvancementTexts.class, v -> switch (v) {
       default -> v.getEnglishText();
+    });
+    addEnum(MachineStatus.class, v -> switch (v) {
+      case PAUSED -> "Приостановлено";
+      case MISSING_STRUCTURE -> "Мульти-структура не найдена";
+      case IDLE -> "Рецепт не найден";
+      case RUNNING -> "Работает...";
+      default -> v.getEnglishText();
+    });
+    addEnum(IOType.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(StructureCreatorItemMode.class, v -> switch (v) {
+      case SINGLE -> "Блочное выделение";
+      case BOX -> "Областное выделение";
+      case VEIN -> "Proximity (Vein)";
+    });
+    addEnum(TabTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(EnergyDisplayUtil.EnergyType.class);
+    addEnum(GaugesTexts.class, v -> switch (v) {
+      case fluidHatchEmpty -> "Пусто";
+      default -> v.getEnglishText();
+    });
+    addEnum(ButtonsTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(ExperienceButtonTypeTexts.class, v -> switch (v) {
+      case EXTRACT_1 -> "Забрать 1 уровень";
+      case EXTRACT_10 -> "Забрать 10 уровень";
+      case EXTRACT_ALL -> "Забрать все";
+      case INSERT_1 -> "Положить 1 уровень";
+      case INSERT_10 -> "Положить 10 уровень";
+      case INSERT_ALL -> "Положить все";
+    });
+    addVariantEnum(CoreActionTypeTexts.class, (a, v) -> switch (a) {
+      case ADD -> "Добавить " + switch (v) {
+        case SINGLE -> "1 поток";
+        case SHIFT -> "10 потоков";
+        case CONTROL -> "все потоки";
+      };
+      case REMOVE -> "Удалить " + switch (v) {
+        case SINGLE -> "1 поток";
+        case SHIFT -> "10 потоков";
+        case CONTROL -> "все потоки, кроме последнего";
+      };
     });
   }
 
@@ -344,23 +399,16 @@ final class RuRuLocalization extends LocalizationProvider {
     add(tooltip("experiencehatch.tank.levels"), "%s / %s уровней");
     add(tooltip("experiencehatch.tank.info"), "Может имеет %s очков опыта");
 
-    add(tooltip("energy.type.fe"), "FE");
-    add(tooltip("energy.type.ic2_eu"), "EU");
-    add(tooltip("energy.type.gt_eu"), "EU");
-
     add(tooltip("constructtool.creative"), "Creative Structure-To-JSON Tool");
 
     add(tooltip("itembus.slot"), "1 Слот");
     add(tooltip("itembus.slots"), "%s Слотов");
 
-    add(tooltip("fluidhatch.empty"), "Пусто");
     add(tooltip("fluidhatch.fluid"), "[Жидкость]");
     add(tooltip("fluidhatch.gas"), "[Газ]");
-    add(tooltip("fluidhatch.tank"), "%smB / %smB");
     add(tooltip("fluidhatch.tank.gas"), "%s / %s");
     add(tooltip("fluidhatch.tank.info"), "Может содержать %s mB");
 
-    add(tooltip("energyhatch.charge"), "%s / %s %s");
     add(tooltip("energyhatch.storage"), "Хранится %s FE");
     add(tooltip("energyhatch.out.transfer"), "Принимается %s FE за тик");
     add(tooltip("energyhatch.in.accept"), "Отдается %s FE за тик");
@@ -369,7 +417,6 @@ final class RuRuLocalization extends LocalizationProvider {
     add(tooltip("blueprint"), "Нажмите по контролеру, чтобы показать мульти-структуру");
 
     add(tooltip("fueltank.storage"), "Can store %s burntime (ticks)");
-    add(tooltip("fuel_tank.tank"), "%s / %s ticks");
 
     add(tooltip("effectdispenser.interdimensional"), "Gives effects interdimensionally");
     add(tooltip("effectdispenser.radius"), "Gives effects in a radius of %s blocks around this block");
@@ -464,16 +511,9 @@ final class RuRuLocalization extends LocalizationProvider {
     add(mmr(gui("button.page.next")), "Следующая страница");
     add(mmr(gui("button.page.prev")), "Предыдущая страница");
     add(mm(gui("core_button")), "Показать информацию о потоках");
-    add(mmr(gui("element.experience.tooltip")), "%s / %s");
     add(mmr(gui("element.experience.tooltip.input")), "Требуется: %s / %s");
     add(mmr(gui("element.experience.tooltip.output")), "Производится: %s / %s");
     add(mmr(gui("element.experience.level")), "%s уровень(и)");
-    add(mmr(gui(tooltip("experience.button.extract_1"))), "Забрать 1 уровень");
-    add(mmr(gui(tooltip("experience.button.extract_10"))), "Забрать 10 уровень");
-    add(mmr(gui(tooltip("experience.button.extract_all"))), "Забрать все");
-    add(mmr(gui(tooltip("experience.button.insert_1"))), "Положить 1 уровень");
-    add(mmr(gui(tooltip("experience.button.insert_10"))), "Положить 10 уровень");
-    add(mmr(gui(tooltip("experience.button.insert_all"))), "Положить все");
     add(mm(gui("structure_placer_button")), "Нажмите, чтобы разместить мульти-структуру");
     add(mm(gui("structure_breaker_button")), "Нажмите, чтобы разобрать мульти-структуру");
     add(mmr(gui("structure.break")), "Вы хотите разрушить мульти-структуру?");
@@ -511,9 +551,6 @@ final class RuRuLocalization extends LocalizationProvider {
     add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Нажмите [%s] с предметом в руке (не в инвентаре), чтобы сменить режим работы");
     add(mm("structure_creator.mode.change"), "Сменить режим с %s на %s");
-    add(mm("structure_creator.mode.single"), "Блочное выделение");
-    add(mm("structure_creator.mode.box"), "Областное выделение");
-    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Укажите начальный точку");
     add(mm("structure_creator.mode.box.second"), "Укажите конечную точку");
     add(mm("structure_creator.mode"), "Выбранный режим: %s");
@@ -541,21 +578,10 @@ final class RuRuLocalization extends LocalizationProvider {
     add(gui("controller.status"), "Статус: ");
     add(gui("controller.error.info"), "Error Info: ");
     add(gui("controller.status.redstone_stopped"), "Мульти-структура приостановлено из-за ред стоун сигнала");
-    add(gui("controller.status.paused"), "Приостановлено");
-    add(gui("controller.status.missing_structure"), "Мульти-структура не найдена");
-    add(gui("controller.status.idle"), "Рецепт не найден");
-    add(gui("controller.status.errored"), "");
-    add(gui("controller.status.running"), "Работает...");
     add(gui("controller.status.running.progress"), "Прогресс: %s");
     add(mmr("core.active.true"), "Поток может выполнить рецепты");
     add(mmr("core.active.false"), "Поток не может выполнить рецепты");
     add(mmr("core.number"), "Поток %s#");
     add(mmr(gui("core.button")), "Нажмите, чтобы показать информацию о потоке %s#");
-    add(mmr(gui(tooltip("core.action.button.single.add"))), "Добавить 1 поток");
-    add(mmr(gui(tooltip("core.action.button.single.remove"))), "Удалить 1 поток");
-    add(mmr(gui(tooltip("core.action.button.shift.add"))), "Добавить 10 потоков");
-    add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Удалить 10 потоков");
-    add(mmr(gui(tooltip("core.action.button.control.add"))), "Добавить все потоки");
-    add(mmr(gui(tooltip("core.action.button.control.remove"))), "Удалить все потоки, кроме последнего");
   }
 }

@@ -12,8 +12,8 @@ import net.minecraft.util.StringRepresentable;
 import javax.annotation.Nullable;
 import java.util.Locale;
 
-@AutoCollectLang(ModularMachineryReborn.MODID)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@AutoCollectLang(value = ModularMachineryReborn.MODID, lang = "en_us")
 public enum IOType implements StringRepresentable, LocalizationEnum {
   INPUT("Input"),
   OUTPUT("Output"),

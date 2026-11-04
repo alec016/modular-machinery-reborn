@@ -1,6 +1,7 @@
 package es.degrassi.mmr.client;
 
 import com.google.common.collect.Lists;
+import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.mojang.math.Quadrant;
 import es.degrassi.experiencelib.api.definition.BlockDefinition;
 import es.degrassi.mmr.ModularMachineryReborn;
@@ -19,19 +20,9 @@ import es.degrassi.mmr.client.item.MMRItemTooltipComponent;
 import es.degrassi.mmr.client.model.InitBuiltInModels;
 import es.degrassi.mmr.client.model.controller.ControllerModelLoader;
 import es.degrassi.mmr.client.model.hatch.HatchModelLoader;
-import es.degrassi.mmr.client.util.FluidRenderer;
 import es.degrassi.mmr.common.block.base.BlockDynamicColor;
 import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
-import es.degrassi.mmr.common.entity.DurabilityHatchEntity;
-import es.degrassi.mmr.common.entity.FuelTankEntity;
-import es.degrassi.mmr.common.entity.MachineControllerEntity;
-import es.degrassi.mmr.common.entity.ParallelHatchEntity;
-import es.degrassi.mmr.common.entity.RedstonePortEntity;
-import es.degrassi.mmr.common.entity.base.EnergyHatchEntity;
-import es.degrassi.mmr.common.entity.base.ExperienceHatchEntity;
-import es.degrassi.mmr.common.entity.base.FluidTankEntity;
-import es.degrassi.mmr.common.entity.base.TileItemBus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.EntityRegistration;
 import es.degrassi.mmr.common.util.Mods;
@@ -90,7 +81,6 @@ public class ModularMachineryRebornClient {
 
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> hatchModelKeys = new HashMap<>();
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> configModelKeys = new HashMap<>();
-  /** Same as the base keys, but rotated to match vanilla blockstate {@code facing} variants (see {@link #registerRotated}). */
   private static final Map<Identifier, Map<Direction, StandaloneModelKey<BlockStateModel>>> rotatedModelKeys = new HashMap<>();
 
   private static final List<Block> blockModelsToRegister = Lists.newLinkedList();
@@ -127,12 +117,6 @@ public class ModularMachineryRebornClient {
     event.register(MMRItemTooltipComponent.class, c -> new MMRItemTooltip(c.getItem(), c.getComponent(), c.isCompleted()));
   }
 
-  @SubscribeEvent
-  public void onBackingCompleted(final ModelEvent.BakingCompleted event) {
-    // Models are now accessed via ModelManager.getStandaloneModel(key)
-    // No need to store them in a map anymore
-  }
-
   public static Map<Identifier, BlockStateModel> getAllModels() {
     return Map.of();
   }
@@ -142,12 +126,6 @@ public class ModularMachineryRebornClient {
     return Minecraft.getInstance().getModelManager().getStandaloneModel(key);
   }
 
-  /**
-   * The 1.21.1 fallback flow ({@code DefaultHatchBakedModel} / model loaders) rebaked the default chain
-   * per render, rotating it to the machine facing with quaternions. The 26.1 standalone pipeline bakes
-   * models once, so every default/config model additionally registers the three horizontal rotations the
-   * legacy code applied (same quaternions as vanilla {@code y: 90/180/270} blockstate variants).
-   */
   private static void registerRotated(ModelEvent.RegisterStandalone event, Identifier modelRL) {
     EnumMap<Direction, StandaloneModelKey<BlockStateModel>> rotated = new EnumMap<>(Direction.class);
     registerRotated(event, rotated, modelRL, Direction.EAST, Quadrant.R90);
@@ -257,10 +235,6 @@ public class ModularMachineryRebornClient {
         if (tile instanceof ColorableMachineEntity machineTile) {
           return machineTile.getMachineColor();
         }
-        // Preview worlds (the auto-IO scene and the EMI/JEI multiblock render) carry plain
-        // BlockStates without any block entity: without this fallback the tint source yields -1
-        // and the preview keeps the raw untinted texture instead of the machine color — the same
-        // fallback BlockMachineComponent#getColorMultiplier already uses.
         return Config.machineColor;
       }
     }
@@ -334,12 +308,13 @@ public class ModularMachineryRebornClient {
   public void registerFilterRender(final RegisterFilterRendererEvent event) {
     BuiltInRegistries.FLUID.forEach(fluid -> {
       if (!fluid.isSource(fluid.defaultFluidState())) return;
-      event.register(fluid, (GuiGraphicsExtractor, x, y) -> {
-        FluidRenderer.renderFluid(
+      event.register(fluid, (context, x, y) -> {
+        DrawerHelperClient.drawFluidForGui(
+            context,
+            new FluidStack(fluid, 1_000),
             x, y,
             16, 16,
-            new FluidStack(fluid, 1000),
-            1000
+            -1
         );
       });
     });
@@ -351,86 +326,5 @@ public class ModularMachineryRebornClient {
 
   public void registerItemModel(Item item) {
     itemModelsToRegister.add(item);
-  }
-
-  public static MachineControllerEntity getClientSideMachineControllerEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof MachineControllerEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Controller container without clicking on a Controller block");
-  }
-
-  public static EnergyHatchEntity getClientSideEnergyHatchEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof EnergyHatchEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Energy Hatch container without clicking on a Energy Hatch block");
-  }
-
-  public static FluidTankEntity getClientSideFluidHatchEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof FluidTankEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Fluid Hatch container without clicking on a Fluid Hatch block");
-  }
-
-  public static TileItemBus getClientSideItemBusEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof TileItemBus controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Item Bus container without clicking on a Item Bus block");
-  }
-
-  public static ExperienceHatchEntity getClientSideExperienceHatchEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof ExperienceHatchEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Experience Hatch container without clicking on a Experience Hatch block");
-  }
-
-  public static ParallelHatchEntity getClientSideParallelHatchEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof ParallelHatchEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Parallel Hatch container without clicking on a Parallel Hatch block");
-  }
-
-  public static DurabilityHatchEntity getClientSideItemDurabilityEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof DurabilityHatchEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Durability Hatch container without clicking on a Durability Hatch block");
-  }
-
-  public static FuelTankEntity getClientSideFuelTankEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof FuelTankEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Fuel Tank container without clicking on a Fuel Tank block");
-  }
-
-  public static RedstonePortEntity getClientSideRedstonePortEntity(BlockPos pos) {
-    if (Minecraft.getInstance().level != null) {
-      BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(pos);
-      if (tile instanceof RedstonePortEntity controller)
-        return controller;
-    }
-    throw new IllegalStateException("Trying to open a Redstone Port container without clicking on a Redstone Port block");
   }
 }

@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 
 public class MachineControllerJS {
   private final MachineControllerEntity internal;
@@ -200,8 +199,8 @@ public class MachineControllerJS {
    * @param stack to be added
    * @return fluid added
    */
-  public int addFluid(FluidStack stack) {
-    AtomicInteger filled = new AtomicInteger(0);
+  public long addFluid(FluidStack stack) {
+    AtomicLong filled = new AtomicLong(0);
     this.internal.getComponentManager()
         .getFoundComponentsList()
         .stream()

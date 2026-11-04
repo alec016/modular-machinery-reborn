@@ -12,18 +12,21 @@ import java.util.List;
 public interface CapabilityInventoryEntity<T> extends ItemDroppeable {
   default ItemHandler createCapabilityInventory() {
     var handler = new ItemHandler(
-        1,
+        2,
         Integer.MAX_VALUE,
         getMode().isInput() ? Integer.MAX_VALUE : 0,
         getMode().isOutput() ? Integer.MAX_VALUE : 0,
         Direction.values()
     );
-    handler.setFilter(stack -> stack.toStack().getCapability(getCapability(), ItemAccess.forStack(stack.toStack())) != null);
+    handler.setInputSlotCount(1);
+    handler.setFilter(resource -> resource
+        .test(stack -> stack.getCapability(getCapability(), ItemAccess.forStack(stack)) != null)
+    );
     return handler;
   }
 
   default void addDrops(List<ItemStack> drops) {
-    getCapabilityInventory().forEach(stack -> drops.add(stack.copy()));
+    getCapabilityInventory().forEach(stack -> drops.addAll(split(stack)));
   }
 
   IOType getMode();

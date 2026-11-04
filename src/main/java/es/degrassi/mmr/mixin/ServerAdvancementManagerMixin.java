@@ -26,8 +26,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
+/**
+ * This can not be achieved with this mixin, I don't remove it to keep track of how I want to do it in other approach.
+ * It isn't added to mixin config, so it will never be triggered on world reload (it is the only point it will be
+ * triggered, and it's not saved at any point as is not really registered)
+ */
 @Mixin(ServerAdvancementManager.class)
 @SuppressWarnings("removal")
+@Deprecated(forRemoval = true)
 public abstract class ServerAdvancementManagerMixin extends SimpleJsonResourceReloadListener<Advancement> {
   public ServerAdvancementManagerMixin(HolderLookup.Provider registries) {
     super(registries, Advancement.CODEC, Registries.ADVANCEMENT);

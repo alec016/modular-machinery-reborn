@@ -9,7 +9,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvent;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.util.WindowDragHelper;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.SpriteButton;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -76,9 +76,9 @@ public abstract class BasePopup extends Dialog {
       event.stopPropagation();
     });
     overlay.addEventListener(UIEvents.DRAG_SOURCE_UPDATE, event -> {
-      if (event.dragHandler.draggingObject instanceof WindowDragHelper.DragMove move) {
+      if (event.dragHandler.draggingObject instanceof WindowDragHelper.DragMove(float startX, float startY)) {
         var delta = overlay.getLocalMouseNormal(event.x - event.dragStartX, event.y - event.dragStartY);
-        overlay.getLayout().left(move.startX() + delta.x).top(move.startY() + delta.y);
+        overlay.getLayout().left(startX + delta.x).top(startY + delta.y);
       }
     });
   }
@@ -113,6 +113,7 @@ public abstract class BasePopup extends Dialog {
       style.textWrap(TextWrap.WRAP);
       style.adaptiveHeight(true);
       style.adaptiveWidth(false);
+      style.textColor(0xff000000).textShadow(false);
     });
     return MMRMachineUI.add(parent, label, x, y);
   }

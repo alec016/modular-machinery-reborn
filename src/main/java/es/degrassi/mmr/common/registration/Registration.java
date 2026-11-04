@@ -1,5 +1,6 @@
 package es.degrassi.mmr.common.registration;
 
+import es.degrassi.mmr.api.uistate.UIState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.util.context.ContextKeySet;
@@ -16,6 +17,7 @@ public final class Registration {
   public static void register(final IEventBus bus) {
     DataComponentRegistration.register(bus);
     TicketTypeRegistration.register(bus);
+    UIStateRegistration.register(bus);
     ComponentRegistration.register(bus);
     MachineHatchTypeRegistration.register(bus);
     DataRegistration.register(bus);
@@ -25,7 +27,6 @@ public final class Registration {
     BlockRegistration.register(bus);
     ItemRegistration.register(bus);
     EntityRegistration.register(bus);
-    ContainerRegistration.register(bus);
     RecipeRegistration.register(bus);
     CreativeTabsRegistration.register(bus);
     SoundRegistration.SOUND_REG.register(bus);

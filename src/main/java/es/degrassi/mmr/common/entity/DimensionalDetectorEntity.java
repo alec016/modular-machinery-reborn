@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -24,7 +25,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 @Getter
 @Setter
-public class DimensionalDetectorEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<DimensionComponent>, TextureableMachineEntity {
+public class DimensionalDetectorEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<DimensionComponent>, TextureableMachineEntity, EntityMenuHolder {
   private Identifier baseTexture;
   private Identifier overlayTexture;
   private static final Identifier defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_dimensional_detector");

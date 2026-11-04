@@ -30,7 +30,7 @@ import es.degrassi.mmr.common.block.BlockRedstonePort;
 import es.degrassi.mmr.common.block.BlockStructureChecker;
 import es.degrassi.mmr.common.block.BlockTimeCounter;
 import es.degrassi.mmr.common.block.BlockWeatherSensor;
-import es.degrassi.mmr.common.block.ParallelHatchBlock;
+import es.degrassi.mmr.common.block.BlockParallelHatch;
 import es.degrassi.mmr.common.block.base.BlockEnergyHatch;
 import es.degrassi.mmr.common.block.base.BlockExperienceHatch;
 import es.degrassi.mmr.common.block.base.BlockFluidHatch;
@@ -80,6 +80,7 @@ import java.util.function.Function;
 
 import static es.degrassi.mmr.ModularMachineryReborn.rootLC;
 
+// TODO: split into files for easier debug
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BlockRegistration {
 
@@ -572,34 +573,34 @@ public final class BlockRegistration {
       ChunkloaderItem::new
   );
 
-  public static final BlockDefinition<ParallelHatchBlock> PARALLEL_HATCH_BASIC = blockWithItem(
+  public static final BlockDefinition<BlockParallelHatch> PARALLEL_HATCH_BASIC = blockWithItem(
       "Basic Parallel Hatch",
       rootLC("parallel_hatch_" + ParallelHatchSize.BASIC.getSerializedName()),
-      id -> new ParallelHatchBlock(id, ParallelHatchSize.BASIC),
+      id -> new BlockParallelHatch(id, ParallelHatchSize.BASIC),
       ParallelHatchItem::new
   );
-  public static final BlockDefinition<ParallelHatchBlock> PARALLEL_HATCH_MEDIUM = blockWithItem(
+  public static final BlockDefinition<BlockParallelHatch> PARALLEL_HATCH_MEDIUM = blockWithItem(
       "Medium Parallel Hatch",
       rootLC("parallel_hatch_" + ParallelHatchSize.MEDIUM.getSerializedName()),
-      id -> new ParallelHatchBlock(id, ParallelHatchSize.MEDIUM),
+      id -> new BlockParallelHatch(id, ParallelHatchSize.MEDIUM),
       ParallelHatchItem::new
   );
-  public static final BlockDefinition<ParallelHatchBlock> PARALLEL_HATCH_ADVANCED = blockWithItem(
+  public static final BlockDefinition<BlockParallelHatch> PARALLEL_HATCH_ADVANCED = blockWithItem(
       "Advanced Parallel Hatch",
       rootLC("parallel_hatch_" + ParallelHatchSize.ADVANCED.getSerializedName()),
-      id -> new ParallelHatchBlock(id, ParallelHatchSize.ADVANCED),
+      id -> new BlockParallelHatch(id, ParallelHatchSize.ADVANCED),
       ParallelHatchItem::new
   );
-  public static final BlockDefinition<ParallelHatchBlock> PARALLEL_HATCH_ULTIMATE = blockWithItem(
+  public static final BlockDefinition<BlockParallelHatch> PARALLEL_HATCH_ULTIMATE = blockWithItem(
       "Ultimate Parallel Hatch",
       rootLC("parallel_hatch_" + ParallelHatchSize.ULTIMATE.getSerializedName()),
-      id -> new ParallelHatchBlock(id, ParallelHatchSize.ULTIMATE),
+      id -> new BlockParallelHatch(id, ParallelHatchSize.ULTIMATE),
       ParallelHatchItem::new
   );
-  public static final BlockDefinition<ParallelHatchBlock> PARALLEL_HATCH_MAX = blockWithItem(
+  public static final BlockDefinition<BlockParallelHatch> PARALLEL_HATCH_MAX = blockWithItem(
       "Max Parallel Hatch",
       rootLC("parallel_hatch_" + ParallelHatchSize.MAX.getSerializedName()),
-      id -> new ParallelHatchBlock(id, ParallelHatchSize.MAX),
+      id -> new BlockParallelHatch(id, ParallelHatchSize.MAX),
       ParallelHatchItem::new
   );
 

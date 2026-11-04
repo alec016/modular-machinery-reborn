@@ -37,6 +37,7 @@ import es.degrassi.mmr.common.crafting.requirement.entity.RequirementCheckEntity
 import es.degrassi.mmr.common.crafting.requirement.entity.RequirementHealthEntity;
 import es.degrassi.mmr.common.crafting.requirement.entity.RequirementKillEntity;
 import es.degrassi.mmr.common.crafting.requirement.entity.RequirementSpawnEntity;
+import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import es.degrassi.mmr.common.machine.component.BiomeComponent;
 import es.degrassi.mmr.common.machine.component.ChunkloadComponent;
 import es.degrassi.mmr.common.machine.component.CommandComponent;
@@ -62,14 +63,12 @@ import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.util.Chunkloader;
 import es.degrassi.mmr.common.util.IntRange;
-import es.degrassi.mmr.common.integration.jei.ingredient.ingredients.Void;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 
 import java.util.List;
 import java.util.function.Supplier;

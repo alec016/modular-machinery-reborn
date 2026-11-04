@@ -16,7 +16,7 @@ import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.capability.config.RelativeSide;
 import es.degrassi.mmr.api.entity.ColorableMachineEntity;
 import es.degrassi.mmr.api.entity.IAutoEntity;
-import es.degrassi.mmr.client.screen.MMRSceneFx;
+import es.degrassi.mmr.client.screen.util.MMRSceneFx;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -37,35 +37,19 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The GTCEu-style 3D preview of this component's block: the block is copied into a dummy world
- * and rendered by LDLib2's {@link Scene}. Hovering highlights the visible face under the cursor
- * (the scene's select outline) and shows that side's auto-IO state; a click toggles that side.
- * The preview can be rotated (drag) and zoomed (wheel) to reach the hidden faces, exactly like
- * the GTCEu machine preview.
- */
 public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> & IAutoEntity<?>> extends Scene {
   private final AutoIoTab<T> tab;
-  /** Step one of the click flow: the face highlighted by clicking, waiting for its toggle click. */
   @Nullable
   private Direction selectedFace;
-  /** The machine's real surrounding blocks, shown as 0.5-opacity ghosts around the preview. */
   private final List<GhostBlock> ghosts = new ArrayList<>();
-  /** The dummy world adapted for ghost tessellation (AO/light sampling). */
   private final BlockAndTintGetter region;
   private final ModelBlockRenderer ghostRenderer;
   private final BlockStateModelSet modelSet;
 
-  /** One surrounding block: its preview position and real-world position, and its real state. */
-  private record GhostBlock(BlockPos pos, BlockPos realPos, BlockState state, @Nullable BlockEntity entity) {
-    private GhostBlock(BlockPos pos, BlockPos realPos, BlockState state) {
-      this(pos, realPos, state, null);
-    }
-  }
+  private record GhostBlock(BlockPos pos, BlockPos realPos, BlockState state, @Nullable BlockEntity entity) { }
 
   SideScene(AutoIoTab<T> tab) {
     this.tab = tab;
-    // The component's block, copied into a tiny dummy world at the origin.
     var world = new TrackedDummyWorld();
     var pos = new BlockPos(0, 0, 0);
     var entityState = tab.entity.getBlockState();
@@ -98,15 +82,8 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     }
     setRenderedCore(List.of(pos));
     setCameraYawAndPitch(-45f, 25f);
-    // The scene's selection machinery paints a dark-red cube overlay on the selected block
-    // (Scene.renderOverlay calls RenderUtils.renderBlockOverLay with r=0.6). The GT-style look
-    // only wants the green facing border, so the overlay pass goes off while the selection
-    // itself (and with it the border) stays intact.
     this.renderSelect = false;
-    // Ghost support: only the component's block ever exists in the dummy world (the scene's
-    // block filter stays core-only), so ghosts render but can never consume a ray-clip hit —
-    // the scene's hover and clicks stay exclusive to the component's own six faces.
-    this.region = world instanceof BlockAndTintGetter getter ? getter : new WrappedBlockAndTintGetter(world);
+    this.region = new WrappedBlockAndTintGetter(world);
     var mc = Minecraft.getInstance();
     this.modelSet = mc.getModelManager().getBlockStateModelSet();
     this.ghostRenderer = new ModelBlockRenderer(mc.options.ambientOcclusion().get(), false, mc.getBlockColors());
@@ -114,24 +91,16 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
       if (p.equals(pos)) onFaceClicked(face);
       else onFaceClicked(null);
     });
-    // A press that lands on the preview's background rather than on one of the six faces drops
-    // the pending face selection; the scene-side block selection (facing border) is untouched.
     addEventListener(UIEvents.MOUSE_DOWN, event -> {
       if (getLastHoverPosFace() == null) {
         selectedFace = null;
       }
     });
-    // Per-frame overlay (runs after the scene's translucent dispatch, camera still bound):
-    // 0.5-alpha neighbor ghosts plus the colored enabled faces.
     this.overlay = this::renderOverlay;
     collectGhostNeighbors();
-    // Ghost neighbors whose visuals live entirely in their BlockEntityRenderer (chests, banners,
-    // heads...) are submitted as real BERs before the dispatch passes, so they draw like they do
-    // in the world instead of as placeholder boxes.
     this.<WorldSceneRenderer>getRenderer()
         .setAfterBuiltinSubmit(this::submitGhostBlockEntities);
     addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
-      // Per-frame tooltip resolution; the face under the cursor makes the lines dynamic.
       BlockPosFace hover = getLastHoverPosFace();
       if (hover == null) {
         return;
@@ -144,22 +113,18 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
           ? side.getTranslationName()
           : Component.translatable("%s: %s", side.getTranslationName(), blockName));
       lines.add(tab.info());
-      lines.add(Component.translatable(tab.infoKey + ".change",
-          Component.translatable("mmr.gui.tooltip.enabled." + mode.isEnabled()).withStyle(ChatFormatting.AQUA),
-          Component.translatable("mmr.gui.tooltip.enabled." + mode.isDisabled()).withStyle(ChatFormatting.AQUA)));
+      lines.add(
+          TabTexts.tooltipAutoChange.text(
+              (mode.isEnabled() ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA),
+              (mode.isDisabled() ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA)
+          )
+      );
       event.hoverTooltips = HoverTooltips.create(lines.toArray());
     });
   }
 
-  /**
-   * The two-step click flow: the first click on a face only selects it (the scene keeps its own
-   * selection outline on that face for as long as the panel is open); clicking the already
-   * selected face toggles that side's auto-IO on the server.
-   */
   private void onFaceClicked(@Nullable Direction face) {
     if (face == null) {
-      // A scene event with no face (click missed the component) resets the pending side
-      // selection; the component's block itself keeps its scene-side selection.
       selectedFace = null;
       return;
     }
@@ -170,7 +135,6 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     toggleSide(face);
   }
 
-  /** Toggles the already-selected face's world side on the server via the set-side RPC. */
   private void toggleSide(Direction face) {
     RelativeSide side = RelativeSide.fromDirections(tab.entity.getControllerFacing(), face);
     boolean turnOn = tab.entity.getConfig().getSideMode(side).isDisabled();
@@ -178,13 +142,7 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     tab.sendEvent(tab.setSideRpc, side.name(), turnOn);
   }
 
-  /**
-   * Snapshots the six real blocks around the component into the ghost list. Ghosts keep their
-   * real-world states (and therefore their true orientation); only non-air blocks get in, and
-   * they are drawn per frame in {@link #renderOverlay} — never added to the dummy world.
-   */
   private void collectGhostNeighbors() {
-    // Client-side only in practice: the SideScene is built by the client-side open() call.
     var level = tab.entity.getLevel();
     if (level == null) {
       return;
@@ -199,13 +157,17 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
       if (state.hasBlockEntity()) {
         entity = tab.entity.getLevel().getBlockEntity(realPos);
       }
-      // Preview-space position: the same offset around the origin block as around the
-      // real component, so a ghost always sits on the face it belongs to.
-      ghosts.add(new GhostBlock(new BlockPos(0, 0, 0).relative(dir), realPos, state, entity));
+      BlockPos ghostPos = new BlockPos(0, 0, 0).relative(dir);
+      ghosts.add(new GhostBlock(ghostPos, realPos, state, entity));
+      // The neighbors have to live in the scene world: the model tints and the block entity colors
+      // are resolved against the region, so a ghost without its block in the world renders with
+      // the wrong colors (or not at all).
+      if (dummyWorld != null) {
+        dummyWorld.addBlock(ghostPos, new BlockInfo(state));
+      }
     }
   }
 
-  /** Overlay hook: ghost neighbors first, then the auto-IO face colors on top. */
   private void renderOverlay(SceneRenderContext ctx) {
     MultiBufferSource.BufferSource bufferSource = ctx.bufferSource();
     drawGhostNeighbors(bufferSource);
@@ -216,9 +178,6 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     if (ghosts.isEmpty()) {
       return;
     }
-    // The ghost consumer's color multiplier is per-call state: machine ghosts carry their
-    // in-world machine color (resolved on the real world position, where a colorable block
-    // entity still exists) at the ghost's 0.5 opacity, matching the in-world look.
     var buffer = MMRSceneFx.ghostBuffer(bufferSource);
     for (GhostBlock ghost : ghosts) {
       if (ghost.entity instanceof ColorableMachineEntity entity) {
@@ -229,25 +188,11 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
       if (ghost.state().getRenderShape() == RenderShape.MODEL) {
         MMRSceneFx.tesselateGhost(ghostRenderer, modelSet, region, buffer, ghost.pos(), ghost.state());
       } else if (!(ghost.state().getBlock() instanceof EntityBlock)) {
-        // No baked block model and no BlockEntityRenderer either: paint a barely-inflated solid
-        // box in their slot so the position stays readable (same machinery the Scene uses for
-        // selection overlays).
         RenderUtils.renderBlockOverLay(new PoseStack(), bufferSource, ghost.pos(), 0.42f, 0.45f, 0.52f, 1.003f);
       }
-      // Everything else (chests, banners, heads — EntityBlock ghosts) is submitted as a real
-      // BlockEntity render in {@link #submitGhostBlockEntities}.
     }
   }
 
-  /**
-   * Real BlockEntityRenderer submission for the ghost neighbors whose visuals live entirely in
-   * their BER. Ghosts are not block entities of the dummy world, so a throwaway BlockEntity is
-   * instantiated per ghost for rendering only, wired to the scene's dummy world, and handed to
-   * the vanilla dispatcher — the exact sequence of LDLib2's own {@code submitBlockEntities}
-   * (prepare with the scene camera, extract the render state, submit translated to the block).
-   * Runs during the scene's post-builtin-submit phase, so the normal dispatch passes drain the
-   * submitted nodes.
-   */
   private void submitGhostBlockEntities(SceneRenderContext ctx) {
     if (ghosts.isEmpty()) {
       return;
@@ -288,11 +233,6 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     }
   }
 
-  /**
-   * Auto-IO enabled faces: blue for the input variant, orange for the output variant — a
-   * per-face indicator of which sides currently take part in the auto-IO, exactly the
-   * color language the user asked for.
-   */
   private void drawFaceTints(MultiBufferSource.BufferSource bufferSource) {
     float[] tint = tab.isInput() ? MMRSceneFx.INPUT_TINT : MMRSceneFx.OUTPUT_TINT;
     var config = tab.entity.getConfig();
@@ -306,7 +246,6 @@ public class SideScene<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     }
   }
 
-  /** The block right next to the hovered face, like the old cell tooltip showed. */
   @Nullable
   private Component blockName(RelativeSide side) {
     if (tab.entity.getLevel() == null) {

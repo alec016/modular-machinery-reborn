@@ -8,6 +8,7 @@ import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
@@ -52,7 +53,7 @@ import java.util.Map;
 @ParametersAreNonnullByDefault
 public class DurabilityHatchEntity extends TileInventory implements MachineComponentEntity<DurabilityComponent>, ControllerAccessible, TextureableMachineEntity,
     IAutoInputEntity<ResourceHandler<ItemResource>>, ISyncableStuff, ITickEntity, IServerTickEntity,
-    ISideConfigComponent<IOSideMode> {
+    ISideConfigComponent<IOSideMode>, EntityMenuHolder {
   @Setter
   @Nullable private BlockPos controllerPos;
   private ItemDurabilityHatchSize size;
@@ -108,8 +109,6 @@ public class DurabilityHatchEntity extends TileInventory implements MachineCompo
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    // Durability hatch: single damageable item per slot, insertable from outside
-    // (legacy: inSlots = all slots, no output slots, filter = ItemStack::isDamageableItem, slotLimit = 1).
     ItemHandler handler = new ItemHandler(slots, 1, 1, 0);
     handler.setFilter(resource -> resource.toStack().isDamageableItem());
     return handler;

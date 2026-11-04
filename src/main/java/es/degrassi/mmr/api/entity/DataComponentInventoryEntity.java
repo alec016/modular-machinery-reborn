@@ -10,17 +10,18 @@ import java.util.List;
 
 public interface DataComponentInventoryEntity<T> extends ItemDroppeable {
   default ItemHandler createDataComponentInventory() {
-    ItemHandler handler = new ItemHandler(1, 64,
+    ItemHandler handler = new ItemHandler(2, 64,
         getMode().isInput() ? 64 : 0,
         getMode().isOutput() ? 64 : 0,
         Direction.values()
     );
-    handler.setFilter(resource -> resource.toStack().get(getDataComponent()) != null);
+    handler.setInputSlotCount(1);
+    handler.setFilter(resource -> resource.get(getDataComponent()) != null);
     return handler;
   }
 
   default void addDrops(List<ItemStack> drops) {
-    getDataComponentInventory().forEach(stack -> drops.add(stack.copy()));
+    getDataComponentInventory().forEach(stack -> drops.addAll(split(stack)));
   }
 
   IOType getMode();

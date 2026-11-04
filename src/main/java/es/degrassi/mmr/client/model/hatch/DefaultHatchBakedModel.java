@@ -24,20 +24,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Port of the 1.21.1 {@code es.degrassi.mmreborn.client.model.hatch.DefaultHatchBakedModel}.
- *
- * <p>1.21.1 processed the machine's {@code ModelData} ({@code BASE_TEXTURE}/{@code OVERLAY_TEXTURE},
- * names, {@code MODEL}) into a fresh {@link net.minecraft.client.resources.model.BlockModel} bake on
- * every render, rotating the result to the machine facing. The 26.1 model pipeline bakes standalone
- * models once, so instead of rebaking, this fallback delegates to the pre-baked default chain the
- * entity pushes through {@link HatchTextureData} ({@code defaultModel} — one chain per hatch block,
- * plus its facing rotations registered in {@link ModularMachineryRebornClient#registerRotated}).
- *
- * <p>Machines without per-block custom textures therefore render like the 1.21.1 fallback. Machines
- * whose hatches carry custom textures currently display the block's default chain textures — visual
- * texture-override rebaking is not portable to the 26.1 bake pipeline and stays a documented gap.
- */
 public class DefaultHatchBakedModel implements DynamicBlockStateModel {
 
   public static final DefaultHatchBakedModel INSTANCE = new DefaultHatchBakedModel();
@@ -45,12 +31,8 @@ public class DefaultHatchBakedModel implements DynamicBlockStateModel {
   private DefaultHatchBakedModel() {
   }
 
-  /**
-   * The 1.21.1 parity target of {@code DefaultHatchBakedModel#getHatchModel(data)}: the entity's
-   * default model ({@code default/hatches/<block>}), rotated to its facing.
-   */
   private @Nullable BlockStateModel delegate(@Nullable BlockAndTintGetter level, BlockPos pos, @Nullable BlockState state) {
-    ModelData modelData = level != null && level instanceof IBlockGetterExtension extension
+    ModelData modelData = level instanceof IBlockGetterExtension extension
         ? extension.getModelData(pos)
         : ModelData.EMPTY;
     Identifier modelRL = ModularMachineryReborn.rl("default/hatch_all");

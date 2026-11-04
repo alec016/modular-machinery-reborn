@@ -52,7 +52,6 @@ public class IWrenchableRenderer implements BlockEntityRenderer<BlockEntity, IWr
     if (!(entity instanceof IWrenchable)) return;
     if (!(entity instanceof ISideConfigComponent<?> component)) return;
     if (!(component.getConfig() instanceof IOSideConfig config)) return;
-    if (!cameraState.blockPos.equals(state.blockPos)) return;
     var blockHit = RayTraceHelper.rayTraceRange(entity.getLevel(), player, player.blockInteractionRange());
     if (!entity.getBlockPos().equals(blockHit.getBlockPos())) return;
     var face = blockHit.getDirection();

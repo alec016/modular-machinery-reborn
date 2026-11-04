@@ -11,7 +11,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.lowdragmc.lowdraglib2.gui.util.UISoundUtils;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -27,11 +27,9 @@ public final class IconButton extends UIElement {
   private static final Icon BG_FOCUS = Icon.TOOLBAR_BUTTON_BACKGROUND_FOCUS;
 
   private final Mode mode;
-  /** Draws the bare icon without the toolbar plate (tab strip icons). */
   private boolean disableBackground;
   @Getter
   private boolean enabled = true;
-  /** Half-size mode: plate and icon draw at half scale inside the 8x8 hit box. */
   private final boolean small;
   @Nullable
   private final Supplier<List<Component>> tooltips;

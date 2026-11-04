@@ -24,7 +24,6 @@ public abstract class SideConfig<M extends SideMode> implements ValueIOSerializa
   @Getter
   @Setter
   private boolean enabled;
-  //Color of the slot in the MachineConfigScreen
   @Getter
   private final Color color;
   @Setter

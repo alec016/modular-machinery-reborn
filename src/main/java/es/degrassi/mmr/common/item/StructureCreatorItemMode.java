@@ -13,8 +13,8 @@ import net.minecraft.util.StringRepresentable;
 
 import java.util.Locale;
 
-@AutoCollectLang(ModularMachineryReborn.MODID)
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@AutoCollectLang(value = ModularMachineryReborn.MODID, lang = "en_us")
 public enum StructureCreatorItemMode implements StringRepresentable, LocalizationEnum {
   SINGLE("Single"), BOX("Box"), VEIN("Proximity (Vein)");
 

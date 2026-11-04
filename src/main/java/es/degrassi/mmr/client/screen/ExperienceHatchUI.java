@@ -1,4 +1,6 @@
 package es.degrassi.mmr.client.screen;
+import es.degrassi.mmr.client.container.MMRBusSlot;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
 import es.degrassi.mmr.client.screen.widget.gauges.ExperienceBarGauge;
 import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
@@ -18,15 +20,6 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import java.util.List;
 
-/**
- * LDLib2 replacement for the old {@code ExperienceHatchContainer} + {@code ExperienceHatchScreen} pair.
- *
- * <p>Parity with 1.21.1: 176x166 {@code guiexperience.png} panel, the 160x16 level bar at (8, 20)
- * (the legacy {@code ExperienceWidget}: level figure over a 3px black track with the green progress
- * line), the capability slot at (80, 47) and the {@code ItemOrIconButton} rows at y = 45 — insert
- * side from x = 8 stepping right by 18, extract side from x = 151 stepping left by 18. Each button
- * fires the real {@code CExperienceButtonClickedPacket} like the old screen did.
- */
 public final class ExperienceHatchUI {
 
   private ExperienceHatchUI() {}
@@ -36,21 +29,17 @@ public final class ExperienceHatchUI {
 
     UIElement panel = MMRMachineUI.panel(MMRMachineUI.TEX_GUIEXPERIENCE, MMRMachineUI.PANEL_WIDTH, 166);
 
-    // Legacy right tab: the GTCEu-style 3D auto-IO configurator for this hatch's io orientation.
     new AutoIoTab<>(panel, hatch, MMRMachineUI.PANEL_WIDTH, 0, hatch.getMode().isInput());
 
-    // Operator-only fill tab, hanging left: pours XP points straight into the tank (input hatches).
     if (hatch.getMode().isInput()) {
       FillTab.fillExperienceTab(panel, holder.player, hatch, FillTab.LEFT_TAB_X, 0,
-          () -> (int) Math.max(0L, Math.min(hatch.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY)
-              - hatch.getTank().getAmountAsLong(0), Integer.MAX_VALUE)));
+          () -> Math.max(0L, hatch.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY)
+              - hatch.getTank().getAmountAsLong(0)));
     }
 
-    // Vanilla-style title above the legacy bar: the (8, 6) caption spot the old screen left blank.
     MMRMachineUI.captionLabel(panel,
         Component.translatable("modular_machinery_reborn.gui.title.experience_hatch"), 8, 6);
 
-    // The legacy ExperienceWidget spot: (leftPos + 8, topPos + 20), width = imageWidth - 16.
     MMRMachineUI.add(panel, new ExperienceBarGauge(
             160,
             () -> tank.getAmountAsLong(0),
@@ -58,8 +47,8 @@ public final class ExperienceHatchUI {
         .lss("width", 160)
         .lss("height", 16), 8, 20);
 
-    // The legacy container slot position: (176 / 2 - 8, 47).
-    MMRMachineUI.slotAt(panel, 80, 47).bind(hatch.getCapabilityInventory(), 0);
+    MMRMachineUI.inputSlotAt(panel, 80, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 0));
+    MMRMachineUI.outputSlotAt(panel, 98, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 1));
 
     if (hatch instanceof ExperienceInputHatchEntity input) {
       int x = 8;
@@ -80,16 +69,12 @@ public final class ExperienceHatchUI {
     return MMRMachineUI.menu(panel, holder.player);
   }
 
-  /**
-   * One legacy {@code ExperienceButton}: an {@code ItemOrIconButton} (16x16 icon on the 18x20
-   * toolbar plate) firing the old {@code CExperienceButtonClickedPacket(pos, type, extract)}.
-   */
   private static void addExperienceButton(UIElement panel, ExperienceHatchEntity hatch,
                                           ExperienceButtonType type,
                                           int x, int y) {
     IconButton.iconButton(panel, type.icon(), x, y,
         event -> ClientPacketDistributor.sendToServer(
             new CExperienceButtonClickedPacket(hatch.getBlockPos(), type, type.extract())),
-        () -> List.of(type.component()));
+        () -> List.of(type.text()));
   }
 }

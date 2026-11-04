@@ -4,7 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IAutoOutputEntity;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
 import es.degrassi.mmr.common.entity.base.ColorableMachineComponentEntity;
+import es.degrassi.mmr.common.integration.WailaTexts;
 import es.degrassi.mmr.common.integration.jade.elements.FuelElement;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -50,8 +53,12 @@ public class MachineHatchComponentProvider implements IBlockComponentProvider {
       if (!autoTag.isEmpty()) {
         boolean autoInput = autoTag.getBooleanOr("input", false);
         boolean autoOutput = autoTag.getBooleanOr("output", false);
-        Component input = Component.translatable("mmr.tooltip.auto_input", Component.translatable("mmr.gui.tooltip.enabled." + autoInput).withStyle(ChatFormatting.AQUA));
-        Component output = Component.translatable("mmr.tooltip.auto_output", Component.translatable("mmr.gui.tooltip.enabled." + autoOutput).withStyle(ChatFormatting.AQUA));
+        Component input = WailaTexts.tooltipAutoInput.text(
+            (autoInput ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA)
+        ).withStyle(ChatFormatting.GRAY);
+        Component output = WailaTexts.tooltipAutoOutput.text(
+            (autoOutput ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA)
+        ).withStyle(ChatFormatting.GRAY);
         if (entity instanceof IAutoInputEntity)
           tooltip.add(input);
         if (entity instanceof IAutoOutputEntity)
@@ -109,7 +116,7 @@ public class MachineHatchComponentProvider implements IBlockComponentProvider {
     else if (percent >= 0.30f) currentColor = ChatFormatting.GOLD;
     tooltip.add(new FuelElement(percent));
     tooltip.append(new SpacerElement(4, 0));
-    tooltip.append(new TextElementImpl(Component.translatable("tooltip.fuel_tank.tank", amount, capacity).withStyle(currentColor)));
+    tooltip.append(new TextElementImpl(GaugesTexts.fuelTankTicks.text(amount, capacity).withStyle(currentColor)));
   }
 
   @Override

@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 import java.util.function.Supplier;
 
@@ -28,6 +29,10 @@ public final class DataRegistration {
       () -> DataType.createEnum(MachineStatus.class));
   public static final Supplier<DataType<IOType>> IO_TYPE_DATA = DATAS.register(rootLC("io_type"),
       () -> DataType.createEnum(IOType.class));
+
+
+  public static final Supplier<DataType<FluidResource>> FLUID_RESOURCE_DATA = DATAS.register(rootLC("fluid_resource"),
+      () -> DataType.create(FluidResource.class, FluidResource.STREAM_CODEC));
 
 
   public static void register(final IEventBus bus) {

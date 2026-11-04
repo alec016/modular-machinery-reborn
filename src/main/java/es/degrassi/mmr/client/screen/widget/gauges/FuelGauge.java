@@ -3,7 +3,8 @@ package es.degrassi.mmr.client.screen.widget.gauges;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.NumberFormats;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -22,8 +23,12 @@ public final class FuelGauge extends Gauge {
 
   @Override
   protected List<Component> tooltipLines() {
-    return List.of(Component.translatable("tooltip.fuel_tank.tank",
-        String.valueOf(fuel.getAsLong()), String.valueOf(maxFuel.getAsLong())));
+    return List.of(
+        GaugesTexts.fuelTankTicks.text(NumberFormats.compact(fuel.getAsLong()), NumberFormats.compact(maxFuel.getAsLong())),
+        GaugesTexts.fuelTankTicks.text(NumberFormats.grouped(fuel.getAsLong()), NumberFormats.grouped(maxFuel.getAsLong())),
+        GaugesTexts.fuelTankSeconds.text(NumberFormats.compact(fuel.getAsLong() / 20), NumberFormats.compact(maxFuel.getAsLong() / 20)),
+        GaugesTexts.fuelTankSeconds.text(NumberFormats.grouped(fuel.getAsLong() / 20), NumberFormats.grouped(maxFuel.getAsLong() / 20))
+    );
   }
 
   @Override

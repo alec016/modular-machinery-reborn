@@ -17,9 +17,11 @@ import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.lowdragmc.lowdraglib2.gui.util.UISoundUtils;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.NumberFormats;
 import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
 import es.degrassi.mmr.client.screen.widget.buttons.SpriteButton;
+import es.degrassi.mmr.common.entity.base.TileInventory;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.network.client.CFillHatchRequestPacket;
@@ -30,6 +32,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -37,17 +41,22 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+// TODO: refactor to be abstract af, this is awful but works
 public final class FillTab extends UIElement {
 
   public static final int LEFT_TAB_X = -27;
@@ -67,7 +76,7 @@ public final class FillTab extends UIElement {
     if (!MMRPermissions.canFillHatch(player)) {
       return;
     }
-    FillTab tab = new FillTab(entity, Kind.ITEM, handler, null, null, itemFilter);
+    FillTab tab = new FillTab(player, entity, Kind.ITEM, handler, null, null, itemFilter);
     tab.lss("width", LEFT_TAB_WIDTH).lss("height", LEFT_TAB_HEIGHT);
     MMRMachineUI.add(parent, tab, x, y);
   }
@@ -78,7 +87,7 @@ public final class FillTab extends UIElement {
       return;
     }
     Predicate<ItemStack> damageable = stack -> stack.isDamageableItem() && stack.getMaxDamage() > 0;
-    FillTab tab = new FillTab(entity, Kind.DURABILITY, handler, null, null, damageable);
+    FillTab tab = new FillTab(player, entity, Kind.DURABILITY, handler, null, null, damageable);
     tab.lss("width", LEFT_TAB_WIDTH).lss("height", LEFT_TAB_HEIGHT);
     MMRMachineUI.add(parent, tab, x, y);
   }
@@ -88,27 +97,27 @@ public final class FillTab extends UIElement {
     if (!MMRPermissions.canFillHatch(player)) {
       return;
     }
-    FillTab tab = new FillTab(entity, Kind.FLUID, null, handler, null, null);
+    FillTab tab = new FillTab(player, entity, Kind.FLUID, null, handler, null, null);
     tab.lss("width", LEFT_TAB_WIDTH).lss("height", LEFT_TAB_HEIGHT);
     MMRMachineUI.add(parent, tab, x, y);
   }
 
   public static void fillEnergyTab(UIElement parent, Player player, BlockEntity entity,
-                                   int x, int y, IntSupplier spaceSupplier) {
+                                   int x, int y, LongSupplier spaceSupplier) {
     if (!MMRPermissions.canFillHatch(player)) {
       return;
     }
-    FillTab tab = new FillTab(entity, Kind.ENERGY, null, null, spaceSupplier, null);
+    FillTab tab = new FillTab(player, entity, Kind.ENERGY, null, null, spaceSupplier, null);
     tab.lss("width", LEFT_TAB_WIDTH).lss("height", LEFT_TAB_HEIGHT);
     MMRMachineUI.add(parent, tab, x, y);
   }
 
   public static void fillExperienceTab(UIElement parent, Player player, BlockEntity entity,
-                                       int x, int y, IntSupplier spaceSupplier) {
+                                       int x, int y, LongSupplier spaceSupplier) {
     if (!MMRPermissions.canFillHatch(player)) {
       return;
     }
-    FillTab tab = new FillTab(entity, Kind.EXPERIENCE, null, null, spaceSupplier, null);
+    FillTab tab = new FillTab(player, entity, Kind.EXPERIENCE, null, null, spaceSupplier, null);
     tab.lss("width", LEFT_TAB_WIDTH).lss("height", LEFT_TAB_HEIGHT);
     MMRMachineUI.add(parent, tab, x, y);
   }
@@ -143,17 +152,43 @@ public final class FillTab extends UIElement {
   private static final int MAX_CANDIDATES = 90;
   private static final int SELECTED_TINT = 0x60FFFFFF;
 
-  private enum Kind {
-    ITEM, FLUID, ENERGY, EXPERIENCE, DURABILITY
+  public record Kind(Identifier id, TabTexts text, int height) {
+    Kind(String path, TabTexts text, int height) {
+      this(mmr(path), text, height);
+    }
+    Kind(String path) {
+      this(mmr(path), TabTexts.fillReasonFull, FILL_OPEN_HEIGHT);
+    }
+    Kind(String path, int height) {
+      this(mmr(path), TabTexts.fillReasonFull, height);
+    }
+    public static final Kind ITEM = new Kind("item");
+    public static final Kind FLUID = new Kind("fluid");
+    public static final Kind ENERGY = new Kind("energy", TabTexts.fillReasonEnergy, FILL_SIMPLE_OPEN_HEIGHT);
+    public static final Kind EXPERIENCE = new Kind("experience", TabTexts.fillReasonExperience, FILL_SIMPLE_OPEN_HEIGHT);
+    public static final Kind DURABILITY = new Kind("durability", FILL_DURABILITY_OPEN_HEIGHT);
+
+    public static Identifier mmr(String path) {
+      return ModularMachineryReborn.rl(path);
+    }
   }
 
   private sealed interface Pick permits ItemPick, FluidPick {}
-  private record ItemPick(ItemStack stack) implements Pick {}
-  private record FluidPick(FluidStack stack) implements Pick {}
 
-  private static final Map<Item, String> ITEM_NAMES = new HashMap<>();
-  private static final Map<Fluid, String> FLUID_NAMES = new HashMap<>();
+  private record ItemPick(ItemStack stack, ItemResource key) implements Pick {
+    static ItemPick of(ItemStack stack) {
+      return new ItemPick(stack, ItemResource.of(stack));
+    }
+  }
 
+  private record FluidPick(FluidStack stack, FluidResource key) implements Pick {
+    static FluidPick of(FluidStack stack) {
+      return new FluidPick(stack, FluidResource.of(stack));
+    }
+  }
+
+  @Nullable
+  private final Player player;
   private final BlockEntity entity;
   private final Kind kind;
   @Nullable
@@ -161,7 +196,7 @@ public final class FillTab extends UIElement {
   @Nullable
   private final Supplier<FluidHandler> fluidHandler;
   @Nullable
-  private final IntSupplier simpleSpace;
+  private final LongSupplier simpleSpace;
   @Nullable
   private final Predicate<ItemStack> itemFilter;
 
@@ -169,7 +204,7 @@ public final class FillTab extends UIElement {
   private long animStart = -1L;
   private boolean contentBuilt = false;
   private boolean syncing = false;
-  private int amount = 1;
+  private long amount = 1;
   private int durability = -1;
   @Nullable
   private Component blockedReason;
@@ -187,13 +222,16 @@ public final class FillTab extends UIElement {
   @Nullable
   private BlockOverlay overlay;
   @Nullable
+  private List<ItemStack> displayCache;
+  @Nullable
   private ScrollerView grid;
   @Nullable
   private Pick selected;
 
-  FillTab(BlockEntity entity, Kind kind, @Nullable Supplier<ItemHandler> itemHandler,
-          @Nullable Supplier<FluidHandler> fluidHandler, @Nullable IntSupplier simpleSpace,
+  FillTab(@Nullable Player player, BlockEntity entity, Kind kind, @Nullable Supplier<ItemHandler> itemHandler,
+          @Nullable Supplier<FluidHandler> fluidHandler, @Nullable LongSupplier simpleSpace,
           @Nullable Predicate<ItemStack> itemFilter) {
+    this.player = player;
     this.entity = entity;
     this.kind = kind;
     this.itemHandler = itemHandler;
@@ -208,7 +246,7 @@ public final class FillTab extends UIElement {
     });
     addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
       if (!opened && event.target == this) {
-        event.hoverTooltips = HoverTooltips.create(Component.translatable("mmr.tooltip.open_fill"));
+        event.hoverTooltips = HoverTooltips.create(TabTexts.tooltipOpenFill.text());
       }
     });
   }
@@ -235,6 +273,7 @@ public final class FillTab extends UIElement {
       confirmButton = null;
       overlay = null;
       grid = null;
+      displayCache = null;
       blockedReason = null;
     }
     contentBuilt = false;
@@ -249,13 +288,7 @@ public final class FillTab extends UIElement {
   }
 
   private int openHeight() {
-    if (kind == Kind.ENERGY || kind == Kind.EXPERIENCE) {
-      return FILL_SIMPLE_OPEN_HEIGHT;
-    }
-    if (kind == Kind.DURABILITY) {
-      return FILL_DURABILITY_OPEN_HEIGHT;
-    }
-    return FILL_OPEN_HEIGHT;
+    return kind.height();
   }
 
   @Override
@@ -307,19 +340,29 @@ public final class FillTab extends UIElement {
     IconButton.smallIconButton(this, Icon.CLEAR, CLOSE_X, 3, event -> {
       event.stopPropagation();
       close();
-    }, () -> List.of(Component.translatable("mmr.gui.tooltip.close_fill")))
+    }, () -> List.of(TabTexts.tooltipCloseFill.text()))
         .style(style -> style.zIndex(20));
-    MMRMachineUI.captionLabel(this, Component.translatable("mmr.gui.fill.amount"), CX, 13);
+    MMRMachineUI.captionLabel(this, TabTexts.fillAmount.text(), CX, 13);
     amountField = new TextField();
-    amountField.setNumbersOnlyInt(1, 1);
+    amountField.setNumbersOnlyLong(1, 1);
     amountField.setTextResponder(this::onAmountTyped);
+    amountField.addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
+      if (event.target == amountField) {
+        event.hoverTooltips = amountTooltips();
+      }
+    });
     MMRMachineUI.add(this, amountField.lss("width", 124).lss("height", 14), CX, 23);
     slider = MMRMachineUI.withScrollerThumb(new Slider.Horizontal());
     slider.setRange(1f, 1f);
     slider.setOnValueChanged(this::onSliderMoved);
+    slider.addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
+      if (event.target == slider) {
+        event.hoverTooltips = amountTooltips();
+      }
+    });
     MMRMachineUI.add(this, slider.lss("width", 120).lss("height", 16), CX + 2, 40);
     if (kind == Kind.DURABILITY) {
-      MMRMachineUI.captionLabel(this, Component.translatable("mmr.gui.fill.durability"), CX, DURAB_LABEL_Y);
+      MMRMachineUI.captionLabel(this, TabTexts.fillDurability.text(), CX, DURAB_LABEL_Y);
       durabField = new TextField();
       durabField.setNumbersOnlyInt(0, 0);
       durabField.setTextResponder(this::onDurabTyped);
@@ -335,10 +378,12 @@ public final class FillTab extends UIElement {
       int fieldY = durab ? DURAB_PICK_FIELD_Y : PICKER_FIELD_Y;
       int gridY = durab ? DURAB_PICK_GRID_Y : PICKER_GRID_Y;
       int buttonY = durab ? DURAB_PICK_BUTTON_Y : PICKER_BUTTON_Y;
-      MMRMachineUI.captionLabel(this, Component.translatable("mmr.gui.fill.search"), CX, labelY);
+      MMRMachineUI.captionLabel(this, TabTexts.fillSearch.text(), CX, labelY);
       TextField searchField = new TextField();
       searchField.setAnyString();
       searchField.setTextResponder(this::onSearchTyped);
+      searchField.addEventListener(UIEvents.HOVER_TOOLTIPS, event -> event.hoverTooltips =
+          HoverTooltips.create(TabTexts.fillSearchHintMod.text(), TabTexts.fillSearchHintTag.text()));
       MMRMachineUI.add(this, searchField.lss("width", 124).lss("height", 14), CX, fieldY);
       grid = new ScrollerView();
       grid.lss("width", GRID_W).lss("height", VISIBLE_ROWS * MMRMachineUI.SLOT);
@@ -360,12 +405,12 @@ public final class FillTab extends UIElement {
         style.pressedTexture(thumb);
       });
       confirmButton = SpriteButton.spriteButton(this,
-          Component.translatable("mmr.gui.fill.confirm"), CX, buttonY, 60, 20,
+          TabTexts.fillConfirm.text(), CX, buttonY, 60, 20,
           event -> {
             event.stopPropagation();
             confirm();
           });
-      SpriteButton.spriteButton(this, Component.translatable("mmr.gui.fill.cancel"),
+      SpriteButton.spriteButton(this, TabTexts.fillCancel.text(),
           BUTTON_RIGHT_X, buttonY, 60, 20,
           event -> {
             event.stopPropagation();
@@ -373,19 +418,19 @@ public final class FillTab extends UIElement {
           });
       rebuild("");
     } else {
-      int max = Math.max(1, currentMax());
+      long max = Math.max(1, currentMax());
       amount = 1;
-      amountField.setNumbersOnlyInt(1, max);
+      amountField.setNumbersOnlyLong(1, max);
       amountField.setText("1");
-      slider.setRange(1f, max);
+      slider.setRange(1f, (float) max);
       slider.setValue(1f);
       confirmButton = SpriteButton.spriteButton(this,
-          Component.translatable("mmr.gui.fill.confirm"), CX, SIMPLE_BUTTON_Y - 2, 60, 20,
+          TabTexts.fillConfirm.text(), CX, SIMPLE_BUTTON_Y - 2, 60, 20,
           event -> {
             event.stopPropagation();
             confirm();
           });
-      SpriteButton.spriteButton(this, Component.translatable("mmr.gui.fill.cancel"),
+      SpriteButton.spriteButton(this, TabTexts.fillCancel.text(),
           BUTTON_RIGHT_X, SIMPLE_BUTTON_Y - 2, 60, 20,
           event -> {
             event.stopPropagation();
@@ -416,21 +461,38 @@ public final class FillTab extends UIElement {
       return;
     }
     syncing = true;
-    amount = Math.max(1, Math.round(value));
+    amount = Math.max(1, (long) value);
     if (amountField != null && !String.valueOf(amount).equals(amountField.getValue())) {
       amountField.setText(String.valueOf(amount));
     }
     syncing = false;
   }
 
-  private int parseAmount(String text) {
-    int parsed;
+  private long parseAmount(String text) {
+    long parsed;
     try {
-      parsed = Integer.parseInt(text.trim());
+      parsed = Long.parseLong(text.trim());
     } catch (NumberFormatException exception) {
       parsed = 1;
     }
     return Mth.clamp(parsed, 1, Math.max(1, currentMax()));
+  }
+
+  private @Nullable HoverTooltips amountTooltips() {
+    if (amountField == null) {
+      return null;
+    }
+    String raw = amountField.getValue();
+    if (raw.isBlank() || amount <= 0) {
+      return null;
+    }
+    var lines = new ArrayList<>(3);
+    lines.add(Component.literal(NumberFormats.grouped(amount)));
+    lines.add(Component.literal("≈ " + NumberFormats.compact(amount)));
+    long max = Math.max(1, currentMax());
+    lines.add(TabTexts.fillMax.text(
+        NumberFormats.grouped(max) + " (≈ " + NumberFormats.compact(max) + ")"));
+    return HoverTooltips.create(lines.toArray());
   }
 
   private void onDurabTyped(String text) {
@@ -468,34 +530,34 @@ public final class FillTab extends UIElement {
   }
 
   private int selectedMaxDurability() {
-    return selected instanceof ItemPick(ItemStack stack) ? stack.getMaxDamage() : 0;
+    return selected instanceof ItemPick(ItemStack stack, ItemResource ignore) ? stack.getMaxDamage() : 0;
   }
 
-  private int currentMax() {
+  private long currentMax() {
     if (kind == Kind.ENERGY || kind == Kind.EXPERIENCE) {
-      return simpleSpace == null ? 0 : Math.max(0, simpleSpace.getAsInt());
+      return simpleSpace == null ? 0L : Math.max(0L, simpleSpace.getAsLong());
     }
     if (selected == null) {
-      return 0;
+      return 0L;
     }
     if (kind == Kind.ITEM || kind == Kind.DURABILITY) {
-      return itemHandler == null || itemHandler.get() == null ? 0
+      return itemHandler == null || itemHandler.get() == null ? 0L
           : itemHandler.get().getSpaceForItem(((ItemPick) selected).stack());
     }
-    return fluidHandler == null || fluidHandler.get() == null ? 0
+    return fluidHandler == null || fluidHandler.get() == null ? 0L
         : fluidHandler.get().getSpaceForFluid(((FluidPick) selected).stack());
   }
 
   private void choose(Pick pick) {
     selected = pick;
     amount = 1;
-    int max = Math.max(1, currentMax());
+    long max = Math.max(1, currentMax());
     if (amountField != null) {
-      amountField.setNumbersOnlyInt(1, max);
+      amountField.setNumbersOnlyLong(1, max);
       amountField.setText("1");
     }
     if (slider != null) {
-      slider.setRange(1f, max);
+      slider.setRange(1f, (float) max);
       slider.setValue(1f);
     }
     if (kind == Kind.DURABILITY) {
@@ -513,20 +575,14 @@ public final class FillTab extends UIElement {
   }
 
   private void confirm() {
-    int max = currentMax();
+    long max = currentMax();
     if (max > 0) {
-      int fill = Mth.clamp(parseAmount(amountField == null ? "1" : amountField.getValue()),
-          1, Integer.MAX_VALUE);
-      byte packetKind;
+      long fill = parseAmount(amountField == null ? "1" : amountField.getValue());
+      Identifier packetKind = kind.id();
       ItemStack item = ItemStack.EMPTY;
       FluidStack fluid = FluidStack.EMPTY;
       int durabilitySent = CFillHatchRequestPacket.DURABILITY_UNUSED;
-      if (kind == Kind.ENERGY) {
-        packetKind = CFillHatchRequestPacket.KIND_ENERGY;
-      } else if (kind == Kind.EXPERIENCE) {
-        packetKind = CFillHatchRequestPacket.KIND_EXPERIENCE;
-      } else if (selected instanceof ItemPick(ItemStack stack)) {
-        packetKind = CFillHatchRequestPacket.KIND_ITEM;
+      if (selected instanceof ItemPick(ItemStack stack, ItemResource ignore)) {
         item = stack;
         if (kind == Kind.DURABILITY) {
           item = stack.copy();
@@ -535,8 +591,7 @@ public final class FillTab extends UIElement {
           item.setDamageValue(item.getMaxDamage() - remaining);
           durabilitySent = remaining;
         }
-      } else {
-        packetKind = CFillHatchRequestPacket.KIND_FLUID;
+      } else if (kind == Kind.FLUID) {
         fluid = ((FluidPick) selected).stack();
       }
       ClientPacketDistributor.sendToServer(new CFillHatchRequestPacket(
@@ -572,25 +627,60 @@ public final class FillTab extends UIElement {
   }
 
   private List<Pick> candidates(String query) {
-    String needle = query.trim().toLowerCase(Locale.ROOT);
+    String trimmed = query.trim();
+    boolean byMod = trimmed.startsWith("@");
+    boolean byTag = trimmed.startsWith("#");
+    String needle = (byMod || byTag ? trimmed.substring(1) : trimmed).trim().toLowerCase(Locale.ROOT);
     List<Pick> result = new ArrayList<>();
     if (kind == Kind.ITEM || kind == Kind.DURABILITY) {
-      for (Item item : BuiltInRegistries.ITEM) {
-        if (result.size() >= MAX_CANDIDATES) {
-          break;
+      List<ItemStack> display = displayItemStacks();
+      if (byTag) {
+        collectItemTagCandidates(needle, display, result);
+      } else if (display.isEmpty()) {
+        for (Item item : BuiltInRegistries.ITEM) {
+          if (result.size() >= MAX_CANDIDATES) {
+            break;
+          }
+          ItemStack template = new ItemStack(item);
+          if (!template.isEmpty()
+              && (itemFilter == null || itemFilter.test(template))
+              && matches(byMod, template.getHoverName().getString(),
+                  BuiltInRegistries.ITEM.getKey(item), needle)) {
+            result.add(ItemPick.of(template));
+          }
         }
-        ItemStack template = new ItemStack(item);
-        if (template.isEmpty()) {
-          continue;
-        }
-        if (itemFilter != null && !itemFilter.test(template)) {
-          continue;
-        }
-        if (matches(ITEM_NAMES.computeIfAbsent(item,
-            key -> template.getHoverName().getString()), BuiltInRegistries.ITEM.getKey(item), needle)) {
-          result.add(new ItemPick(template));
+      } else {
+        for (ItemStack template : display) {
+          if (result.size() >= MAX_CANDIDATES) {
+            break;
+          }
+          if ((itemFilter == null || itemFilter.test(template))
+              && matches(byMod, template.getHoverName().getString(),
+                  BuiltInRegistries.ITEM.getKey(template.getItem()), needle)) {
+            result.add(ItemPick.of(template));
+          }
         }
       }
+    } else if (byTag) {
+      var seen = new LinkedHashSet<Fluid>();
+      BuiltInRegistries.FLUID.getTags().forEach(named -> {
+        if (result.size() >= MAX_CANDIDATES || !tagMatches(named.key().location(), needle)) {
+          return;
+        }
+        for (var holder : named.stream().toList()) {
+          if (result.size() >= MAX_CANDIDATES) {
+            return;
+          }
+          Fluid fluid = holder.value();
+          if (fluid == Fluids.EMPTY || !fluid.defaultFluidState().isSource() || !seen.add(fluid)) {
+            continue;
+          }
+          if (!acceptsFluid(fluid)) {
+            continue;
+          }
+          result.add(FluidPick.of(new FluidStack(fluid, 1)));
+        }
+      });
     } else {
       for (Fluid fluid : BuiltInRegistries.FLUID) {
         if (result.size() >= MAX_CANDIDATES) {
@@ -599,20 +689,114 @@ public final class FillTab extends UIElement {
         if (fluid == Fluids.EMPTY || !fluid.defaultFluidState().isSource()) {
           continue;
         }
+        if (!acceptsFluid(fluid)) {
+          continue;
+        }
         FluidStack template = new FluidStack(fluid, 1);
-        if (matches(FLUID_NAMES.computeIfAbsent(fluid,
-            key -> template.getHoverName().getString()), BuiltInRegistries.FLUID.getKey(fluid), needle)) {
-          result.add(new FluidPick(template));
+        if (matches(byMod, template.getHoverName().getString(),
+            BuiltInRegistries.FLUID.getKey(fluid), needle)) {
+          result.add(FluidPick.of(template));
         }
       }
     }
     return result;
   }
 
-  private static boolean matches(String name, Identifier id, String needle) {
+  /**
+   * Whether the hatch accepts this fluid at all: the handler carries the hatch's filter, so a
+   * filtered hatch only offers (and accepts) the fluids that pass it.
+   */
+  private boolean acceptsFluid(Fluid fluid) {
+    if (fluidHandler == null || fluidHandler.get() == null) {
+      return true;
+    }
+    return fluidHandler.get().isValid(0, FluidResource.of(fluid));
+  }
+
+  private List<ItemStack> displayItemStacks() {
+    if (displayCache != null) {
+      return displayCache;
+    }
+    var stacks = new ArrayList<ItemStack>();
+    var level = entity.getLevel();
+    if (level != null) {
+      CreativeModeTabs.tryRebuildTabContents(
+          level.enabledFeatures(), player != null && player.canUseGameMasterBlocks(),
+          level.registryAccess());
+      var seen = new HashSet<ItemResource>();
+      for (CreativeModeTab tab : CreativeModeTabs.allTabs()) {
+        if (tab.getType() != CreativeModeTab.Type.CATEGORY) {
+          continue;
+        }
+        for (ItemStack stack : tab.getDisplayItems()) {
+          if (stack.isEmpty() || !seen.add(ItemResource.of(stack))) {
+            continue;
+          }
+          stacks.add(stack.copyWithCount(1));
+        }
+      }
+    }
+    displayCache = List.copyOf(stacks);
+    return displayCache;
+  }
+
+  private static boolean matches(boolean byMod, String name, Identifier id, String needle) {
+    if (byMod) {
+      return id.getNamespace().contains(needle);
+    }
     return needle.isEmpty()
         || name.toLowerCase(Locale.ROOT).contains(needle)
         || id.getPath().contains(needle);
+  }
+
+  private static boolean tagMatches(Identifier location, String needle) {
+    return needle.isEmpty()
+        || location.getPath().contains(needle)
+        || location.getNamespace().contains(needle);
+  }
+
+  private void collectItemTagCandidates(String needle, List<ItemStack> display, List<Pick> result) {
+    Map<Item, ItemStack> preferred = new HashMap<>();
+    for (ItemStack stack : display) {
+      preferred.putIfAbsent(stack.getItem(), stack);
+    }
+    var seen = new LinkedHashSet<Item>();
+    BuiltInRegistries.ITEM.getTags().forEach(named -> {
+      if (result.size() >= MAX_CANDIDATES || !tagMatches(named.key().location(), needle)) {
+        return;
+      }
+      for (var holder : named.stream().toList()) {
+        if (result.size() >= MAX_CANDIDATES) {
+          return;
+        }
+        Item item = holder.value();
+        if (!seen.add(item)) {
+          continue;
+        }
+        ItemStack template = preferred.getOrDefault(item, ItemStack.EMPTY);
+        if (template.isEmpty() || (itemFilter != null && !itemFilter.test(template))) {
+          continue;
+        }
+        result.add(ItemPick.of(template));
+      }
+    });
+    BuiltInRegistries.BLOCK.getTags().forEach(named -> {
+      if (result.size() >= MAX_CANDIDATES || !tagMatches(named.key().location(), needle)) {
+        return;
+      }
+      for (var holder : named.stream().toList()) {
+        if (result.size() >= MAX_CANDIDATES) {
+          return;
+        }
+        ItemStack template = new ItemStack(holder.value().asItem());
+        if (template.isEmpty()
+            || !seen.add(template.getItem())
+            || (itemFilter != null && !itemFilter.test(template))) {
+          continue;
+        }
+        result.add(ItemPick.of(template));
+      }
+    });
   }
 
   // ------------------------------------------------------------------
@@ -629,8 +813,11 @@ public final class FillTab extends UIElement {
         && (fluidHandler == null || fluidHandler.get() == null
         || fluidHandler.get().getTotalFreeSpace() <= 0);
     boolean full = unselected ? hatchFull : currentMax() <= 0;
-    boolean blocked = unselected ? hatchFull : full;
-    blockedReason = blocked ? fullReason() : null;
+    // While the grid of the hatch is still compiling its slots do not exist yet, so nothing can
+    // be filled into it.
+    boolean compiling = isCompiling();
+    boolean blocked = compiling || (unselected ? hatchFull : full);
+    blockedReason = blocked ? (compiling ? TabTexts.fillReasonCompiling.text() : fullReason()) : null;
     if (overlay != null) {
       if (blocked && overlay.getParent() == null) {
         MMRMachineUI.add(this, overlay, BODY_LEFT + LEFT_TAB_WIDTH, 0);
@@ -659,12 +846,19 @@ public final class FillTab extends UIElement {
     }
   }
 
+  /**
+   * Whether the grid of this hatch is still compiling: its slots do not exist yet, so filling it
+   * is not possible.
+   */
+  private boolean isCompiling() {
+    if (itemHandler != null && itemHandler.get() != null && itemHandler.get().isCompiling()) {
+      return true;
+    }
+    return entity instanceof TileInventory inventory && inventory.getInventory().isCompiling();
+  }
+
   private Component fullReason() {
-    return switch (kind) {
-      case ENERGY -> Component.translatable("mmr.gui.fill.reason.energy");
-      case EXPERIENCE -> Component.translatable("mmr.gui.fill.reason.experience");
-      default -> Component.translatable("mmr.gui.fill.reason.full");
-    };
+    return kind.text().text();
   }
 
   private static List<String> wrap(String text, int maxWidth) {
@@ -735,9 +929,9 @@ public final class FillTab extends UIElement {
       });
       addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
         List<Component> lines = new ArrayList<>();
-        if (pick instanceof ItemPick(ItemStack stack)) {
+        if (pick instanceof ItemPick(ItemStack stack, ItemResource ignore)) {
           lines.add(stack.getHoverName());
-        } else if (pick instanceof FluidPick(FluidStack stack)) {
+        } else if (pick instanceof FluidPick(FluidStack stack, FluidResource ignore)) {
           lines.add(stack.getHoverName());
         }
         event.hoverTooltips = HoverTooltips.create(lines.toArray());
@@ -751,9 +945,9 @@ public final class FillTab extends UIElement {
       }
       int x = (int) getContentX();
       int y = (int) getContentY();
-      if (pick instanceof ItemPick(ItemStack stack)) {
+      if (pick instanceof ItemPick(ItemStack stack, ItemResource ignore)) {
         DrawerHelperClient.drawItemStack(gui, stack, x + 1, y + 1, 0);
-      } else if (pick instanceof FluidPick(FluidStack stack)) {
+      } else if (pick instanceof FluidPick(FluidStack stack, FluidResource ignore)) {
         DrawerHelperClient.drawFluidForGui(gui, stack, x + 1, y + 1, 16, 16, -1);
       }
       if (pick.equals(selected)) {

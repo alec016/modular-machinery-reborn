@@ -1,5 +1,8 @@
 package es.degrassi.mmr.client.util;
 
+import es.degrassi.experiencelib.api.datagen.LocalizationEnum;
+import es.degrassi.experiencelib.data.localization.AutoCollectLang;
+import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.common.data.config.EnergyHatchConfig;
 import lombok.Getter;
 import net.minecraft.util.Mth;
@@ -17,17 +20,18 @@ public class EnergyDisplayUtil {
     type = EnergyHatchConfig.get().energy_type.get();
   }
 
-  public enum EnergyType {
-    FE(1),
-    IC2_EU(0.25F);
+  @AutoCollectLang(value = ModularMachineryReborn.MODID, lang = "en_us")
+  public enum EnergyType implements LocalizationEnum {
+    FE(1, "FE"),
+    IC2_EU(0.25F, "EU");
 
     private final double multiplier;
     @Getter
-    private final String unlocalizedFormat;
+    private final String englishText;
 
-    EnergyType(double multiplier) {
+    EnergyType(double multiplier, String englishText) {
       this.multiplier = multiplier;
-      this.unlocalizedFormat = "tooltip.energy.type." + name().toLowerCase();
+      this.englishText = englishText;
     }
 
     public long formatEnergyForDisplay(long energy) {
@@ -41,6 +45,11 @@ public class EnergyDisplayUtil {
       } catch (Exception ignored) {}
 
       return type;
+    }
+
+    @Override
+    public String getTranslationKey() {
+      return "tooltip.energy.type." + name();
     }
   }
 }

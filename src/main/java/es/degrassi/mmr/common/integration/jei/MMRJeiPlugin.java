@@ -47,6 +47,7 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -146,7 +147,8 @@ public class MMRJeiPlugin implements IModPlugin {
 
   @Override
   public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-}
+    registration.addGhostIngredientHandler(AbstractContainerScreen.class, MMRJeiHandlers.GHOST_HANDLER);
+  }
 
   private static IGuiClickableArea createBasic(
       int xPos,

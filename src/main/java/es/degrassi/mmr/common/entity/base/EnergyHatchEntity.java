@@ -10,6 +10,7 @@ import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.CapabilityInventoryEntity;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
@@ -17,15 +18,16 @@ import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.EnergyHatchSize;
-import es.degrassi.mmr.common.entity.EnergyInputHatchEntity;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
+import es.degrassi.mmr.common.manager.handler.UpdateValueListener;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateEnergyComponentPacket;
+import es.degrassi.mmr.common.network.server.component.SUpdateItemComponentPacket;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmr.common.util.Utils;
 import lombok.Getter;
@@ -34,6 +36,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,14 +56,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<EnergyComponent>,
     ControllerAccessible, TextureableMachineEntity, CapabilityInventoryEntity<EnergyHandler>, ITickEntity, IServerTickEntity,
-    ISyncableStuff, IAutoEntity<EnergyHandler>, ISideConfigComponent<IOSideMode> {
-
+    ISyncableStuff, IAutoEntity<EnergyHandler>, ISideConfigComponent<IOSideMode>, EntityMenuHolder {
   protected EnergyHatchSize size;
-  protected IOType ioType;
+  protected final IOType ioType;
   @Getter
   @Nullable private BlockPos controllerPos;
 
@@ -75,6 +76,8 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
 
   @Getter
   private final ItemHandler capabilityInventory;
+
+  private final UpdateValueListener<ItemStack> capabilityItemListener;
 
   private final long tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
   private long lastCheckTick;
@@ -99,6 +102,20 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_energy" + ioType.getSerializedName() + "hatch_" + size.getSerializedName());
     this.overlayTexture = defaultOverlayTexture;
     this.capabilityInventory = createCapabilityInventory();
+    this.capabilityItemListener = (slot, stack) -> {
+      getControllerPosSet().forEach(p -> {
+        if (getLevel() == null) return;
+        if (getLevel().isClientSide()) return;
+        if (getLevel().getBlockEntity(p) instanceof MachineControllerEntity controller) {
+          controller.getProcessor().setMachineInventoryChanged();
+        }
+      });
+      if (getLevel() instanceof ServerLevel level) {
+        PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(getBlockPos()),
+            new SUpdateItemComponentPacket(slot, capabilityInventory.getStack(slot), getBlockPos()));
+      }
+    };
+    this.capabilityInventory.setListener(capabilityItemListener);
     this.config = IOSideConfig.Template.DEFAULT_ALL_DISABLED.build(this);
     this.config.setCallback(this::configChanged);
     this.energyHandler = new SimpleEnergyHandler(
@@ -142,13 +159,16 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   @Override
   public void tickInventory() {
     if (!shouldTickInventory()) return;
-    capabilityInventory.forEach(stack -> {
-      Optional.ofNullable(stack.getCapability(getCapability(), null)).ifPresent(cap -> {
-        if (ioType == IOType.NONE) return;
-        try(var transaction = Transaction.openRoot()) {
+    int inputSlots = capabilityInventory.getInputSlotCount();
+    for (int slot = 0; slot < inputSlots; slot++) {
+      ItemStack stack = capabilityInventory.getStack(slot);
+      if (stack.isEmpty()) continue;
+      var cap = stack.getCapability(getCapability(), null);
+      if (cap == null || ioType == IOType.NONE) continue;
+      try(var transaction = Transaction.openRoot()) {
           if (ioType.isInput()) {
-            if (!this.canReceive()) return;
-            if (this.getEnergyHandler().getAmountAsLong() >= this.getEnergyHandler().getCapacityAsLong()) return;
+            if (!this.canReceive()) continue;
+            if (this.getEnergyHandler().getAmountAsLong() >= this.getEnergyHandler().getCapacityAsLong()) continue;
             int simulatedCap;
             try (var subTx = Transaction.open(transaction)) {
               simulatedCap = cap.extract(Integer.MAX_VALUE, subTx);
@@ -156,8 +176,8 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
             var inserted = energyHandler.insert(simulatedCap, transaction);
             cap.extract(inserted, transaction);
           } else if (ioType.isOutput()) {
-            if (!this.canExtract()) return;
-            if (this.energyHandler.getAmountAsLong() == 0) return;
+            if (!this.canExtract()) continue;
+            if (this.energyHandler.getAmountAsLong() == 0) continue;
             int simulatedExtract;
             try (var subTx = Transaction.open(transaction)) {
               simulatedExtract = energyHandler.extract(Integer.MAX_VALUE, subTx);
@@ -166,9 +186,12 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
             energyHandler.extract(simulatedCap, transaction);
           }
           transaction.commit();
-        } catch (Exception ignored) {}
-      });
-    });
+      } catch (Exception ignored) {}
+      try (var check = Transaction.openRoot()) {
+        boolean done = ioType.isInput() ? cap.extract(1, check) == 0 : cap.insert(1, check) == 0;
+        if (done) capabilityInventory.moveToOutputs(slot);
+      } catch (Exception ignored) {}
+    }
   }
 
   @Nullable
@@ -202,8 +225,7 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   protected void loadAdditional(ValueInput compound) {
     super.loadAdditional(compound);
     compound.readChild("energyHandler", energyHandler);
-    this.ioType = IOType.getByString(compound.getStringOr("ioType", ""));
-    this.size = EnergyHatchSize.value(compound.getStringOr("hatchSize", "").toUpperCase(Locale.ROOT));
+    this.size = EnergyHatchSize.value(compound.getString("hatchSize").orElseThrow().toUpperCase(Locale.ENGLISH));
     compound.getLong("controllerPos").ifPresent(val -> controllerPos = BlockPos.of(val));
     onContentsChange();
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_energy" + ioType.getSerializedName() + "hatch_" + size.getSerializedName());
@@ -212,6 +234,7 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
     this.overlayTexture = compound.getString("overlayTexture").map(Identifier::parse).orElse(defaultOverlayTexture);
     compound.readChild("inventory", capabilityInventory);
     compound.readChild("config", config);
+    capabilityInventory.setListener(capabilityItemListener);
   }
 
   @Override
@@ -219,9 +242,6 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
     super.saveAdditional(compound);
 
     compound.putChild("energyHandler", energyHandler);
-    if (ioType == null) {
-      ioType = this instanceof EnergyInputHatchEntity ? IOType.INPUT : IOType.OUTPUT;
-    }
     compound.putString("ioType", ioType.getSerializedName());
     compound.putString("hatchSize", this.size.getSerializedName());
     if (controllerPos != null)
@@ -239,14 +259,6 @@ public abstract class EnergyHatchEntity extends ColorableMachineComponentEntity 
   @Override
   public void setControllerPos(BlockPos pos) {
     this.controllerPos = pos;
-  }
-
-  protected int convertDownEnergy(long energy) {
-    return energy >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) energy;
-  }
-
-  public EnergyHatchSize getTier() {
-    return size;
   }
 
   protected void attemptFETransfer(EnergyHandler from, EnergyHandler to, long maxTransferLeft) {

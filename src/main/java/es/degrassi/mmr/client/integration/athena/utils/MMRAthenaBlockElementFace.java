@@ -5,16 +5,6 @@ import net.minecraft.core.Direction;
 import net.neoforged.neoforge.client.model.ExtraFaceData;
 import org.joml.Vector3f;
 
-/**
- * Re-implementation of the 1.21.1 {@code MMRAthenaBlockElementFace} on top of the 26.1 cuboid
- * baking primitives ({@code CuboidFace}/{@code BakedQuad.MaterialInfo}).
- *
- * <p>The old class built a vanilla {@code BlockElementFace} + {@code BlockFaceUV} which the
- * vanilla {@code FaceBakery} then baked. Those classes no longer exist, but the pieces this
- * helper provides are exactly what the ported {@code CtmUtils#bakeQuad} needs to replicate the
- * vanilla element bake one-to-one: the pre-rotated UV rect (model space 0..16), the per-face
- * tint index and the static tint colour.
- */
 public class MMRAthenaBlockElementFace {
 
   public static MMRAthenaBlockElementFace.Result of(MMRAthenaQuad quad, Direction direction, Vector3f start, Vector3f end,

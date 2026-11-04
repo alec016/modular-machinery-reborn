@@ -1,5 +1,6 @@
 package es.degrassi.mmr.common.block;
 
+import com.mojang.serialization.MapCodec;
 import es.degrassi.mmr.client.util.EnergyDisplayUtil;
 import es.degrassi.mmr.common.block.base.BlockEnergyHatch;
 import es.degrassi.mmr.common.block.prop.EnergyHatchSize;
@@ -20,6 +21,11 @@ import java.util.function.Consumer;
 public class BlockEnergyInputHatch extends BlockEnergyHatch {
   public BlockEnergyInputHatch(Properties id, EnergyHatchSize type) {
     super(id, type);
+  }
+
+  @Override
+  protected MapCodec<BlockEnergyInputHatch> codec() {
+    return BlockCodecs.ENERGY_INPUT.mapCodec();
   }
 
   @Override

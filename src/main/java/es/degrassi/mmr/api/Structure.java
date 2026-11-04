@@ -244,7 +244,7 @@ public class Structure {
               removed = true;
               break;
             }
-            if (removed) {
+            if (removed || isCreative) {
               level.setBlockAndUpdate(wp.immutable(), Blocks.AIR.defaultBlockState());
               level.playSound(null, wp.immutable(), SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
             }

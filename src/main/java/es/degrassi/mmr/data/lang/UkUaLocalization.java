@@ -2,6 +2,15 @@ package es.degrassi.mmr.data.lang;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import es.degrassi.mmr.api.client.CoreActionTypeTexts;
+import es.degrassi.mmr.api.client.ExperienceButtonTypeTexts;
+import es.degrassi.mmr.client.screen.widget.buttons.ButtonsTexts;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
+import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.data.advancements.AdvancementTexts;
@@ -19,6 +28,55 @@ final class UkUaLocalization extends LocalizationProvider {
   protected void addEnums() {
     addEnum(AdvancementTexts.class, v -> switch (v) {
       default -> v.getEnglishText();
+    });
+    addEnum(MachineStatus.class, v -> switch (v) {
+      case PAUSED -> "Пауза";
+      case MISSING_STRUCTURE -> "Відсутня структура";
+      case IDLE -> "Відповідного рецепту не знайдено";
+      case RUNNING -> "Обробка...";
+      default -> v.getEnglishText();
+    });
+    addEnum(IOType.class, v -> switch (v) {
+      case INPUT -> "Вхід";
+      case OUTPUT -> "Вихід";
+      case NONE -> "Немає";
+    });
+    addEnum(StructureCreatorItemMode.class, v -> switch (v) {
+      case SINGLE -> "Одиничний";
+      case BOX -> "Область";
+      case VEIN -> "Proximity (Vein)";
+    });
+    addEnum(TabTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(EnergyDisplayUtil.EnergyType.class);
+    addEnum(GaugesTexts.class, v -> switch (v) {
+      case fluidHatchEmpty -> "Порожньо";
+      case fuelTankTicks -> "%s / %s тактів";
+      default -> v.getEnglishText();
+    });
+    addEnum(ButtonsTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(ExperienceButtonTypeTexts.class, v -> switch (v) {
+      case EXTRACT_1 -> "Витягти 1 рівень";
+      case EXTRACT_10 -> "Витягти 10 рівнів";
+      case EXTRACT_ALL -> "Витягти всі рівні";
+      case INSERT_1 -> "Вставити 1 рівень";
+      case INSERT_10 -> "Вставити 10 рівнів";
+      case INSERT_ALL -> "Вставити всі рівні";
+    });
+    addVariantEnum(CoreActionTypeTexts.class, (a, v) -> switch (a) {
+      case ADD -> "Додати " + switch (v) {
+        case SINGLE -> "1 активне ядро";
+        case SHIFT -> "10 10 активних ядер";
+        case CONTROL -> "всі активні ядра";
+      };
+      case REMOVE -> "Видалити " + switch (v) {
+        case SINGLE -> "1 активне ядро";
+        case SHIFT -> "10 10 активних ядер";
+        case CONTROL -> "всі активні ядра";
+      };
     });
   }
 
@@ -179,9 +237,6 @@ final class UkUaLocalization extends LocalizationProvider {
     add(mm(ingredient("chance.output")), "Шанс виробництва: %s%s");
     add(mm(ingredient("chance.not_consumed")), "Не споживається");
     add(mm(ingredient("chance.nc")), "НС");
-    add(mm("requirement.mode.input"), "Вхід");
-    add(mm("requirement.mode.output"), "Вихід");
-    add(mm("requirement.mode.none"), "Немає");
     add(jeiIngredient("long"), "%s");
     add(jeiIngredient("int"), "%s");
     add(jeiIngredient("energy.input"), "Потрібно: %s RF");
@@ -388,23 +443,16 @@ final class UkUaLocalization extends LocalizationProvider {
     add(tooltip("experiencehatch.tank.levels"), "%s / %s рівнів");
     add(tooltip("experiencehatch.tank.info"), "Може містити %s XP");
 
-    add(tooltip("energy.type.fe"), "FE");
-    add(tooltip("energy.type.ic2_eu"), "EU");
-    add(tooltip("energy.type.gt_eu"), "EU");
-
     add(tooltip("constructtool.creative"), "Креативний інструмент 'Структура в JSON'");
 
     add(tooltip("itembus.slot"), "1 слот");
     add(tooltip("itembus.slots"), "Слотів: %s");
 
-    add(tooltip("fluidhatch.empty"), "Порожньо");
     add(tooltip("fluidhatch.fluid"), "[Рідина]");
     add(tooltip("fluidhatch.gas"), "[Газ]");
-    add(tooltip("fluidhatch.tank"), "%smB / %smB");
     add(tooltip("fluidhatch.tank.gas"), "%s / %s");
     add(tooltip("fluidhatch.tank.info"), "Може містити %s мБ");
 
-    add(tooltip("energyhatch.charge"), "%s / %s %s");
     add(tooltip("energyhatch.storage"), "Зберігає %s FE");
     add(tooltip("energyhatch.out.transfer"), "Передає %s FE за такт");
     add(tooltip("energyhatch.in.accept"), "Приймає %s FE за такт");
@@ -413,7 +461,6 @@ final class UkUaLocalization extends LocalizationProvider {
     add(tooltip("blueprint"), "Натисніть по будь-якому контролеру, щоб переглянути структуру");
 
     add(tooltip("fueltank.storage"), "Може зберігати %s часу горіння (тактів)");
-    add(tooltip("fuel_tank.tank"), "%s / %s тактів");
 
     add(tooltip("effectdispenser.interdimensional"), "Надає ефекти між вимірами");
     add(tooltip("effectdispenser.radius"), "Надає ефекти в радіусі %s блоків навколо");
@@ -508,16 +555,9 @@ final class UkUaLocalization extends LocalizationProvider {
     add(mmr(gui("button.page.next")), "Наступна сторінка");
     add(mmr(gui("button.page.prev")), "Попередня сторінка");
     add(mm(gui("core_button")), "Показати інформацію про ядра");
-    add(mmr(gui("element.experience.tooltip")), "%s / %s");
     add(mmr(gui("element.experience.tooltip.input")), "Потрібно: %s / %s");
     add(mmr(gui("element.experience.tooltip.output")), "Виробляє: %s / %s");
     add(mmr(gui("element.experience.level")), "%s рівень(ів)");
-    add(mmr(gui(tooltip("experience.button.extract_1"))), "Витягти 1 рівень");
-    add(mmr(gui(tooltip("experience.button.extract_10"))), "Витягти 10 рівнів");
-    add(mmr(gui(tooltip("experience.button.extract_all"))), "Витягти всі рівні");
-    add(mmr(gui(tooltip("experience.button.insert_1"))), "Вставити 1 рівень");
-    add(mmr(gui(tooltip("experience.button.insert_10"))), "Вставити 10 рівнів");
-    add(mmr(gui(tooltip("experience.button.insert_all"))), "Вставити всі рівні");
     add(mm(gui("structure_placer_button")), "Натисніть, щоб спробувати встановити структуру");
     add(mm(gui("structure_breaker_button")), "Натисніть, щоб розібрати поточну структуру");
     add(mmr(gui("structure.break")), "Ви впевнені, що хочете розібрати поточну структуру?");
@@ -555,9 +595,6 @@ final class UkUaLocalization extends LocalizationProvider {
     add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "Натисніть [%s] з предметом у руці (поза інтерфейсом), щоб змінити режим");
     add(mm("structure_creator.mode.change"), "Змінено режим з %s на %s");
-    add(mm("structure_creator.mode.single"), "Одиничний");
-    add(mm("structure_creator.mode.box"), "Область");
-    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Виберіть перший кут");
     add(mm("structure_creator.mode.box.second"), "Виберіть другий кут");
     add(mm("structure_creator.mode"), "Поточний режим: %s");
@@ -585,21 +622,10 @@ final class UkUaLocalization extends LocalizationProvider {
     add(gui("controller.status"), "Статус: ");
     add(gui("controller.error.info"), "Помилка: ");
     add(gui("controller.status.redstone_stopped"), "Машину зупинено сигналом редстоуну.");
-    add(gui("controller.status.paused"), "Пауза");
-    add(gui("controller.status.missing_structure"), "Відсутня структура");
-    add(gui("controller.status.idle"), "Відповідного рецепту не знайдено");
-    add(gui("controller.status.errored"), "");
-    add(gui("controller.status.running"), "Обробка...");
     add(gui("controller.status.running.progress"), "Прогрес: %s");
     add(mmr("core.active.true"), "Ядро може виконувати рецепти");
     add(mmr("core.active.false"), "Ядро не може виконувати рецепти");
     add(mmr("core.number"), "Номер ядра: %s");
     add(mmr(gui("core.button")), "Натисніть, щоб показати інформацію про ядро №%s");
-    add(mmr(gui(tooltip("core.action.button.single.add"))), "Додати 1 активне ядро");
-    add(mmr(gui(tooltip("core.action.button.single.remove"))), "Видалити 1 активне ядро");
-    add(mmr(gui(tooltip("core.action.button.shift.add"))), "Додати 10 активних ядер");
-    add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Видалити 10 активних ядер");
-    add(mmr(gui(tooltip("core.action.button.control.add"))), "Додати всі активні ядра");
-    add(mmr(gui(tooltip("core.action.button.control.remove"))), "Видалити всі активні ядра");
   }
 }

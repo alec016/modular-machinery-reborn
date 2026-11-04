@@ -11,63 +11,68 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class FilterSlotComponent<T, E> extends SlotItemComponent {
-   @Getter
-   private final FiltereableEntity<T, E> entity;
-   public FilterSlotComponent(FiltereableEntity<T, E> entity, int slot, int x, int y) {
-     super(entity.getFilterInventory(), slot, x, y);
-     this.entity = entity;
-   }
+public class FilterSlotComponent<T, E> extends MMRBusSlot {
+  @Getter
+  private final FiltereableEntity<T, E> entity;
 
-   /**
-    * @see MMRJeiClientIntegration#registerFilterDragDrop(RegisterJeiFilterDragDropEvent) for JEI implementation example
-    * @param constructor Packet that will be sent once applied
-    */
-   public void setGenericFromClient(Function<BlockPos, CustomPacketPayload> constructor) {
-     ClientPacketDistributor.sendToServer(constructor.apply(entity.getBlockPos()));
-   }
+  public FilterSlotComponent(FiltereableEntity<T, E> entity, int slot, int x, int y) {
+    super(entity.getFilterInventory(), slot, x, y);
+    this.entity = entity;
+  }
 
-   //Call from the client only, will ask the server to place the item in the slot to avoid desync issues.
-   public void setFromClient(ItemStack stack) {
-     ItemStack copy = stack.copyWithCount(1);
-     ClientPacketDistributor.sendToServer(new CSetFilterSlotItemPacket(copy, entity.getBlockPos()));
-   }
+  /**
+   * @see MMRJeiClientIntegration#registerFilterDragDrop(RegisterJeiFilterDragDropEvent) for JEI implementation example
+   * @param constructor Packet that will be sent once applied
+   */
+  public void setGenericFromClient(Function<BlockPos, CustomPacketPayload> constructor) {
+    ClientPacketDistributor.sendToServer(constructor.apply(entity.getBlockPos()));
+  }
 
-   @Override
-   public boolean mayPlace(ItemStack stack) {
-     ItemStack copy = stack.copyWithCount(1);
-     ClientPacketDistributor.sendToServer(new CSetFilterSlotItemPacket(copy, entity.getBlockPos()));
-     return false;
-   }
+  public void setFromClient(ItemStack stack) {
+    ItemStack copy = stack.copyWithCount(1);
+    ClientPacketDistributor.sendToServer(new CSetFilterSlotItemPacket(copy, entity.getBlockPos()));
+  }
 
-   @Override
-   public boolean mayPickup(Player player) {
-     return true;
-   }
+  @Override
+  public boolean mayPlace(ItemStack stack) {
+    return false;
+  }
 
-   @Override
-   public boolean isFake() {
-     return true;
-   }
+  @Override
+  public boolean mayPickup(Player player) {
+    return false;
+  }
 
-   @Nullable
-   public Component getFilter() {
-     return entity.getFilterComponent();
-   }
+  @Override
+  public boolean isFake() {
+    return true;
+  }
 
-   public E toFilterRender() {
-     return entity.toFilterRender();
-   }
+  @Nullable
+  public Component getFilter() {
+    return entity.getFilterComponent();
+  }
 
-   @Override
-   public Optional<ItemStack> tryRemove(int count, int decrement, Player player) {
-     this.getComponent().setStack(getSlotIndex(), ItemStack.EMPTY);
-     return Optional.empty();
-   }
- }
+  public E toFilterRender() {
+    return entity.toFilterRender();
+  }
 
+  @Override
+  public ItemStack remove(int amount) {
+    this.handler.set(getSlotIndex(), ItemResource.EMPTY, 0);
+    this.setChanged();
+    return ItemStack.EMPTY;
+  }
+
+  @Override
+  public Optional<ItemStack> tryRemove(int count, int decrement, Player player) {
+    remove(count);
+    return Optional.empty();
+  }
+}

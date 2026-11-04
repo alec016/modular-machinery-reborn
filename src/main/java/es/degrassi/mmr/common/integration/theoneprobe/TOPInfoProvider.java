@@ -4,6 +4,8 @@ import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IAutoOutputEntity;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
 import es.degrassi.mmr.common.crafting.MachineRecipe;
 import es.degrassi.mmr.common.crafting.requirement.RequirementFluid;
 import es.degrassi.mmr.common.crafting.requirement.RequirementFluidPerTick;
@@ -13,11 +15,13 @@ import es.degrassi.mmr.common.entity.FuelTankEntity;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.entity.RedstonePortEntity;
 import es.degrassi.mmr.common.entity.base.ColorableMachineComponentEntity;
+import es.degrassi.mmr.common.integration.WailaTexts;
 import es.degrassi.mmr.common.integration.theoneprobe.element.CustomProgress;
 import es.degrassi.mmr.common.integration.theoneprobe.element.FuelElement;
 import es.degrassi.mmr.common.integration.theoneprobe.element.SizedFluidIngredientRenderer;
 import es.degrassi.mmr.common.integration.theoneprobe.element.SizedItemIngredientRenderer;
 import es.degrassi.mmr.common.manager.crafting.MachineProcessorCore;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.util.RomanNumber;
 import mcjty.theoneprobe.api.ElementAlignment;
 import mcjty.theoneprobe.api.IElement;
@@ -68,7 +72,7 @@ public class TOPInfoProvider implements IProbeInfoProvider, Function<ITheOneProb
     BlockEntity tile = level.getBlockEntity(data.getPos());
     if (tile instanceof MachineControllerEntity controller) {
       if (controller.isPaused()) {
-        info.mcText(Component.translatable("gui.controller.status.paused").withStyle(ChatFormatting.DARK_RED));
+        info.mcText(MachineStatus.PAUSED.text().withStyle(ChatFormatting.DARK_RED));
       } else{
         showCraftingInfo(controller, info);
       }
@@ -84,13 +88,17 @@ public class TOPInfoProvider implements IProbeInfoProvider, Function<ITheOneProb
   private void addAutoInfo(IAutoEntity<?> entity, IProbeInfo info) {
     if (entity instanceof IAutoInputEntity) {
       boolean autoInput = entity.shouldAuto();
-      Component input = Component.translatable("mmr.tooltip.auto_input", Component.translatable("mmr.gui.tooltip.enabled." + autoInput).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY);
+      Component input = WailaTexts.tooltipAutoInput.text(
+          (autoInput ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA)
+      ).withStyle(ChatFormatting.GRAY);
       info.mcText(input);
     }
 
     if (entity instanceof IAutoOutputEntity) {
       boolean autoOutput = entity.shouldAuto();
-      Component output = Component.translatable("mmr.tooltip.auto_output", Component.translatable("mmr.gui.tooltip.enabled." + autoOutput).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY);
+      Component output = WailaTexts.tooltipAutoOutput.text(
+          (autoOutput ? TabTexts.tooltipEnabled : TabTexts.tooltipDisabled).text().withStyle(ChatFormatting.AQUA)
+      ).withStyle(ChatFormatting.GRAY);
       info.mcText(output);
     }
   }
@@ -104,7 +112,7 @@ public class TOPInfoProvider implements IProbeInfoProvider, Function<ITheOneProb
     else if (percent >= 0.30f) currentColor = ChatFormatting.GOLD;
     info.horizontal(style())
         .element(new FuelElement(percent))
-        .mcText(Component.translatable("tooltip.fuel_tank.tank", amount, capacity).withStyle(currentColor));
+        .mcText(GaugesTexts.fuelTankTicks.text(amount, capacity).withStyle(currentColor));
   }
 
   private void addRedstoneInfo(RedstonePortEntity entity, IProbeInfo info) {

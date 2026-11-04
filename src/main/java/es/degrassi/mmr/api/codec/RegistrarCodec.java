@@ -6,6 +6,7 @@ import com.mojang.serialization.DynamicOps;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
+import es.degrassi.mmr.api.uistate.UIStateType;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.crafting.requirement.RequirementType;
 import es.degrassi.mmr.common.machine.MachineHatchType;
@@ -37,6 +38,7 @@ public class RegistrarCodec<V> implements NamedCodec<V> {
   public static final NamedCodec<ComponentType<?>> COMPONENT = of(ModularMachineryReborn.getComponentRegistrar(), true);
   public static final NamedCodec<EmptyRequirementType> EMPTY_REQUIREMENT_TYPE = of(ModularMachineryReborn.getEmptyRequirementTypeRegistrar(), true);
   public static final NamedCodec<MachineHatchType> HATCH_TYPE = of(ModularMachineryReborn.getMachineHatchTypeRegistrar(), true);
+  public static final NamedCodec<UIStateType<?>> UI_STATE = of(ModularMachineryReborn.getUISateRegistrar(), true);
 
   public static final NamedCodec<Identifier> MMR_LOC_CODEC = NamedCodec.STRING.comapFlatMap(
     s -> {

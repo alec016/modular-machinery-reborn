@@ -2,6 +2,16 @@ package es.degrassi.mmr.data.lang;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import es.degrassi.mmr.api.client.CoreActionTypeTexts;
+import es.degrassi.mmr.api.client.ExperienceButtonTypeTexts;
+import es.degrassi.mmr.client.screen.UITexts;
+import es.degrassi.mmr.client.screen.widget.buttons.ButtonsTexts;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
+import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.data.advancements.AdvancementTexts;
@@ -17,6 +27,125 @@ final class EsEsLocalization extends LocalizationProvider {
   protected void addEnums() {
     addEnum(AdvancementTexts.class, v -> switch (v) {
       default -> v.getEnglishText();
+    });
+    addEnum(MachineStatus.class, v -> switch (v) {
+      case PAUSED -> "Pausado";
+      case MISSING_STRUCTURE -> "Sin estructura";
+      case IDLE -> "Sin receta encontrada";
+      case RUNNING -> "Procesando...";
+      default -> v.getEnglishText();
+    });
+    addEnum(IOType.class, v -> switch (v) {
+      case INPUT -> "Entrada";
+      case OUTPUT -> "Salida";
+      case NONE -> "Nada";
+    });
+    addEnum(StructureCreatorItemMode.class, v -> switch (v) {
+      case SINGLE -> "Único";
+      case BOX -> "Caja";
+      case VEIN -> "Proximidad (Veta)";
+    });
+    addEnum(TabTexts.class, v -> switch (v) {
+      case tooltipAutoChange -> "Modo actual: %s, Cambia a: %s";
+      case tooltipEnabled -> "Habilitado";
+      case tooltipDisabled -> "Deshabilitado";
+      case tooltipOpenFill -> "Abrir panel de llenado";
+      case tooltipCloseFill -> "Cerrar panel de llenado";
+      case fillDurability -> "Durabilidad";
+      case fillAmount -> "Cantidad";
+      case fillCancel -> "Cancelar";
+      case fillConfirm -> "Confirmar";
+      case fillSearch -> "Buscar";
+      case autoioEnableAll -> "Habilitar todo";
+      case autoioDisableAll -> "Deshabilitar todo";
+      case tooltipOpenSideConfig -> "Abrir configuración de lados";
+      case tooltipCloseSideConfig -> "Cerrar configuración de lados";
+      case fillSearchHintMod -> "@ para buscar por mod";
+      case fillSearchHintTag -> "# para buscar por tag";
+      case autoioHintSelect -> "Click en una cara para seleccionarla (borde verde)";
+      case autoioHintToggle -> "Click la cara seleccionada de nuevo para activar-desactivar el auto-IO (azul = entrada, naranja = salida)";
+      case fillReasonEnergy -> "El almacenamiento de energía esta lleno";
+      case fillReasonExperience -> "El tanque de experiencia no puede almacenar más";
+      case fillReasonFull -> "El tanque esta lleno: nada más se puede añadir";
+      case fillReasonCompiling -> "La interfaz todavía se está compilando: inténtalo de nuevo en un momento";
+      case compileHud -> "Compilando interfaz… %s (%s/%s)";
+      case fillMax -> "Máx: %s";
+      case rowsCycleHint -> "Clic para cambiar: 4 / 7 / 10 / pantalla";
+      default -> v.getEnglishText();
+    });
+    addEnum(EnergyDisplayUtil.EnergyType.class);
+    addEnum(GaugesTexts.class, v -> switch (v) {
+      case fluidHatchEmpty -> "Vacío";
+      case fuelTankSeconds -> "%s / %s segundos";
+      default -> v.getEnglishText();
+    });
+    addEnum(UITexts.class, v -> switch (v) {
+      case status -> "Estado: %s";
+      case applyingEffect -> "Aplicando efecto";
+      case noRecipe -> "Ninguna receta en proceso";
+      case effectText -> "Efecto: %s";
+      case amplifier -> "Amplificador: %s";
+      case duration -> "Duración: %s ticks";
+      case radiusBlocks -> "Radio: %s bloques";
+      case radiusChunks -> "Radio: %s chunks";
+      case interdimensional -> "Funciona entre dimensiones";
+      case chunkActive -> "Activo";
+      case chunkInactive -> "Inactivo";
+      case chunkTempo -> "Caduca en %s ticks";
+      case mode -> "Modo: %s";
+      case acceptedActions -> "Acciones aceptadas:";
+      case boundController -> "Controlador enlazado: X %s, Y %s, Z %s";
+      case notBound -> "Sin controlador enlazado";
+      case machineStatus -> "Estado de la máquina: %s";
+      case boundMachine -> "Máquina enlazada: %s";
+      case noBoundMachine -> "Ninguna máquina detectada todavía";
+      case recipeRadiusNote -> "El radio de escaneo lo definen las recetas de la máquina";
+      case commandNote -> "Ejecuta los comandos definidos en las recetas de la máquina";
+      case commandSourceNote -> "Se ejecuta en esta posición con permisos de operador — la receta aporta el comando";
+      case heightText -> "Altura: Y %s";
+      case heightNote -> "La receta compara esta altura";
+      case dayTime -> "Tiempo del día: %s";
+      case timeNote -> "La receta compara este tiempo";
+      case biomeText -> "Bioma: %s";
+      case biomeId -> "Identificador: %s";
+      case dimensionText -> "Dimensión: %s";
+      case dimensionId -> "Identificador: %s";
+      case weatherText -> "Clima: %s";
+      case weatherClear -> "Despejado";
+      case weatherRain -> "Lluvia";
+      case weatherThunder -> "Tormenta";
+      case areaToggle -> "Mostrar/ocultar vista previa del área";
+      case actionCheckAmount -> "Comprobar cantidad de entidades";
+      case actionCheckHealth -> "Comprobar salud de entidades";
+      case actionConsumeHealth -> "Dañar entidades";
+      case actionAddHealth -> "Sanar entidades";
+      case actionSpawn -> "Generar entidades";
+      case actionKill -> "Matar entidades";
+      default -> v.getEnglishText();
+    });
+    addEnum(ButtonsTexts.class, v -> switch (v) {
+      case rowsVisible -> "Filas visibles máx.: %s";
+      case rowsScreenMax -> "Máx. de pantalla: %s filas";
+    });
+    addEnum(ExperienceButtonTypeTexts.class, v -> switch (v) {
+      case EXTRACT_1 -> "Extraer 1 Nivel";
+      case EXTRACT_10 -> "Extraer 10 Niveles";
+      case EXTRACT_ALL -> "Extraer Todos los Niveles";
+      case INSERT_1 -> "Insertar 1 Nivel";
+      case INSERT_10 -> "Insertar 10 Niveles";
+      case INSERT_ALL -> "Insertar Todos los Niveles";
+    });
+    addVariantEnum(CoreActionTypeTexts.class, (a, v) -> switch (a) {
+      case ADD -> "Añade " + switch (v) {
+        case SINGLE -> "1 núcleo activo";
+        case SHIFT -> "10 núcleos activos";
+        case CONTROL -> "Todos los núcleos activos";
+      };
+      case REMOVE -> "Elimina " + switch (v) {
+        case SINGLE -> "1 núcleo activo";
+        case SHIFT -> "10 núcleos activos";
+        case CONTROL -> "Todos los núcleos activos menos 1";
+      };
     });
   }
 
@@ -344,23 +473,16 @@ final class EsEsLocalization extends LocalizationProvider {
     add(tooltip("experiencehatch.tank.levels"), "%s / %s levels");
     add(tooltip("experiencehatch.tank.info"), "Can hold %s XP points");
 
-    add(tooltip("energy.type.fe"), "FE");
-    add(tooltip("energy.type.ic2_eu"), "EU");
-    add(tooltip("energy.type.gt_eu"), "EU");
-
     add(tooltip("constructtool.creative"), "Creative Structure-To-JSON Tool");
 
     add(tooltip("itembus.slot"), "1 Slot");
     add(tooltip("itembus.slots"), "%s Slots");
 
-    add(tooltip("fluidhatch.empty"), "Empty");
     add(tooltip("fluidhatch.fluid"), "[Fluid]");
     add(tooltip("fluidhatch.gas"), "[Gas]");
-    add(tooltip("fluidhatch.tank"), "%smB / %smB");
     add(tooltip("fluidhatch.tank.gas"), "%s / %s");
     add(tooltip("fluidhatch.tank.info"), "Can hold %s mB");
 
-    add(tooltip("energyhatch.charge"), "%s / %s %s");
     add(tooltip("energyhatch.storage"), "Stores %s FE");
     add(tooltip("energyhatch.out.transfer"), "Transfers %s FE per tick");
     add(tooltip("energyhatch.in.accept"), "Accepts %s FE per tick");
@@ -369,7 +491,6 @@ final class EsEsLocalization extends LocalizationProvider {
     add(tooltip("blueprint"), "Click on any machine controller to show the structure preview");
 
     add(tooltip("fueltank.storage"), "Can store %s burntime (ticks)");
-    add(tooltip("fuel_tank.tank"), "%s / %s ticks");
 
     add(tooltip("effectdispenser.interdimensional"), "Gives effects interdimensionally");
     add(tooltip("effectdispenser.radius"), "Gives effects in a radius of %s blocks around this block");
@@ -396,6 +517,7 @@ final class EsEsLocalization extends LocalizationProvider {
     add(mmr(gui("fill.reason.full")), "El depósito está lleno: no se puede añadir más");
     add(mmr(gui("fill.reason.energy")), "El almacenamiento de energía está al máximo");
     add(mmr(gui("fill.reason.experience")), "El tanque no puede contener más experiencia");
+    add(mmr(gui("fill.search.hint")), "Escribe \"@\" + id de mod para buscar por mod, o \"#\" + id de tag para buscar por tags");
     add(mmr(gui("autoio.hint.select")), "Haz clic en una cara para seleccionarla (contorno verde)");
     add(mmr(gui("autoio.hint.toggle")), "Haz clic de nuevo en la cara seleccionada para alternar su auto-IO (azul = entrada, naranja = salida)");
     add(mmr("wrench.side_mode.change"), "Changed side: %s from %s to %s");
@@ -474,21 +596,28 @@ final class EsEsLocalization extends LocalizationProvider {
     add(mm(gui("title.redstone_port")), "Redstone Port");
     add(mm(gui("title.experience_hatch")), "Experience Hatch");
     add(mm(gui("title.durability_hatch")), "Durability Hatch");
+    add(mm(gui("title.effect_dispenser")), "Dispensador de efectos");
+    add(mm(gui("title.entity_detector")), "Detector de entidades");
+    add(mm(gui("title.entity_damager")), "Dañador de entidades");
+    add(mm(gui("title.entity_healer")), "Sanador de entidades");
+    add(mm(gui("title.entity_spawner")), "Generador de entidades");
+    add(mm(gui("title.entity_killer")), "Asesino de entidades");
+    add(mm(gui("title.structure_checker")), "Comprobador de estructuras");
+    add(mm(gui("title.command_executioner")), "Ejecutor de comandos");
+    add(mm(gui("title.chunkloader")), "Chunkloader");
+    add(mm(gui("title.height_meter")), "Medidor de altura");
+    add(mm(gui("title.time_counter")), "Contador de tiempo");
+    add(mm(gui("title.biome_reader")), "Lector de biomas");
+    add(mm(gui("title.dimension_detector")), "Detector de dimensión");
+    add(mm(gui("title.weather_sensor")), "Sensor de clima");
     add(mmr(gui("button.back")), "Back");
     add(mmr(gui("button.close")), "Close");
     add(mmr(gui("button.page.next")), "Next Page");
     add(mmr(gui("button.page.prev")), "Prev Page");
     add(mm(gui("core_button")), "Show info about cores");
-    add(mmr(gui("element.experience.tooltip")), "%s / %s");
     add(mmr(gui("element.experience.tooltip.input")), "Require: %s / %s");
     add(mmr(gui("element.experience.tooltip.output")), "Produce: %s / %s");
     add(mmr(gui("element.experience.level")), "%s level(s)");
-    add(mmr(gui(tooltip("experience.button.extract_1"))), "Extract 1 Level");
-    add(mmr(gui(tooltip("experience.button.extract_10"))), "Extract 10 Levels");
-    add(mmr(gui(tooltip("experience.button.extract_all"))), "Extract All Levels");
-    add(mmr(gui(tooltip("experience.button.insert_1"))), "Insert 1 Level");
-    add(mmr(gui(tooltip("experience.button.insert_10"))), "Insert 10 Levels");
-    add(mmr(gui(tooltip("experience.button.insert_all"))), "Insert All Levels");
     add(mm(gui("structure_placer_button")), "Click to try place structure");
     add(mm(gui("structure_breaker_button")), "Click to break the current structure");
     add(mmr(gui("structure.break")), "Are you sure you want to break the current structure?");
@@ -535,22 +664,11 @@ final class EsEsLocalization extends LocalizationProvider {
     add(gui("controller.status"), "Estado: ");
     add(gui("controller.error.info"), "Error Info: ");
     add(gui("controller.status.redstone_stopped"), "Máquina parada por una señal de redstone recibida.");
-    add(gui("controller.status.paused"), "Pausado");
-    add(gui("controller.status.missing_structure"), "Sin estructura");
-    add(gui("controller.status.idle"), "Sin receta encontrada");
-    add(gui("controller.status.errored"), "");
-    add(gui("controller.status.running"), "Procesando...");
     add(gui("controller.status.running.progress"), "Progreso: %s");
     add(mmr("core.active.true"), "Core is able to run recipes");
     add(mmr("core.active.false"), "Core is not able to run recipes");
     add(mmr("core.number"), "Core number: %s");
     add(mmr(gui("core.button")), "Click to show info about core number %s");
-    add(mmr(gui(tooltip("core.action.button.single.add"))), "Add 1 active core");
-    add(mmr(gui(tooltip("core.action.button.single.remove"))), "Remove 1 active core");
-    add(mmr(gui(tooltip("core.action.button.shift.add"))), "Add 10 active cores");
-    add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Remove 10 active cores");
-    add(mmr(gui(tooltip("core.action.button.control.add"))), "Add all active cores");
-    add(mmr(gui(tooltip("core.action.button.control.remove"))), "Remove all active cores");
   }
 
   @Override
@@ -558,9 +676,6 @@ final class EsEsLocalization extends LocalizationProvider {
     add(mmr("no_paper_template"), "No se ha encontrad papel o template de estructura en el inventario");
     add(mm("structure_creator.mode.change.tooltip"), "Presiona [%s] con el item en la mano(NO GUI) para cambiar el modo");
     add(mm("structure_creator.mode.change"), "Cambiado el modo de %s a %s");
-    add(mm("structure_creator.mode.single"), "Único");
-    add(mm("structure_creator.mode.box"), "Caja");
-    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "Selecciona primera esquina");
     add(mm("structure_creator.mode.box.second"), "Selecciona segunda esquina");
     add(mm("structure_creator.mode"), "Modo Actual: %s");

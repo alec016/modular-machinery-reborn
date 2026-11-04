@@ -8,10 +8,13 @@ import es.degrassi.experiencelib.util.TransferPreconditions;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.StacksResourceHandler;
 import net.neoforged.neoforge.transfer.resource.Resource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,16 +27,17 @@ public abstract class AbstractHandler<
     STACK,
     RESOURCE extends Resource
 > extends StacksResourceHandler<STACK, RESOURCE> implements ISyncableStuff {
-  /** Accepts everything unless a specific filter is installed (was {@code null} before, which NPE'd). */
   private Predicate<RESOURCE> filter = resource -> true;
-  private final long capacity, maxIn, maxOut;
+  private long capacity, maxIn, maxOut;
 
   private boolean recipe = false;
 
   @Getter
   private UpdateValueListener<STACK> listener = null;
 
-  private final Direction[] accessibleSides;
+  private int inputSlotCount = -1;
+
+  private Direction[] accessibleSides;
 
   protected AbstractHandler(int size, long capacity, long maxIn, long maxOut, STACK emptyStack, Codec<STACK> stackCodec, Direction...accessibleSides) {
     super(size, emptyStack, stackCodec);
@@ -43,8 +47,38 @@ public abstract class AbstractHandler<
     this.accessibleSides = Optional.of(accessibleSides).orElse(Direction.values());
   }
 
+  @Override
+  public void serialize(ValueOutput output) {
+    super.serialize(output);
+    output.putLong("c", capacity);
+    output.putLong("mi", maxIn);
+    output.putLong("mo", maxOut);
+    output.store("as", Direction.CODEC.listOf(), Arrays.asList(accessibleSides));
+  }
+
+  @Override
+  public void deserialize(ValueInput input) {
+    super.deserialize(input);
+    this.capacity = input.getLongOr("c", 0);
+    this.maxIn = input.getLongOr("mi", capacity);
+    this.maxOut = input.getLongOr("mo", capacity);
+    this.accessibleSides = input.read("as", Direction.CODEC.listOf()).map(l -> l.toArray(Direction[]::new)).orElse(Direction.values());
+  }
+
   public List<Direction> getAccessibleSides() {
     return ImmutableList.copyOf(accessibleSides);
+  }
+
+  public int getInputSlotCount() {
+    return inputSlotCount < 0 ? size() : inputSlotCount;
+  }
+
+  public boolean isInputSlot(int index) {
+    return inputSlotCount < 0 || index < inputSlotCount;
+  }
+
+  public boolean isOutputSlot(int index) {
+    return inputSlotCount < 0 || index >= inputSlotCount;
   }
 
   public STACK getStack(int index) {
@@ -57,17 +91,14 @@ public abstract class AbstractHandler<
     stacks.set(index, stack);
   }
 
-  /** Per-slot capacity configured at construction time. */
   public long getCapacityPerSlot() {
     return capacity;
   }
 
-  /** Maximum amount a single external {@code insert} operation may move. */
   public long getMaxInsert() {
     return maxIn;
   }
 
-  /** Maximum amount a single external {@code extract} operation may move. */
   public long getMaxExtract() {
     return maxOut;
   }
@@ -83,7 +114,13 @@ public abstract class AbstractHandler<
   @Override
   public boolean isValid(int index, RESOURCE resource) {
     TransferPreconditions.checkNonEmptyNonNegative(resource, index);
+    if (!isInputSlot(index)) return false;
     return filter.test(resource);
+  }
+
+  protected boolean acceptsInternally(int index, RESOURCE resource) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, index);
+    return (isInputSlot(index) && filter.test(resource)) || filter.test(resource);
   }
 
   @Override

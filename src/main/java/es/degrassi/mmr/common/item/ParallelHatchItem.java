@@ -1,7 +1,7 @@
 package es.degrassi.mmr.common.item;
 
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.common.block.ParallelHatchBlock;
+import es.degrassi.mmr.common.block.BlockParallelHatch;
 import es.degrassi.mmr.common.block.prop.ParallelHatchSize;
 import es.degrassi.mmr.common.registration.DataComponentRegistration;
 import lombok.Getter;
@@ -12,7 +12,7 @@ public class ParallelHatchItem extends ItemBlockMachineComponent implements Item
   private static final Identifier BASE_TEXTURE = ModularMachineryReborn.rl("block/casing_plain");
   private final ParallelHatchSize type;
 
-  public ParallelHatchItem(ParallelHatchBlock block, Properties props) {
+  public ParallelHatchItem(BlockParallelHatch block, Properties props) {
     super(block,
         props
             .component(DataComponentRegistration.BASE_TEXTURE, BASE_TEXTURE)

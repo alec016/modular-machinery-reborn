@@ -136,7 +136,7 @@ public class RequirementFluidPerTick implements IRequirement<FluidComponent, Flu
     if (!handler.isEmpty() && !handler.contains(ingredient.ingredient()))
       return errorOutput(handler.getFluids());
     int amount = (int) context.getIntegerModifiedValue(this.ingredient.amount(), this);
-    int canFill = handler.getSpaceForFluid(output());
+    int canFill = Math.clamp(handler.getSpaceForFluid(output), 0, Integer.MAX_VALUE);
     if (canFill >= amount) {
       component.addToOutputs(output.copyWithAmount(amount));
       return CraftingResult.success();

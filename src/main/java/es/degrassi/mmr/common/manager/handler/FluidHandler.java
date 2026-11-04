@@ -44,24 +44,16 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return fluidStack.amount() >= getCapacity(0, FluidResource.of(fluidStack));
   }
 
-  /* ------------------------------------------------------------------
-   * Machine-side helpers (legacy per-tank views removed together with the handler.slot package).
-   * Same slot-bypassing behaviour as the old insertFluidBypassLimit/extractFluidBypassLimit.
-   * ------------------------------------------------------------------ */
-
-  /** Total capacity of every tank. */
   public int getCapacity() {
     return (int) (getCapacityPerSlot() * size());
   }
 
-  /** Total amount of fluid stored. */
   public int getFluidAmount() {
     int total = 0;
     for (int i = 0; i < size(); i++) total += getStack(i).amount();
     return total;
   }
 
-  /** Total amount of fluid matching the given stack. */
   public int getFluidAmount(FluidStack stack) {
     int total = 0;
     for (int i = 0; i < size(); i++) {
@@ -71,7 +63,6 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return total;
   }
 
-  /** Total amount of fluid matching the given ingredient. */
   public int getFluidAmount(FluidIngredient ingredient) {
     int total = 0;
     for (int i = 0; i < size(); i++) {
@@ -92,7 +83,6 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return false;
   }
 
-  /** True when {@code stack} could be poured into tank {@code index} (filter + fluid matching). */
   public boolean canPlaceOutput(int index, FluidStack stack) {
     FluidResource resource = FluidResource.of(stack);
     if (!isValid(index, resource)) return false;
@@ -102,55 +92,43 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return value.amount() < getCapacity(index, resource);
   }
 
-  public int getSpaceForFluid(FluidStack stack) {
-    int space = 0;
+  public long getSpaceForFluid(FluidStack stack) {
+    long space = 0;
     for (int i = 0; i < size(); i++) {
       if (!canPlaceOutput(i, stack)) continue;
       FluidStack value = getStack(i);
-      space += value.isEmpty() ? (int) getCapacityPerSlot() : (int) getCapacityPerSlot() - value.amount();
+      space += value.isEmpty() ? getCapacityPerSlot() : getCapacityPerSlot() - value.amount();
     }
     return Math.max(space, 0);
   }
 
-  /**
-   * Free volume ignoring WHICH fluid goes in: every empty tank counts at full capacity and every
-   * filled tank at its own leftover room (an incompatible tank can still take more of what it
-   * holds). This is the hatch-level fullness the fill drawer needs before anything is picked: a
-   * full-sum of 0 means no fluid at all fits anymore.
-   */
-  public int getTotalFreeSpace() {
-    int space = 0;
+  public long getTotalFreeSpace() {
+    long space = 0;
     for (int i = 0; i < size(); i++) {
       FluidStack value = getStack(i);
-      space += Math.max(0, (int) getCapacityPerSlot() - value.amount());
+      space += Math.max(0, getCapacityPerSlot() - value.amount());
     }
     return space;
   }
 
-  /**
-   * Pours into any tank bypassing the external maxIn limit. Returns the amount actually inserted.
-   * Writes go through {@link #set} (like {@code addToOutputs} in ItemHandler) so the change
-   * listeners — the fluid update packets — fire; plain {@code stacks.set} would leave every
-   * listener and client copy stale, which is how the operator fill used to look dead.
-   */
-  public int addToOutputs(FluidStack stack, int amount) {
-    int remaining = amount;
+  public long addToOutputs(FluidStack stack, long amount) {
+    long remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
       if (!canPlaceOutput(i, stack)) continue;
       FluidStack value = getStack(i);
-      int maxInsert = Math.min((int) getCapacityPerSlot() - value.amount(), remaining);
+      long slotRoom = Math.min(getCapacityPerSlot() - value.amount(), (long) Integer.MAX_VALUE - value.amount());
+      long maxInsert = Math.min(slotRoom, remaining);
       if (maxInsert <= 0) continue;
       if (value.isEmpty()) {
-        set(i, FluidResource.of(stack), maxInsert);
+        set(i, FluidResource.of(stack), (int) maxInsert);
       } else {
-        set(i, FluidResource.of(value), value.amount() + maxInsert);
+        set(i, FluidResource.of(value), value.amount() + (int) maxInsert);
       }
       remaining -= maxInsert;
     }
     return amount - remaining;
   }
 
-  /** Drains matching fluid bypassing the external maxOut limit. Returns the amount actually extracted. */
   public int removeFromInputs(FluidStack stack, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
@@ -164,7 +142,6 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     return amount - remaining;
   }
 
-  /** Drains fluid matching the ingredient bypassing the external maxOut limit. */
   public void removeFromInputs(FluidIngredient ingredient, int amount) {
     int remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
@@ -193,10 +170,6 @@ public class FluidHandler extends AbstractHandler<FluidStack, FluidResource> {
     setStack(slot, fluid);
   }
 
-  /**
-   * Builds a live view over several handlers (legacy {@code mergeBuild} shared the underlying tanks
-   * so that mutations still hit the source block entities).
-   */
   public static FluidHandler mergeBuild(FluidHandler... inventories) {
     return new MergedFluidHandler(inventories);
   }

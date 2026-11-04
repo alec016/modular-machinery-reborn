@@ -3,6 +3,7 @@ package es.degrassi.mmr.common.entity.base;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.EntityHandler;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -30,20 +31,16 @@ import java.util.stream.Collectors;
 
 @Getter
 public abstract class EntityBaseEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<EntityComponent>,
-    TextureableMachineEntity, ControllerAccessible {
+    TextureableMachineEntity, ControllerAccessible, EntityMenuHolder {
   protected final EntityHandler handler;
   protected final IOType mode;
 
-  @Getter
   @Setter
   private BlockPos controllerPos;
-  @Getter
   @Setter
   private Identifier baseTexture;
-  @Getter
   @Setter
   private Identifier overlayTexture;
-  @Getter
   private Identifier defaultOverlayTexture;
   @Getter
   private static final Identifier defaultBaseTexture = ModularMachineryReborn.rl("block/casing_plain");

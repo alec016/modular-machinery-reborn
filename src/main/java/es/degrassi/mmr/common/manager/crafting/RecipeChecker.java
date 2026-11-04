@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
+// TODO: maybe this in async thread?
 public class RecipeChecker<T extends MachineRecipe> {
 
   @Getter

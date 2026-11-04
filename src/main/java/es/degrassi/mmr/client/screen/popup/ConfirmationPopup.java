@@ -5,10 +5,9 @@ import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollDisplay;
 import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollerMode;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
 import com.lowdragmc.lowdraglib2.utils.TextUtilities;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.ScrollingTextButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -40,11 +39,11 @@ public final class ConfirmationPopup extends BasePopup {
       y += 20;
     }
     if (!text.isEmpty()) {
-      int wrapWidth = width - 10 - SCROLLER_GUTTER;
+      int wrapWidth = width - SCROLLER_GUTTER;
       addScrollingText(joined(text), y, wrapWidth, height - BOTTOM_CHROME - y);
     }
     ScrollingTextButton.scrollingButton(contentContainer,
-        confirmText == null ? CONFIRM : confirmText, 5, height - 25, 75, 20,
+        confirmText == null ? CONFIRM : confirmText, 5, height - 25, 80, 20,
         event -> {
           if (onConfirm != null) {
             onConfirm.run();
@@ -52,7 +51,7 @@ public final class ConfirmationPopup extends BasePopup {
           close();
         });
     ScrollingTextButton.scrollingButton(contentContainer,
-        cancelText == null ? CANCEL : cancelText, 5 + 75 + 10, height - 25, 75, 20,
+        cancelText == null ? CANCEL : cancelText, width - 85, height - 25, 80, 20,
         event -> {
           if (onCancel != null) {
             onCancel.run();
@@ -80,7 +79,7 @@ public final class ConfirmationPopup extends BasePopup {
       top += 20;
     }
     int lines = text.isEmpty() ? 0
-        : TextUtilities.computeFormattedLines(LDFonts.font(), joined(text), 9f, width - 10 - SCROLLER_GUTTER).size();
+        : TextUtilities.computeFormattedLines(LDFonts.font(), joined(text), 9f, width - SCROLLER_GUTTER).size();
     int desired = top + (int) Math.ceil(lines * LINE_HEIGHT - 1) + BOTTOM_CHROME;
     int cap = Minecraft.getInstance().getWindow().getGuiScaledHeight() * 2 / 3;
     return Mth.clamp(desired, minHeight, Math.max(minHeight, cap));

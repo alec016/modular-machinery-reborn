@@ -2,6 +2,7 @@ package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -28,7 +29,8 @@ import javax.annotation.Nullable;
 
 @Getter
 @Setter
-public class HeightMeterEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<HeightComponent>, ControllerAccessible, TextureableMachineEntity {
+public class HeightMeterEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<HeightComponent>, ControllerAccessible,
+    TextureableMachineEntity, EntityMenuHolder {
   @Nullable
   private BlockPos controllerPos;
 

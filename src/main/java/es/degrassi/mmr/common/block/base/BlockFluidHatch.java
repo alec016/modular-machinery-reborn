@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -28,14 +27,17 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public abstract class BlockFluidHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable, BlockUIMenuType.BlockUI {
+public abstract class BlockFluidHatch extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable,
+    BlockUIMenuType.BlockUI, SizedBlockHatch<FluidHatchSize> {
 
   @Override
+  @Nullable
   public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
     if (holder.player.level().getBlockEntity(holder.pos) instanceof FluidTankEntity entity) {
       return FluidHatchUI.create(holder, entity);
@@ -57,23 +59,24 @@ public abstract class BlockFluidHatch extends BlockMachineComponent implements B
   }
 
   @Override
-  protected @NotNull InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                                 Player player, InteractionHand hand, BlockHitResult hitResult) {
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                        Player player, InteractionHand hand, BlockHitResult hitResult) {
     BlockEntity te = level.getBlockEntity(pos);
     if (te instanceof FluidTankEntity fluidTank) {
       if (!stack.isEmpty()) {
         var access = ItemAccess.forStack(stack);
+        var done = new AtomicBoolean(false);
         Optional.ofNullable(access.getCapability(Capabilities.Fluid.ITEM)).ifPresent(_ -> {
           try (Transaction tx = Transaction.open(null)) {
             FluidHandler ft = fluidTank.getTank();
-            var done = FluidUtil.interactWithFluidHandler(player, hand, pos, ft, tx);
+            done.set(FluidUtil.interactWithFluidHandler(player, hand, pos, ft, tx));
+            tx.commit();
           }
         });
+        if (done.get()) {
+          return sidedSuccess(level.isClientSide());
+        }
       }
-      if (player instanceof ServerPlayer serverPlayer) {
-        BlockUIMenuType.openUI(serverPlayer, pos);
-      }
-      return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
     return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
   }

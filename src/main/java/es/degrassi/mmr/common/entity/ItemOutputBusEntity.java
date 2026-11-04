@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.api.entity.IAutoOutputEntity;
+import es.degrassi.mmr.common.block.BlockOutputBus;
 import es.degrassi.mmr.common.block.prop.ItemBusSize;
 import es.degrassi.mmr.common.entity.base.TileItemBus;
 import es.degrassi.mmr.common.machine.IOType;
@@ -19,7 +20,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class ItemOutputBusEntity extends TileItemBus implements IAutoOutputEntity<ResourceHandler<ItemResource>> {
 
   public ItemOutputBusEntity(BlockPos pos, BlockState state) {
-    super(EntityRegistration.ITEM_OUTPUT_BUS.get(), pos, state, ItemBusSize.TINY, IOType.OUTPUT);
+    this(pos, state, ((BlockOutputBus) state.getBlock()).getSize());
   }
 
   public ItemOutputBusEntity(BlockPos pos, BlockState state, ItemBusSize type) {

@@ -24,17 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * Port of the 1.21.1 {@code es.degrassi.mmreborn.client.integration.athena.model.hatch.HatchBakedModel}.
- *
- * <p>Runtime texture overrides arrive through {@code ModelData} exactly like before: block entities
- * still build {@code getModelData()} with {@link #TEXTURE_DATA}, and the 26.1 chunk renderer exposes
- * it via {@code IBlockGetterExtension#getModelData(BlockPos)} on the level passed to
- * {@code collectParts}.
- *
- * <p>When the hatch has non-default textures (or CTM is disabled) the model falls back to
- * {@code es.degrassi.mmr.client.model.hatch.DefaultHatchBakedModel}, as in 1.21.1.
- */
 public class HatchBakedModel implements MMRBakedModel {
 
   public static final ModelProperty<HatchTextureData> TEXTURE_DATA = new ModelProperty<>();
@@ -58,7 +47,6 @@ public class HatchBakedModel implements MMRBakedModel {
     return this.model;
   }
 
-  /** 1.21.1 parity: hatches only expose the overlay on their horizontal facing (or when un-oriented). */
   @Override
   public boolean addOverlay(Direction direction, @Nullable BlockState state) {
     if (!MMRBakedModel.super.addOverlay(direction, state)) return false;
@@ -69,13 +57,11 @@ public class HatchBakedModel implements MMRBakedModel {
   @Override
   public void collectParts(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state,
                            @NotNull RandomSource random, @NotNull List<BlockStateModelPart> parts) {
-    ModelData modelData = level instanceof IBlockGetterExtension extension
-        ? extension.getModelData(pos)
-        : ModelData.EMPTY;
+    ModelData modelData = level.getModelData(pos);
     HatchTextureData textureData = modelData.get(TEXTURE_DATA);
 
-    // 1.21.1 parity: custom textures or CTM disabled route to the legacy DefaultHatchBakedModel.
-    if (!state.getValue(BlockMachineComponent.CONNECT_TEXTURES)
+    if (!state.hasProperty(BlockMachineComponent.CONNECT_TEXTURES)
+        || !state.getValue(BlockMachineComponent.CONNECT_TEXTURES)
         || (textureData != null && !textureData.hasDefaultTextures())) {
       DefaultHatchBakedModel.INSTANCE.collectParts(level, pos, state, random, parts);
       return;

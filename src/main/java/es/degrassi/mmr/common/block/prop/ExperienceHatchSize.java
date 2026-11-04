@@ -16,11 +16,11 @@ public enum ExperienceHatchSize implements EnumRepresentable, ConfigLoaded {
   VACUUM(320_000);
 
   @Getter
-  public int capacity;
+  public long capacity;
 
-  public final int defaultCapacity;
+  public final long defaultCapacity;
 
-  ExperienceHatchSize(int defaultCapacity) {
+  ExperienceHatchSize(long defaultCapacity) {
     this.defaultCapacity = defaultCapacity;
   }
 

@@ -11,6 +11,7 @@ import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
@@ -60,10 +61,10 @@ import java.util.Map;
 @Setter
 public class FuelTankEntity extends TileInventory implements MachineComponentEntity<FuelComponent>,
     ControllerAccessible, TextureableMachineEntity, IServerTickEntity, ISyncableStuff, IAutoInputEntity<ResourceHandler<ItemResource>>,
-    ISideConfigComponent<IOSideMode> {
+    ISideConfigComponent<IOSideMode>, EntityMenuHolder {
   @Nullable
   private BlockPos controllerPos;
-  private FuelTankSize size;
+  private final FuelTankSize size;
 
   private Identifier baseTexture;
   private Identifier overlayTexture;
@@ -81,7 +82,7 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
   private final IContentsListener fuelListener;
 
   private FuelTankEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, FuelTankSize size) {
-    super(type, pos, state, 1);
+    super(type, pos, state, 2);
     this.size = size;
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fueltank_" + size.getSerializedName());
     this.overlayTexture = defaultOverlayTexture;
@@ -98,7 +99,7 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
         });
         if (getLevel() instanceof ServerLevel l)
           PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()),
-              new SUpdateItemComponentPacket(slot, stack, getBlockPos()));
+              new SUpdateItemComponentPacket(slot, inventory.getStack(slot), getBlockPos()));
       }
 
       @Override
@@ -152,8 +153,8 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    // Every slot is a fuel input (legacy: all slots in, no output slots, fuel-only filter).
-    ItemHandler handler = new ItemHandler(slots, stackSize, stackSize, 0, Direction.values());
+    ItemHandler handler = new ItemHandler(slots, stackSize, stackSize, stackSize, Direction.values());
+    handler.setInputSlotCount(1);
     handler.setFilter(resource -> {
       var level = getLevel();
       return level != null && level.fuelValues().isFuel(resource.toStack());
@@ -165,7 +166,6 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
   protected void loadAdditional(ValueInput input) {
     super.loadAdditional(input);
     input.readChild("fuelTank", fuelHandler);
-    this.size = FuelTankSize.value(input.getString("busSize").orElseThrow());
     input.getLong("controllerPos").ifPresent(value -> controllerPos = BlockPos.of(value));
 
     this.baseTexture = input.getString("baseTexture").map(Identifier::parse).orElse(defaultBaseTexture);
@@ -280,7 +280,6 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
       var neighbour = getNeighbour(Capabilities.Item.BLOCK, side);
       if (neighbour == null) continue;
 
-      // Every slot of the fuel tank is an input slot, so pull into the whole handler.
       moveStacks(neighbour, inventory, Integer.MAX_VALUE);
     }
   }

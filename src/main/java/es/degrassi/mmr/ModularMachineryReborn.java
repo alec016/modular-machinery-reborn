@@ -10,6 +10,8 @@ import es.degrassi.mmr.api.crafting.IProcessor;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
 import es.degrassi.mmr.api.handler.FilterConverterRegistry;
 import es.degrassi.mmr.api.handler.RegisterFilterConversionEvent;
+import es.degrassi.mmr.api.uistate.UIStateType;
+import es.degrassi.mmr.api.uistate.UIStates;
 import es.degrassi.mmr.client.util.EnergyDisplayUtil;
 import es.degrassi.mmr.common.block.BlockController;
 import es.degrassi.mmr.common.block.prop.ConfigLoaded;
@@ -42,6 +44,7 @@ import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.MachineJsonReloadListener;
 import es.degrassi.mmr.common.manager.crafting.MachineProcessorCore;
 import es.degrassi.mmr.common.manager.crafting.ProcessorType;
+import es.degrassi.mmr.common.network.client.SSyncUIStatesPacket;
 import es.degrassi.mmr.common.network.server.SLootTablesPacket;
 import es.degrassi.mmr.common.network.server.SSyncMachinePacket;
 import es.degrassi.mmr.common.network.server.SSyncTooltipsPacket;
@@ -53,6 +56,8 @@ import es.degrassi.mmr.common.registration.ProcessorTypeRegistration;
 import es.degrassi.mmr.common.registration.RecipeRegistration;
 import es.degrassi.mmr.common.registration.Registration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
+import es.degrassi.mmr.common.registration.UIStateRegistration;
+import es.degrassi.mmr.common.uistate.ServerUIStates;
 import es.degrassi.mmr.common.util.EmptyRequirementType;
 import es.degrassi.mmr.common.util.LootTableHelper;
 import es.degrassi.mmr.common.util.MMRLogger;
@@ -90,6 +95,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.resource.ListenerKey;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -203,6 +209,7 @@ public class ModularMachineryReborn {
     MACHINES.forEach((id, machine) -> PacketDistributor.sendToPlayer(player, new SSyncMachinePacket(machine)));
     PacketDistributor.sendToPlayer(player, new SLootTablesPacket(LootTableHelper.getLoots()));
     MACHINE_EXTRA_TOOLTIPS.forEach((id, tooltips) -> PacketDistributor.sendToPlayer(player, new SSyncTooltipsPacket(id, tooltips)));
+    PacketDistributor.sendToPlayer(player, new SSyncUIStatesPacket(UIStates.exportAll(player)));
   }
 
   private void commonSetup(final FMLCommonSetupEvent event) {
@@ -211,6 +218,7 @@ public class ModularMachineryReborn {
     Config.load();
     ConfigLoaded.load();
     EnergyDisplayUtil.loadFromConfig();
+    ServerUIStates.init();
 
     RecipeModifierTargetEvent.init();
     FilterConverterRegistry.init();
@@ -220,10 +228,10 @@ public class ModularMachineryReborn {
     BuiltInRegistries.FLUID.forEach(fluid -> {
       if (!fluid.isSource(fluid.defaultFluidState())) return;
       if (fluid.isSame(Fluids.EMPTY)) {
-        event.register(Items.BUCKET::getDefaultInstance, () -> FluidStack.EMPTY);
+        event.register(Items.BUCKET::getDefaultInstance, () -> FluidResource.EMPTY);
         return;
       }
-      event.register(fluid.getBucket()::getDefaultInstance, () -> new FluidStack(fluid, 1));
+      event.register(fluid.getBucket()::getDefaultInstance, () -> FluidResource.of(fluid));
     });
   }
 
@@ -259,32 +267,32 @@ public class ModularMachineryReborn {
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_INPUT_BUS.get(),
-        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
+        (be, side) -> side == null || be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_OUTPUT_BUS.get(),
-        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
+        (be, side) -> side == null || be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.ITEM_DURABILITY_HATCH.get(),
-        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
+        (be, side) -> side == null || be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Item.BLOCK,
         EntityRegistration.FUEL_TANK.get(),
-        (be, side) -> be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
+        (be, side) -> side == null || be.getInventory().getAccessibleSides().contains(side) ? be.getInventory() : null
     );
     event.registerBlockEntity(
         Capabilities.Fluid.BLOCK,
         EntityRegistration.FLUID_INPUT_HATCH.get(),
-        (be, side) -> be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
+        (be, side) -> side == null || be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
     );
     event.registerBlockEntity(
         Capabilities.Fluid.BLOCK,
         EntityRegistration.FLUID_OUTPUT_HATCH.get(),
-        (be, side) -> be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
+        (be, side) -> side == null || be.getTank().getAccessibleSides().contains(side) ? be.getTank() : null
     );
     event.registerBlockEntity(
         Capabilities.Energy.BLOCK,
@@ -393,5 +401,9 @@ public class ModularMachineryReborn {
 
   public static Registry<EmptyRequirementType> getEmptyRequirementTypeRegistrar() {
     return EmptyRequirementTypeRegistration.EMPTY_REQUIREMENT_REGISTRY;
+  }
+
+  public static Registry<UIStateType<?>> getUISateRegistrar() {
+    return UIStateRegistration.REGISTRY;
   }
 }

@@ -2,6 +2,7 @@ package es.degrassi.mmr.common.block;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.mojang.serialization.MapCodec;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.client.integration.athena.model.controller.ControllerBakedModel;
 import es.degrassi.mmr.client.screen.ControllerUI;
@@ -41,9 +42,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -53,6 +54,12 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
   }
 
   @Override
+  protected MapCodec<BlockController> codec() {
+    return BlockCodecs.CONTROLLER.mapCodec();
+  }
+
+  @Override
+  @Nullable
   public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
     if (holder.player.level().getBlockEntity(holder.pos) instanceof MachineControllerEntity controller) {
       return ControllerUI.create(holder, controller);
@@ -76,7 +83,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
     Identifier id = ModularMachineryReborn.MACHINES_BLOCK.inverse().get(this);
     if (id != null && pLevel.getBlockEntity(pPos) instanceof MachineControllerEntity entity) {
       entity.setMachine(id);
-      if (entity.getModelData().get(ControllerBakedModel.DATA).hasCustomModel()) {
+      if (Objects.requireNonNull(entity.getModelData().get(ControllerBakedModel.DATA)).hasCustomModel()) {
         pLevel.setBlockAndUpdate(pPos, pState.setValue(BlockMachineComponent.CONNECT_TEXTURES, false));
       }
       if (pLevel instanceof ServerLevel serverLevel)
@@ -109,7 +116,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
   }
 
   @Override
-  public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+  public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
     return new MachineControllerEntity(blockPos, blockState);
   }
 
@@ -124,7 +131,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
   }
 
   @Override
-  public @NonNull BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+  public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
     if (player.getAbilities().instabuild && level instanceof ServerLevel serverLevel && level.getBlockEntity(pos) instanceof MachineControllerEntity entity) {
       PacketDistributor.sendToPlayersTrackingChunk(serverLevel, ChunkPos.containing(pos), new SStopSoundInstancePacket(pos));
       PacketDistributor.sendToPlayersTrackingChunk(serverLevel, ChunkPos.containing(pos), new SRemoveControllerRenderer(pos));
@@ -152,9 +159,7 @@ public class BlockController extends BlockMachineComponent implements BlockTickE
           PacketDistributor.sendToPlayersTrackingChunk(serverPlayer.level(), ChunkPos.containing(pos), new SAddControllerRenderer(machine.getRegistryName(), pos));
           return InteractionResult.SUCCESS;
         }
-        BlockUIMenuType.openUI(serverPlayer, pos);
       }
-      return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
     return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
   }

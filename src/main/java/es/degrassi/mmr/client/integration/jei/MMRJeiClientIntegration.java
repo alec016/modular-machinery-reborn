@@ -20,11 +20,8 @@ import es.degrassi.mmr.common.integration.jei.JeiEmptyRequirementRegistry;
 import es.degrassi.mmr.common.integration.jei.JeiFilterDragDropRegistry;
 import es.degrassi.mmr.common.integration.jei.MMRJeiPlugin;
 import es.degrassi.mmr.common.integration.jei.ingredient.CustomIngredientTypes;
-import es.degrassi.mmr.common.network.client.CSetFilterSlotFluidPacket;
 import es.degrassi.mmr.common.registration.EmptyRequirementTypeRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
-import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.neoforge.NeoForgeTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -36,17 +33,21 @@ public class MMRJeiClientIntegration {
     JeiFilterDragDropRegistry.init();
   }
 
+  /**
+   * This is mantained commented to clarify users how to do it. This two types are builtin directly (no event dispatch)
+   */
   @SubscribeEvent
   public void registerFilterDragDrop(final RegisterJeiFilterDragDropEvent event) {
+    /*
     event.register(
         VanillaTypes.ITEM_STACK,
         (fs, stack) -> fs.setFromClient(stack.getIngredient())
     );
     event.register(
         NeoForgeTypes.FLUID_STACK,
-        (fs, stack) ->
-            fs.setGenericFromClient(pos -> new CSetFilterSlotFluidPacket(stack.getIngredient().copyWithAmount(1), pos))
+        (fs, stack) -> fs.setGenericFromClient(pos -> new CSetFilterSlotFluidPacket(stack.getIngredient().copyWithAmount(1), pos))
     );
+    */
   }
 
   @SubscribeEvent

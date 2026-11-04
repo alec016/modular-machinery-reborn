@@ -7,7 +7,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvent;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
@@ -92,13 +92,10 @@ public final class ScrollingTextButton {
       float lineY = y0 + (getContentHeight() - font.lineHeight) / 2;
 
       if (textWidth <= boxWidth) {
-        // Fits — keep the classic static centered text (legacy StringButton rendering).
         LDFonts.drawText(gui, font, text, x0 + (boxWidth - textWidth) / 2, lineY, ARGB.opaque(0xFFFFFF), true);
         return;
       }
 
-      // Overflows — infinite recursive auto-scroll: clip to the button's box and draw the
-      // repeating strip (a copy always straddles the window while the offset advances).
       loopSpan = textWidth + GAP;
       gui.enableScissor(x0, y0, boxWidth, getContentHeight());
       for (float drawX = x0 - offset; drawX < x0 + boxWidth; drawX += loopSpan) {

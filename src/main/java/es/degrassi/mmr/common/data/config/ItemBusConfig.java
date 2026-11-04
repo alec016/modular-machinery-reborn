@@ -31,13 +31,13 @@ public class ItemBusConfig {
   public final ModConfigSpec.ConfigValue<Integer> HUGE_item_size;
   public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_item_size;
 
-  /*public final ModConfigSpec.ConfigValue<Integer> TINY_stack_size;
+  public final ModConfigSpec.ConfigValue<Integer> TINY_stack_size;
   public final ModConfigSpec.ConfigValue<Integer> SMALL_stack_size;
   public final ModConfigSpec.ConfigValue<Integer> NORMAL_stack_size;
   public final ModConfigSpec.ConfigValue<Integer> REINFORCED_stack_size;
   public final ModConfigSpec.ConfigValue<Integer> BIG_stack_size;
   public final ModConfigSpec.ConfigValue<Integer> HUGE_stack_size;
-  public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_stack_size;*/
+  public final ModConfigSpec.ConfigValue<Integer> LUDICROUS_stack_size;
 
   public final ModConfigSpec.ConfigValue<Integer> TINY_item_cols;
   public final ModConfigSpec.ConfigValue<Integer> SMALL_item_cols;
@@ -65,9 +65,9 @@ public class ItemBusConfig {
     TINY_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.TINY.defaultCols, 1, Integer.MAX_VALUE);
-    /*TINY_stack_size = builder
+    TINY_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.TINY.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.TINY.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.SMALL.getSerializedName());
     SMALL_item_size = builder
@@ -76,9 +76,9 @@ public class ItemBusConfig {
     SMALL_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.SMALL.defaultCols, 1, Integer.MAX_VALUE);
-    /*SMALL_stack_size = builder
+    SMALL_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.SMALL.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.SMALL.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.NORMAL.getSerializedName());
     NORMAL_item_size = builder
@@ -87,9 +87,9 @@ public class ItemBusConfig {
     NORMAL_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.NORMAL.defaultCols, 1, Integer.MAX_VALUE);
-    /*NORMAL_stack_size = builder
+    NORMAL_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.NORMAL.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.NORMAL.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.REINFORCED.getSerializedName());
     REINFORCED_item_size = builder
@@ -98,9 +98,9 @@ public class ItemBusConfig {
     REINFORCED_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.REINFORCED.defaultCols, 1, Integer.MAX_VALUE);
-    /*REINFORCED_stack_size = builder
+    REINFORCED_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.REINFORCED.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.REINFORCED.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.BIG.getSerializedName());
     BIG_item_size = builder
@@ -109,9 +109,9 @@ public class ItemBusConfig {
     BIG_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.BIG.defaultCols, 1, Integer.MAX_VALUE);
-    /*BIG_stack_size = builder
+    BIG_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.BIG.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.BIG.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.HUGE.getSerializedName());
     HUGE_item_size = builder
@@ -120,9 +120,9 @@ public class ItemBusConfig {
     HUGE_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.HUGE.defaultCols, 1, Integer.MAX_VALUE);
-    /*HUGE_stack_size = builder
+    HUGE_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.HUGE.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.HUGE.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
     builder.push(ItemBusSize.LUDICROUS.getSerializedName());
     LUDICROUS_item_size = builder
@@ -131,9 +131,9 @@ public class ItemBusConfig {
     LUDICROUS_item_cols = builder
         .comment("Defines the slot cols number of item bus")
         .defineInRange("cols", ItemBusSize.LUDICROUS.defaultCols, 1, Integer.MAX_VALUE);
-    /*LUDICROUS_stack_size = builder
+    LUDICROUS_stack_size = builder
         .comment("Defined the item bus slot max stack size")
-        .defineInRange("stackSize", ItemBusSize.LUDICROUS.defaultStackSize, 1, Integer.MAX_VALUE);*/
+        .defineInRange("stackSize", ItemBusSize.LUDICROUS.defaultStackSize, 1, Integer.MAX_VALUE);
     builder.pop();
   }
 
@@ -162,8 +162,7 @@ public class ItemBusConfig {
   }
 
   public int stackSize(ItemBusSize size) {
-    return 64;
-    /*return (switch (size) {
+    return (switch (size) {
       case TINY -> TINY_stack_size;
       case SMALL -> SMALL_stack_size;
       case NORMAL -> NORMAL_stack_size;
@@ -171,6 +170,6 @@ public class ItemBusConfig {
       case BIG -> BIG_stack_size;
       case HUGE -> HUGE_stack_size;
       case LUDICROUS -> LUDICROUS_stack_size;
-    }).get();*/
+    }).get();
   }
 }

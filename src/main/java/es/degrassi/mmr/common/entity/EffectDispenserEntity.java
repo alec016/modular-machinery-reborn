@@ -5,6 +5,7 @@ import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.EffectHandler;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
@@ -38,7 +39,7 @@ import java.util.Optional;
 @Setter
 @ParametersAreNonnullByDefault
 public class EffectDispenserEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<EffectComponent>,
-    ControllerAccessible, TextureableMachineEntity, ISyncableStuff, ITickEntity, IServerTickEntity {
+    ControllerAccessible, TextureableMachineEntity, ISyncableStuff, ITickEntity, IServerTickEntity, EntityMenuHolder {
   @Getter
   private BlockPos controllerPos;
   @Getter
@@ -51,7 +52,7 @@ public class EffectDispenserEntity extends ColorableMachineComponentEntity imple
   private static final Identifier defaultBaseTexture = ModularMachineryReborn.rl("block/casing_plain");
 
   @Getter
-  private EffectDispenserSize size;
+  private final EffectDispenserSize size;
   @Getter
   private final EffectHandler handler;
 
@@ -133,7 +134,6 @@ public class EffectDispenserEntity extends ColorableMachineComponentEntity imple
   @Override
   protected void loadAdditional(ValueInput nbt) {
     super.loadAdditional(nbt);
-    this.size = EffectDispenserSize.value(nbt.getStringOr("busSize", "small"));
     nbt.getLong("controllerPos").ifPresent(val -> controllerPos = BlockPos.of(val));
 
     this.baseTexture = nbt.getString("baseTexture").map(Identifier::parse).orElse(defaultBaseTexture);

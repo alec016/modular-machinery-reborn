@@ -1,8 +1,9 @@
 package es.degrassi.mmr.common.network.server.component;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.entity.CapabilityInventoryEntity;
+import es.degrassi.mmr.api.entity.DataComponentInventoryEntity;
 import es.degrassi.mmr.common.entity.base.TileInventory;
-import es.degrassi.mmr.common.entity.base.TileItemBus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -32,8 +33,13 @@ public record SUpdateItemComponentPacket(int slot, ItemStack item, BlockPos pos)
   public static void handle(SUpdateItemComponentPacket packet, IPayloadContext context) {
     if (context.flow().isClientbound())
       context.enqueueWork(() -> {
-        if (context.player().level().getBlockEntity(packet.pos) instanceof TileInventory entity) {
+        var be = context.player().level().getBlockEntity(packet.pos);
+        if (be instanceof TileInventory entity) {
           entity.getInventory().setStack(packet.slot, packet.item);
+        } else if (be instanceof CapabilityInventoryEntity<?> entity) {
+          entity.getCapabilityInventory().setStack(packet.slot, packet.item);
+        } else if (be instanceof DataComponentInventoryEntity<?> entity) {
+          entity.getDataComponentInventory().setStack(packet.slot, packet.item);
         }
       });
   }

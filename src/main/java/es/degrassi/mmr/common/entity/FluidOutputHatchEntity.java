@@ -33,7 +33,7 @@ public class FluidOutputHatchEntity extends FluidTankEntity implements IAutoOutp
         ResourceHandler<FluidResource> neighbour = getNeighbour(Capabilities.Fluid.BLOCK, side);
         if (neighbour == null)
           continue;
-        ResourceHandlerUtil.moveStacking(neighbour, getTank(), _ -> true, Integer.MAX_VALUE, root);
+        ResourceHandlerUtil.moveStacking(getTank(), neighbour, _ -> true, Integer.MAX_VALUE, root);
         root.commit();
       }
     }

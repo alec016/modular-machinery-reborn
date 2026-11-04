@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -25,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
-public class WeatherSensorEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<WeatherComponent>, TextureableMachineEntity {
+public class WeatherSensorEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<WeatherComponent>, TextureableMachineEntity, EntityMenuHolder {
 
   private Identifier baseTexture;
   private Identifier overlayTexture;

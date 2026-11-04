@@ -1,6 +1,6 @@
 package es.degrassi.mmr.api.client;
 
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public enum ExperienceButtonType implements StringRepresentable {
 
   @Override
   public String getSerializedName() {
-    return name().toLowerCase(Locale.ROOT);
+    return name().toLowerCase(Locale.ENGLISH);
   }
 
   public boolean isAll() {
@@ -33,6 +33,17 @@ public enum ExperienceButtonType implements StringRepresentable {
       case EXTRACT_1, EXTRACT_10, EXTRACT_ALL -> true;
       default -> false;
     };
+  }
+
+  public MutableComponent text() {
+    return (switch (this) {
+      case EXTRACT_1 -> ExperienceButtonTypeTexts.EXTRACT_1;
+      case EXTRACT_10 -> ExperienceButtonTypeTexts.EXTRACT_10;
+      case EXTRACT_ALL -> ExperienceButtonTypeTexts.EXTRACT_ALL;
+      case INSERT_1 -> ExperienceButtonTypeTexts.INSERT_1;
+      case INSERT_10 -> ExperienceButtonTypeTexts.INSERT_10;
+      case INSERT_ALL -> ExperienceButtonTypeTexts.INSERT_ALL;
+    }).text();
   }
 
   public static List<ExperienceButtonType> extractions() {
@@ -53,9 +64,5 @@ public enum ExperienceButtonType implements StringRepresentable {
       case INSERT_10, EXTRACT_10 -> extraction ? 10 : -10;
       default -> 0;
     };
-  }
-
-  public Component component() {
-    return Component.translatable("mmr.gui.tooltip.experience.button." + getSerializedName());
   }
 }

@@ -31,7 +31,7 @@ public class FluidInputHatchEntity extends FluidTankEntity implements IAutoInput
         if (!getConfig().canAutoIO(side)) continue;
         ResourceHandler<FluidResource> neighbour = getNeighbour(Capabilities.Fluid.BLOCK, side);
         if (neighbour == null) continue;
-        ResourceHandlerUtil.moveStacking(getTank(), neighbour, _ -> true, Integer.MAX_VALUE, root);
+        ResourceHandlerUtil.moveStacking(neighbour, getTank(), _ -> true, Integer.MAX_VALUE, root);
         root.commit();
       }
     }

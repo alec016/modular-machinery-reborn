@@ -28,6 +28,11 @@ public class BiomeComponent extends MachineComponent<List<Identifier>> {
   }
 
   @Override
+  public <C extends MachineComponent<List<Identifier>>> boolean canMerge(C c) {
+    return false;
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
   public <C extends MachineComponent<List<Identifier>>> C merge(C c) {
     return (C) this;

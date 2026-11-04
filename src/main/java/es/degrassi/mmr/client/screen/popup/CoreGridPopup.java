@@ -4,7 +4,7 @@ import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
 import es.degrassi.mmr.client.screen.widget.buttons.SpriteButton;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
@@ -39,7 +39,7 @@ public final class CoreGridPopup extends BasePopup {
       popupLabel(Component.translatable(status.isPaused()
               ? "mmr.gui.paused"
               : "mmr.gui.missing_structure"),
-          0, 60, WIDTH).setId("core_status");
+          10, 60, WIDTH).setId("core_status");
     } else {
       int pages = pagesNumber(entity);
       int current = Math.clamp(page[0], 1, pages);

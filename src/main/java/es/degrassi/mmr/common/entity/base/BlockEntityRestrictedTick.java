@@ -1,10 +1,6 @@
 package es.degrassi.mmr.common.entity.base;
 
-import es.degrassi.experiencelib.api.network.ISyncableStuff;
 import es.degrassi.mmr.api.entity.ITickEntity;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;

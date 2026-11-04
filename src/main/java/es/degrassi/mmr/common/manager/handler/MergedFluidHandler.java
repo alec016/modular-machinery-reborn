@@ -12,12 +12,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/**
- * Live view over several {@link FluidHandler}s (fluid counterpart of {@link MergedItemHandler}).
- *
- * <p>The legacy {@code mergeBuild} shared the underlying tanks between the merged handler and the
- * source block entities; every operation is routed here so mutations still hit the real inventories.</p>
- */
 public class MergedFluidHandler extends FluidHandler {
   private final FluidHandler[] sources;
   private final int[] offsets;

@@ -13,7 +13,6 @@ import es.degrassi.mmr.common.machine.component.EnergyComponent;
 import es.degrassi.mmr.common.manager.handler.SimpleEnergyHandler;
 import es.degrassi.mmr.common.registration.ComponentRegistration;
 import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
-import es.degrassi.mmr.common.util.MMRLogger;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -79,7 +78,6 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, S
       handler.setMaxExtract(Long.MAX_VALUE);
       try (var sub = Transaction.open(root)) {
         int canExtract = handler.extract(amount, sub);
-        MMRLogger.INSTANCE.debug("canExtract {}", canExtract);
         if (canExtract == amount) {
           sub.commit();
           root.commit();

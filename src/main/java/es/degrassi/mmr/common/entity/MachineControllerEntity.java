@@ -11,9 +11,10 @@ import es.degrassi.mmr.api.client.machine.SoundManagerEntity;
 import es.degrassi.mmr.api.controller.ComponentMapper;
 import es.degrassi.mmr.api.controller.CorePopup;
 import es.degrassi.mmr.api.controller.IMultiblockController;
-import es.degrassi.mmr.api.controller.MMRWorldSavedData;
+import es.degrassi.mmr.api.save.MultiblockWorldSavedData;
 import es.degrassi.mmr.api.crafting.ComponentNotFoundException;
 import es.degrassi.mmr.api.entity.ColorableMachineEntity;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IClientTickEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
@@ -83,7 +84,7 @@ import static es.degrassi.mmr.ModularMachineryReborn.CONTROLLERS;
 @Setter
 @ParametersAreNonnullByDefault
 public class MachineControllerEntity extends BlockEntityRestrictedTick implements ComponentMapper, ISyncableStuff, IServerTickEntity,
-    IClientTickEntity, SoundManagerEntity, IMultiblockController, ISyncPersistRPCBlockEntity {
+    IClientTickEntity, SoundManagerEntity, IMultiblockController, ISyncPersistRPCBlockEntity, EntityMenuHolder {
   private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
   /*@Persisted
   @DescSynced*/
@@ -235,7 +236,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     IServerTickEntity.super.doRestrictedTick();
     assert level != null;
     if (!isFormed()) {
-      var mwsd = MMRWorldSavedData.getOrCreate((ServerLevel) level);
+      var mwsd = MultiblockWorldSavedData.getOrCreate((ServerLevel) level);
       if (!mwsd.containsAsyncLogicOrMapping(this)) {
         mwsd.addAsyncLogic(this);
       }
@@ -259,8 +260,8 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     if (this.level != null && this.level.isClientSide() && this.soundManager != null)
       this.soundManager.stop();
     if (getLevel() instanceof ServerLevel serverLevel && !getFoundMachine().isDummy()) {
-      MMRWorldSavedData.getOrCreate(serverLevel).removeAsyncLogic(this);
-      MMRWorldSavedData.getOrCreate(serverLevel).removeMapping(this);
+      MultiblockWorldSavedData.getOrCreate(serverLevel).removeAsyncLogic(this);
+      MultiblockWorldSavedData.getOrCreate(serverLevel).removeMapping(this);
     }
     if (getLevel() instanceof ServerLevel) {
       getStuffToSync().clear();
@@ -278,7 +279,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
       try {
         ComponentManager.cache.get(this);
       } catch (ExecutionException ignored) {}
-      var mwsd = MMRWorldSavedData.getOrCreate(l);
+      var mwsd = MultiblockWorldSavedData.getOrCreate(l);
       mwsd.removeMapping(this);
       mwsd.removeAsyncLogic(this);
       mwsd.addAsyncLogic(this);
@@ -441,7 +442,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
       addErrorInfo(formatStructureErrors());
       componentManager.resetWithColor();
       processor.reset();
-      var mwsd = MMRWorldSavedData.getOrCreate(sl);
+      var mwsd = MultiblockWorldSavedData.getOrCreate(sl);
       mwsd.removeMapping(this);
       mwsd.removeAsyncLogic(this);
       mwsd.addAsyncLogic(this);
@@ -461,7 +462,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
           patternLock.lock();
           if (getFoundMachine().getPattern().match(getLevel(), getBlockPos(), getFacing())) {
             onStructureFormed();
-            var mwsd = MMRWorldSavedData.getOrCreate(sl);
+            var mwsd = MultiblockWorldSavedData.getOrCreate(sl);
             mwsd.addMapping(this);
             mwsd.removeAsyncLogic(this);
           } else {

@@ -6,7 +6,6 @@ import mezz.jei.api.ingredients.IIngredientType;
 
 import java.util.Map;
 
-// TODO: This is correct?
 public class RegisterJeiFilterDragDropEvent extends MMREvent<IIngredientType<?>, JeiFilterDragDropFactory<?>> {
   private final Map<IIngredientType<?>, JeiFilterDragDropFactory<?>> map = Maps.newHashMap();
 

@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.entity;
 
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
+import es.degrassi.mmr.common.block.BlockInputBus;
 import es.degrassi.mmr.common.block.prop.ItemBusSize;
 import es.degrassi.mmr.common.entity.base.TileItemBus;
 import es.degrassi.mmr.common.machine.IOType;
@@ -17,9 +18,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class ItemInputBusEntity extends TileItemBus implements IAutoInputEntity<ResourceHandler<ItemResource>> {
-
   public ItemInputBusEntity(BlockPos pos, BlockState state) {
-    super(EntityRegistration.ITEM_INPUT_BUS.get(), pos, state, ItemBusSize.TINY, IOType.INPUT);
+    this(pos, state, ((BlockInputBus) state.getBlock()).getSize());
   }
 
   public ItemInputBusEntity(BlockPos pos, BlockState state, ItemBusSize type) {
@@ -28,8 +28,6 @@ public class ItemInputBusEntity extends TileItemBus implements IAutoInputEntity<
 
   @Override
   public ItemHandler buildInventory(int slots, int stackSize) {
-    // Input bus: every slot accepts insertion from outside, nothing is extractable
-    // (legacy: inSlots = all slots, outSlots = none, slotLimit = stackSize).
     return new ItemHandler(slots, stackSize, stackSize, 0, Direction.values());
   }
 

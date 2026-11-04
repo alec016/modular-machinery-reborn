@@ -13,6 +13,7 @@ import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.CapabilityInventoryEntity;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
@@ -20,14 +21,15 @@ import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
 import es.degrassi.mmr.common.block.prop.ExperienceHatchSize;
-import es.degrassi.mmr.common.entity.ExperienceInputHatchEntity;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.MachineHatchType;
 import es.degrassi.mmr.common.machine.component.ExperienceComponent;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
+import es.degrassi.mmr.common.manager.handler.UpdateValueListener;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateExperienceComponentPacket;
+import es.degrassi.mmr.common.network.server.component.SUpdateItemComponentPacket;
 import es.degrassi.mmr.common.registration.MachineHatchTypeRegistration;
 import es.degrassi.mmr.common.util.Utils;
 import lombok.Getter;
@@ -56,9 +58,9 @@ import java.util.Map;
 
 public abstract class ExperienceHatchEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<ExperienceComponent>,
     ControllerAccessible, TextureableMachineEntity, CapabilityInventoryEntity<IExperienceHandler>, ITickEntity, IServerTickEntity, ISyncableStuff,
-    IAutoEntity<IExperienceHandler>, ISideConfigComponent<IOSideMode> {
+    IAutoEntity<IExperienceHandler>, ISideConfigComponent<IOSideMode>, EntityMenuHolder {
   protected ExperienceHatchSize size;
-  protected IOType ioType;
+  protected final IOType ioType;
   @Getter
   @Nullable private BlockPos controllerPos;
 
@@ -76,6 +78,8 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
   private static final Identifier defaultBaseTexture = ModularMachineryReborn.rl("block/casing_plain");
   @Getter
   private final ItemHandler capabilityInventory;
+
+  private final UpdateValueListener<ItemStack> itemListener;
 
   private final long tickOffset = Utils.RAND.nextIntBetweenInclusive(0, Integer.MAX_VALUE - 1);
   private long lastCheckTick;
@@ -96,6 +100,20 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
     this.experienceTank = buildTank();
     this.config = IOSideConfig.Template.DEFAULT_ALL_DISABLED.build(this);
     this.capabilityInventory = this.createCapabilityInventory();
+    this.itemListener = (slot, stack) -> {
+      getControllerPosSet().forEach(p -> {
+        if (getLevel() == null) return;
+        if (getLevel().isClientSide()) return;
+        if (getLevel().getBlockEntity(p) instanceof MachineControllerEntity controller) {
+          controller.getProcessor().setMachineInventoryChanged();
+        }
+      });
+      if (getLevel() instanceof ServerLevel level) {
+        PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(getBlockPos()),
+            new SUpdateItemComponentPacket(slot, capabilityInventory.getStack(slot), getBlockPos()));
+      }
+    };
+    this.capabilityInventory.setListener(itemListener);
     this.config.setCallback(this::configChanged);
   }
 
@@ -121,58 +139,78 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
   @Override
   public void tickInventory() {
     if (!shouldTickInventory()) return;
+    int inventorySize = capabilityInventory.getInputSlotCount();
+    var caps = new IExperienceHandler[inventorySize];
+    var bottleSims = new IExperienceHandler[inventorySize];
+    for (int slot = 0; slot < inventorySize; slot++) {
+      ItemStack stack = capabilityInventory.getStack(slot);
+      if (stack.isEmpty()) continue;
+      caps[slot] = stack.getCapability(getCapability(), ItemAccess.forStack(stack));
+      if (stack.is(Items.EXPERIENCE_BOTTLE)) {
+        ItemStack single = stack.copyWithCount(1);
+        bottleSims[slot] = single.getCapability(getCapability(), ItemAccess.forStack(single));
+      }
+    }
     try (Transaction root = Transaction.openRoot()) {
-      capabilityInventory.forEach((stack, slot) -> {
-        if (stack.isEmpty()) return;
-        var cap = stack.getCapability(getCapability(), ItemAccess.forStack(stack));
-        if (cap == null) return;
-        if (ioType == IOType.NONE) return;
+      for (int slot = 0; slot < inventorySize; slot++) {
+        ItemStack stack = capabilityInventory.getStack(slot);
+        if (stack.isEmpty()) continue;
+        var cap = caps[slot];
+        if (cap == null || ioType == IOType.NONE) continue;
         if (ioType.isInput()) {
           if (this.getTank().getAmountAsLong(0) >= this.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY))
-            return;
+            continue;
           if (stack.is(Items.EXPERIENCE_BOTTLE)) {
-            int experienceBottles = stack.getCount();
-            for (int i = 0; i < experienceBottles; i++) {
-              try (Transaction subTx = Transaction.open(root)) {
-                long simulatedCap = cap.extractRecipe(0, Long.MAX_VALUE, subTx);
-                long simulatedInsert = getTank().insertRecipe(0, simulatedCap, subTx);
-                if (simulatedInsert < 7) return;
-                if (capabilityInventory.extractFromInputs(stack, 1) <= 0) return;
-                subTx.commit();
-              }
+            var bottleSim = bottleSims[slot];
+            if (bottleSim == null) continue;
+            long simulatedCap = bottleSim.getCapacityAsLong(0, ExperienceResource.EMPTY);
+            try (Transaction subTx = Transaction.open(root)) {
+              long simulatedInsert = getTank().insertRecipe(0, simulatedCap, subTx);
+              if (simulatedInsert < 7) continue;
+              ItemStack emptyBottle = new ItemStack(Items.GLASS_BOTTLE, 1);
+              if (!capabilityInventory.canPlaceOutput(1, emptyBottle)) continue;
+              if (capabilityInventory.extractFromInputs(stack, 1) <= 0) continue;
+              capabilityInventory.addToOutputs(emptyBottle, 1);
+              subTx.commit();
             }
           } else {
+            if (stack.is(Items.GLASS_BOTTLE)) continue;
             try (Transaction subTx = Transaction.open(root)) {
-              if (stack.is(Items.GLASS_BOTTLE)) return;
               long simulatedCap = cap.extractRecipe(0, Long.MAX_VALUE, subTx);
               long simulatedInsert = getTank().insertRecipe(0, simulatedCap, subTx);
               if (simulatedInsert > 0) subTx.commit();
             }
+            try (Transaction checkTx = Transaction.open(root)) {
+              if (cap.extractRecipe(0, 1, checkTx) <= 0) capabilityInventory.moveToOutputs(slot);
+            }
           }
         } else if (ioType.isOutput()) {
-          if (this.getTank().getAmountAsLong(0) == 0) return;
+          if (this.getTank().getAmountAsLong(0) == 0) continue;
           if (stack.is(Items.GLASS_BOTTLE)) {
             try (Transaction subTx = Transaction.open(root)) {
               int experienceBottles = stack.getCount();
-              if (experienceBottles > 1) return;
+              if (experienceBottles > 1) continue;
               long simulatedCap = cap.insertRecipe(0, Long.MAX_VALUE, subTx);
               long simulatedInsert = getTank().extractRecipe(0, simulatedCap, subTx);
-              if (simulatedInsert < 7) return;
-              if (!capabilityInventory.canPlaceOutput(slot, new ItemStack(Items.EXPERIENCE_BOTTLE, 1))) return;
-              if (capabilityInventory.extractFromInputs(stack, 1) <= 0) return;
+              if (simulatedInsert < 7) continue;
+              if (!capabilityInventory.canPlaceOutput(1, new ItemStack(Items.EXPERIENCE_BOTTLE, 1))) continue;
+              if (capabilityInventory.extractFromInputs(stack, 1) <= 0) continue;
               capabilityInventory.addToOutputs(new ItemStack(Items.EXPERIENCE_BOTTLE, 1), 1);
               subTx.commit();
             }
           } else {
+            if (stack.is(Items.EXPERIENCE_BOTTLE)) continue;
             try (Transaction subTx = Transaction.open(root)) {
-              if (stack.is(Items.EXPERIENCE_BOTTLE)) return;
               long simulatedCap = cap.insertRecipe(0, Long.MAX_VALUE, subTx);
               long simulatedInsert = getTank().extractRecipe(0, simulatedCap, subTx);
               if (simulatedInsert > 0) subTx.commit();
             }
+            try (Transaction checkTx = Transaction.open(root)) {
+              if (cap.insertRecipe(0, 1, checkTx) <= 0) capabilityInventory.moveToOutputs(slot);
+            }
           }
         }
-      });
+      }
       root.commit();
     }
   }
@@ -208,10 +246,6 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
             controller.getProcessor().setMachineInventoryChanged();
           }
         });
-        // Live UI sync: every server-side change (manual XP buttons, bottle conversion, operator
-        // fill, auto-IO) sends the experience sync packet, the same dedicated packet every other
-        // component keeps (the block-entity update tag alone does not carry the tank amount, so a
-        // bare markForUpdate left the UI bar stale until the next world load).
         if (getLevel() instanceof ServerLevel level && prevAmount != this.amount) {
           PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(getBlockPos()),
               new SUpdateExperienceComponentPacket(this.amount, getBlockPos()));
@@ -223,8 +257,7 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
   @Override
   protected void loadAdditional(ValueInput input) {
     super.loadAdditional(input);
-    this.size = ExperienceHatchSize.value(input.getString("hatchSize").orElseThrow().toUpperCase(Locale.ROOT));
-    this.ioType = IOType.getByString(input.getString("ioType").orElseThrow());
+    this.size = ExperienceHatchSize.value(input.getString("hatchSize").orElseThrow().toUpperCase(Locale.ENGLISH));
 
     experienceTank.deserialize(input.childOrEmpty("experience"));
 
@@ -237,6 +270,7 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
     this.baseTexture = input.getString("baseTexture").map(Identifier::parse).orElse(defaultBaseTexture);
     this.overlayTexture = input.getString("overlayTexture").map(Identifier::parse).orElse(defaultOverlayTexture);
     this.capabilityInventory.deserialize(input.childOrEmpty("inventory"));
+    this.capabilityInventory.setListener(itemListener);
     this.config.deserialize(input.childOrEmpty("config"));
   }
 
@@ -244,9 +278,6 @@ public abstract class ExperienceHatchEntity extends ColorableMachineComponentEnt
   protected void saveAdditional(ValueOutput output) {
     super.saveAdditional(output);
     output.putString("hatchSize", this.size.getSerializedName());
-    if (ioType == null) {
-      ioType = this instanceof ExperienceInputHatchEntity ? IOType.INPUT : IOType.OUTPUT;
-    }
     output.putString("ioType", ioType.getSerializedName());
 
     output.putChild("experience", experienceTank);

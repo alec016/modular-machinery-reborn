@@ -14,6 +14,7 @@ import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 
+// TODO: use the same part as Controller Renderer
 public class StructureCheckerRenderer implements BlockEntityRenderer<StructureCheckerEntity, StructureCheckerRenderState> {
   public static final Map<Identifier, StructureRenderer> renderers = Maps.newHashMap();
   private final BlockEntityRendererProvider.Context context;

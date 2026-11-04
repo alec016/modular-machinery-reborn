@@ -34,17 +34,32 @@ public class FilterConverterRegistry {
   public static <T> boolean isConvertible(T value) {
     return converters.values()
         .parallelStream()
-        .anyMatch(f -> f.get() == value);
+        .anyMatch(f -> sameValue(f.get(), value));
   }
 
   public static <T> ItemStack convertBack(T value) {
     return converters.entrySet()
         .parallelStream()
-        .filter(entry -> entry.getValue().get() == value)
+        .filter(entry -> sameValue(entry.getValue().get(), value))
         .findFirst()
         .map(Map.Entry::getKey)
         .map(Supplier::get)
         .orElse(ItemStack.EMPTY);
+  }
+
+  /**
+   * Compares two converted filter values. Resources (fluids, experience, ...) are value objects
+   * with a proper equals implementation, while a factory may hand out a fresh instance on every
+   * call, so identity is not enough; anything without value equality falls back to identity.
+   */
+  private static boolean sameValue(Object a, Object b) {
+    if (a == null || b == null) {
+      return a == b;
+    }
+    if (a == b) {
+      return true;
+    }
+    return a.getClass() == b.getClass() && a.equals(b);
   }
 
   @SuppressWarnings("unchecked")

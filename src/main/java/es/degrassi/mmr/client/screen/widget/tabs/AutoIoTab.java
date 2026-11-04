@@ -12,14 +12,14 @@ import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
 import es.degrassi.mmr.api.capability.config.RelativeSide;
-import es.degrassi.mmr.api.entity.IAutoEntity;
 import es.degrassi.mmr.api.client.Icon;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.api.entity.IAutoEntity;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
+import es.degrassi.mmr.common.machine.IOType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> & IAutoEntity<?>> extends UIElement {
@@ -36,7 +36,7 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
 
   final T entity;
   final boolean input;
-  final String infoKey;
+  final Component infoKey;
   private boolean opened = false;
   private long animStart = -1L;
   private int lastWidth = RightTab.RIGHT_TAB_WIDTH;
@@ -50,7 +50,7 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
   public AutoIoTab(UIElement parent, T entity, int x, int y, boolean input) {
     this.entity = entity;
     this.input = input;
-    this.infoKey = input ? "mmr.gui.tooltip.auto_input" : "mmr.gui.tooltip.auto_output";
+    this.infoKey = TabTexts.tooltipAuto.text(input ? IOType.INPUT.text() : IOType.OUTPUT.text());
     this.setSideRpc = RPCEventBuilder.create()
         .arg(String.class, RelativeSide.FRONT.name())
         .arg(Boolean.class, false)
@@ -74,7 +74,7 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     });
     addEventListener(UIEvents.HOVER_TOOLTIPS, event -> {
       if (!opened && event.target == this) {
-        event.hoverTooltips = HoverTooltips.create(Component.translatable("mmr.tooltip.open_side_config"));
+        event.hoverTooltips = HoverTooltips.create(TabTexts.tooltipOpenSideConfig.text());
       }
     });
     lss("width", RightTab.RIGHT_TAB_WIDTH).lss("height", RightTab.RIGHT_TAB_HEIGHT);
@@ -100,7 +100,7 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
   }
 
   Component info() {
-    return Component.translatable(infoKey);
+    return infoKey;
   }
 
   boolean isInput() {
@@ -171,28 +171,27 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     gui.drawTexture(MMRMachineUI.nineSliceTexture(MMRMachineUI.TEX_BACKGROUND), x, y, width, height);
   }
 
-  /** Creates the 3D preview and the half-size button row (client side only). */
   private void buildContent() {
     contentBuilt = true;
     if (entity.getLevel() != null && entity.getLevel().isClientSide()) {
       SideScene<T> scene = new SideScene<>(this);
       scene.lss("width", SCENE_SIZE).lss("height", SCENE_SIZE - 6);
       MMRMachineUI.add(this, scene, SCENE_X, SCENE_Y);
-      // Close affordance on the preview corner: reverses the opening animation.
       IconButton.smallIconButton(this, Icon.CLEAR, CLOSE_X, CLOSE_Y, event -> close(),
-          () -> List.of(Component.translatable("mmr.gui.tooltip.close_side_config")));
+          () -> List.of(TabTexts.tooltipCloseSideConfig.text()));
       IconButton.smallIconButton(this, Icon.HELP,
           SMALL_MINUS_X + 12, BUTTON_Y, null,
           () -> List.of(
-              Component.translatable("mmr.gui.autoio.hint.select"),
-              Component.translatable("mmr.gui.autoio.hint.toggle")));
+              TabTexts.autoioHintSelect.text(),
+              TabTexts.autoioHintToggle.text()
+          ));
     }
     IconButton.smallIconButton(this, Icon.MINUS, SMALL_MINUS_X, BUTTON_Y,
         event -> sendEvent(disableAllRpc),
-        () -> List.of(Component.translatable("mmr.gui.autoio.disable_all")));
+        () -> List.of(TabTexts.autoioDisableAll.text()));
     IconButton.smallIconButton(this, Icon.PLUS, SMALL_MINUS_X + 24, BUTTON_Y,
         event -> sendEvent(enableAllRpc),
-        () -> List.of(Component.translatable("mmr.gui.autoio.enable_all")));
+        () -> List.of(TabTexts.autoioEnableAll.text()));
   }
 
   private static void drawSpriteIcon(GUIContext gui, Icon icon, int x, int y, int hoverShift) {

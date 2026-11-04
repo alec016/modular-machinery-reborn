@@ -1,8 +1,8 @@
 package es.degrassi.mmr.common.network.client;
 
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.api.handler.FilterConverterRegistry;
 import es.degrassi.mmr.api.entity.FiltereableEntity;
+import es.degrassi.mmr.api.handler.FilterConverterRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,6 +10,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.Map;
 
@@ -38,13 +40,13 @@ public record CSetFilterSlotFluidPacket(FluidStack stack, BlockPos pos) implemen
           FilterConverterRegistry.getConverters()
               .entrySet()
               .stream()
-              .filter(entry ->
-                  entry.getValue().get().getClass().equals(fluid.getClass())
-                      && FluidStack.isSameFluidSameComponents(((FluidStack) entry.getValue().get()), fluid)
-              )
+              .filter(entry -> entry.getValue().get() instanceof FluidResource resource && resource.matches(fluid))
               .findAny()
               .map(Map.Entry::getKey)
-              .ifPresent(item -> machine.getFilterInventory().setStack(0, item.get()));
+              .ifPresent(item -> {
+                var bucket = item.get().copyWithCount(1);
+                machine.getFilterInventory().set(0, ItemResource.of(bucket), 1);
+              });
         }
       });
   }

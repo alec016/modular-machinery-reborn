@@ -9,11 +9,6 @@ import net.minecraft.client.resources.model.sprite.Material;
 
 import java.util.function.Function;
 
-/**
- * Port of the 1.21.1 {@code es.degrassi.mmreborn.client.integration.athena.model.casing.CasingBakedModel}.
- * All shared CTM/overlay behaviour lives in {@link MMRBakedModel}; the casing injects the overlay
- * unconditionally per direction, so no extra state is needed here.
- */
 public class CasingBakedModel implements MMRBakedModel {
 
   private final CasingBlockModel model;

@@ -4,6 +4,7 @@ import es.degrassi.experiencelib.api.network.ISyncableStuff;
 import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
+import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
 import es.degrassi.mmr.client.integration.athena.model.hatch.HatchTextureData;
@@ -31,8 +32,8 @@ import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
-public class RedstonePortEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<RedstoneComponent>, TextureableMachineEntity, ControllerAccessible,
-    ISyncableStuff {
+public class RedstonePortEntity extends ColorableMachineComponentEntity implements MachineComponentEntity<RedstoneComponent>, TextureableMachineEntity,
+    ControllerAccessible, ISyncableStuff, EntityMenuHolder {
   private Identifier baseTexture;
   private Identifier overlayTexture;
   @Nullable

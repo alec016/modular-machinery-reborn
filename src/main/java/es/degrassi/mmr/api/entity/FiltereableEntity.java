@@ -7,6 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nullable;
 
@@ -30,9 +32,9 @@ public interface FiltereableEntity<T, E> {
     return handler;
   }
 
-  CompoundTag serializeFilter(HolderLookup.Provider provider);
+  void serializeFilter(ValueOutput output);
 
-  void deserializeFilter(CompoundTag tag, HolderLookup.Provider provider);
+  void deserializeFilter(ValueInput input);
 
   @Nullable
   Component getFilterComponent();

@@ -12,7 +12,6 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.SplitView;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
 import com.lowdragmc.lowdraglib2.integration.xei.IngredientIO;
 import com.lowdragmc.lowdraglib2.utils.virtuallevel.DummyWorld;
-import es.degrassi.mmr.client.screen.MMRSceneFx;
 import es.degrassi.mmr.common.block.BlockController;
 import es.degrassi.mmr.common.item.ControllerItem;
 import es.degrassi.mmr.common.machine.DynamicMachine;

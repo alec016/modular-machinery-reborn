@@ -42,12 +42,6 @@ public record HatchTextureData(
     );
   }
 
-  /**
-   * 1.21.1 parity for the in-world fallback: the block's own default chain
-   * ({@code default/hatches/<block>}) instead of the generic {@code default/hatch_all},
-   * so disabled-CTM / custom-texture hatches (formed machines, texture overrides) still show
-   * their own casing and overlay.
-   */
   public static HatchTextureData withBlockDefault(Identifier blockId) {
     return new HatchTextureData(
         null,

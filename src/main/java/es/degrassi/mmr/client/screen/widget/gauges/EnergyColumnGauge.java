@@ -2,7 +2,8 @@ package es.degrassi.mmr.client.screen.widget.gauges;
 
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
-import es.degrassi.mmr.client.screen.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.util.NumberFormats;
 import es.degrassi.mmr.client.util.EnergyDisplayUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -24,10 +25,18 @@ public final class EnergyColumnGauge extends Gauge {
   protected List<Component> tooltipLines() {
     long currentEnergy = EnergyDisplayUtil.type.formatEnergyForDisplay(current.getAsLong());
     long maxEnergy = EnergyDisplayUtil.type.formatEnergyForDisplay(max.getAsLong());
-    return List.of(Component.translatable("tooltip.energyhatch.charge",
-        String.valueOf(currentEnergy),
-        String.valueOf(maxEnergy),
-        Component.translatable(EnergyDisplayUtil.type.getUnlocalizedFormat())));
+    return List.of(
+        GaugesTexts.energyHatchCharge.text(
+            NumberFormats.compact(currentEnergy),
+            NumberFormats.compact(maxEnergy),
+            EnergyDisplayUtil.type.text()
+        ),
+        GaugesTexts.energyHatchCharge.text(
+            NumberFormats.grouped(currentEnergy),
+            NumberFormats.grouped(maxEnergy),
+            EnergyDisplayUtil.type.text()
+        )
+    );
   }
 
   @Override

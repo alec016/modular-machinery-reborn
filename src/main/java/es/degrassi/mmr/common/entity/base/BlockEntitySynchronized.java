@@ -64,10 +64,6 @@ public class BlockEntitySynchronized extends BlockEntity implements IEntitySynch
   @Override
   protected void loadAdditional(ValueInput nbt) {
     super.loadAdditional(nbt);
-    // The sync table must be rebuilt AFTER deserialization: components only exist once the
-    // entity data has been read. Building it before that left client-side tables shorter than
-    // the ones the server indexes its data with — the experiencelib sync_data handler then
-    // crashed with IndexOutOfBounds (Index 1 out of bounds for length 1) on every sync.
     stuffToSync.clear();
     if (this instanceof ISyncableStuff stuff) {
       stuff.getStuffToSync(list);

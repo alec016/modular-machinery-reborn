@@ -2,18 +2,13 @@ package es.degrassi.mmr.common.network.client.emi;
 
 import com.google.common.collect.Lists;
 import es.degrassi.mmr.ModularMachineryReborn;
-import es.degrassi.mmr.client.container.ControllerContainer;
-import es.degrassi.mmr.common.machine.IOType;
-import es.degrassi.mmr.common.machine.component.ItemComponent;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
-import es.degrassi.mmr.common.registration.ComponentRegistration;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -21,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class FillRecipeC2SPacket implements CustomPacketPayload {
@@ -86,9 +80,6 @@ public class FillRecipeC2SPacket implements CustomPacketPayload {
   }
 
   public void apply(Player player) {
-    // LEGACY: the vanilla-menu UI this relied on was replaced by the LDLib2 ModularUI screens
-    // (es.degrassi.mmr.client.screen.*UI + BlockUIMenuType). There is no ContainerBase menu to
-    // act on any more, so this is a no-op until it is re-implemented on top of LDLib2.
 }
 
   private static List<Integer> parseCompressedSlots(FriendlyByteBuf buf) {

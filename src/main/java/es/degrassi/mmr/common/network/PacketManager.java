@@ -2,15 +2,17 @@ package es.degrassi.mmr.common.network;
 
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.common.network.client.CBreakStructurePacket;
-import es.degrassi.mmr.common.network.client.CChangeIOSideConfigPacket;
 import es.degrassi.mmr.common.network.client.CCoreButtonClickedPacked;
-import es.degrassi.mmr.common.network.client.CDynamicTooltipEventCallPacket;
 import es.degrassi.mmr.common.network.client.CExperienceButtonClickedPacket;
 import es.degrassi.mmr.common.network.client.CFillHatchRequestPacket;
+import es.degrassi.mmr.common.network.client.CGridChunkPacket;
 import es.degrassi.mmr.common.network.client.CPlaceStructurePacket;
 import es.degrassi.mmr.common.network.client.CRedstoneButtonModeClickedPacket;
 import es.degrassi.mmr.common.network.client.CSetFilterSlotItemPacket;
 import es.degrassi.mmr.common.network.client.CSetFilterSlotFluidPacket;
+import es.degrassi.mmr.common.network.client.CUpdateUIStatePacket;
+import es.degrassi.mmr.common.network.client.SSyncUIStatesPacket;
+import es.degrassi.mmr.common.network.client.SUpdateUIStatePacket;
 import es.degrassi.mmr.common.network.client.emi.FillRecipeC2SPacket;
 import es.degrassi.mmr.common.network.server.SAddControllerRenderer;
 import es.degrassi.mmr.common.network.server.SLootTablesPacket;
@@ -18,14 +20,12 @@ import es.degrassi.mmr.common.network.server.SMachineUpdatePacket;
 import es.degrassi.mmr.common.network.server.SOpenFilePacket;
 import es.degrassi.mmr.common.network.server.SRemoveControllerRenderer;
 import es.degrassi.mmr.common.network.server.SStopSoundInstancePacket;
-import es.degrassi.mmr.common.network.server.SSyncDynamicTooltipsPacket;
 import es.degrassi.mmr.common.network.server.SSyncMachinePacket;
 import es.degrassi.mmr.common.network.server.SSyncPauseStatePacket;
 import es.degrassi.mmr.common.network.server.SSyncTooltipsPacket;
 import es.degrassi.mmr.common.network.server.SUpdateContainerPacket;
 import es.degrassi.mmr.common.network.server.SUpdateCraftingStatusPacket;
 import es.degrassi.mmr.common.network.server.SUpdateFilterInvPacket;
-import es.degrassi.mmr.common.network.server.SUpdateFluidFilterPacket;
 import es.degrassi.mmr.common.network.server.SUpdateMachineColorPacket;
 import es.degrassi.mmr.common.network.server.SUpdateMachineTexturePacket;
 import es.degrassi.mmr.common.network.server.component.SUpdateCoresPacket;
@@ -64,15 +64,15 @@ public class PacketManager {
     registrar.playToClient(SSyncMachinePacket.TYPE, SSyncMachinePacket.CODEC, SSyncMachinePacket::handle);
     registrar.playToClient(SSyncPauseStatePacket.TYPE, SSyncPauseStatePacket.CODEC, SSyncPauseStatePacket::handle);
     registrar.playToClient(SSyncTooltipsPacket.TYPE, SSyncTooltipsPacket.CODEC, SSyncTooltipsPacket::handle);
-    registrar.playToClient(SSyncDynamicTooltipsPacket.TYPE, SSyncDynamicTooltipsPacket.CODEC, SSyncDynamicTooltipsPacket::handle);
     registrar.playToClient(SAddControllerRenderer.TYPE, SAddControllerRenderer.CODEC, SAddControllerRenderer::handle);
     registrar.playToClient(SRemoveControllerRenderer.TYPE, SRemoveControllerRenderer.CODEC, SRemoveControllerRenderer::handle);
     registrar.playToClient(SUpdateContainerPacket.TYPE, SUpdateContainerPacket.CODEC, SUpdateContainerPacket::handle);
     registrar.playToClient(SUpdateCoresPacket.TYPE, SUpdateCoresPacket.CODEC, SUpdateCoresPacket::handle);
     registrar.playToClient(SStopSoundInstancePacket.TYPE, SStopSoundInstancePacket.CODEC, SStopSoundInstancePacket::handle);
     registrar.playToClient(SUpdateEffectComponent.TYPE, SUpdateEffectComponent.CODEC, SUpdateEffectComponent::handle);
-    registrar.playToClient(SUpdateFluidFilterPacket.TYPE, SUpdateFluidFilterPacket.CODEC, SUpdateFluidFilterPacket::handle);
     registrar.playToClient(SUpdateFilterInvPacket.TYPE, SUpdateFilterInvPacket.CODEC, SUpdateFilterInvPacket::handle);
+    registrar.playToClient(SSyncUIStatesPacket.TYPE, SSyncUIStatesPacket.CODEC, SSyncUIStatesPacket::handle);
+    registrar.playToClient(SUpdateUIStatePacket.TYPE, SUpdateUIStatePacket.CODEC, SUpdateUIStatePacket::handle);
 
     // TO SERVER
     registrar.playToServer(CPlaceStructurePacket.TYPE, CPlaceStructurePacket.CODEC, CPlaceStructurePacket::handle);
@@ -80,11 +80,11 @@ public class PacketManager {
     registrar.playToServer(CExperienceButtonClickedPacket.TYPE, CExperienceButtonClickedPacket.CODEC, CExperienceButtonClickedPacket::handle);
     registrar.playToServer(CCoreButtonClickedPacked.TYPE, CCoreButtonClickedPacked.CODEC, CCoreButtonClickedPacked::handle);
     registrar.playToServer(CRedstoneButtonModeClickedPacket.TYPE, CRedstoneButtonModeClickedPacket.CODEC, CRedstoneButtonModeClickedPacket::handle);
-    registrar.playToServer(CChangeIOSideConfigPacket.TYPE, CChangeIOSideConfigPacket.CODEC, CChangeIOSideConfigPacket::handle);
-    registrar.playToServer(CDynamicTooltipEventCallPacket.TYPE, CDynamicTooltipEventCallPacket.CODEC, CDynamicTooltipEventCallPacket::handle);
     registrar.playToServer(CSetFilterSlotItemPacket.TYPE, CSetFilterSlotItemPacket.CODEC, CSetFilterSlotItemPacket::handle);
     registrar.playToServer(CSetFilterSlotFluidPacket.TYPE, CSetFilterSlotFluidPacket.CODEC, CSetFilterSlotFluidPacket::handle);
     registrar.playToServer(CFillHatchRequestPacket.TYPE, CFillHatchRequestPacket.CODEC, CFillHatchRequestPacket::handle);
+    registrar.playToServer(CGridChunkPacket.TYPE, CGridChunkPacket.CODEC, CGridChunkPacket::handle);
+    registrar.playToServer(CUpdateUIStatePacket.TYPE, CUpdateUIStatePacket.CODEC, CUpdateUIStatePacket::handle);
 
     // JEI/Recipe Transfer packet
     if (Mods.isJEILoaded()) {

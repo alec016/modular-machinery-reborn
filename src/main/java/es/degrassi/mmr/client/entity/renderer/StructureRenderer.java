@@ -10,11 +10,13 @@ import es.degrassi.mmr.client.util.RenderTypes;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.util.CycleTimer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -119,12 +121,26 @@ public class StructureRenderer {
                                      VertexConsumer builder) {
     List<BlockStateModelPart> parts = new ArrayList<>();
     model.collectParts(cl, pos, state, RandomSource.create(), parts);
+    var blockColors = Minecraft.getInstance().getBlockColors();
+    List<BlockTintSource> tintSources = blockColors.getTintSources(state);
     parts.forEach(part -> {
       Arrays.stream(Direction.values())
           .flatMap(dir -> part.getQuads(dir).stream())
-          .forEach(quad -> builder.putBakedQuad(pose, quad, new QuadInstance()));
-      part.getQuads(null).forEach(quad -> builder.putBakedQuad(pose, quad, new QuadInstance()));
+          .forEach(quad -> putQuadWithTint(builder, pose, quad, cl, state, pos, tintSources));
+      part.getQuads(null).forEach(quad -> putQuadWithTint(builder, pose, quad, cl, state, pos, tintSources));
     });
+  }
+
+  /** Same tint resolution the world renderer applies (ModelBlockRenderer#putQuadWithTint). */
+  private void putQuadWithTint(VertexConsumer builder, PoseStack.Pose pose, BakedQuad quad,
+                               ClientLevel cl, BlockState state, BlockPos pos,
+                               List<BlockTintSource> tintSources) {
+    QuadInstance instance = new QuadInstance();
+    int tintIndex = quad.materialInfo().tintIndex();
+    if (tintIndex != -1 && tintIndex < tintSources.size()) {
+      instance.multiplyColor(tintSources.get(tintIndex).colorInWorld(state, cl, pos));
+    }
+    builder.putBakedQuad(pose, quad, instance);
   }
 
   public boolean shouldRender() {

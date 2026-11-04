@@ -2,6 +2,15 @@ package es.degrassi.mmr.data.lang;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import es.degrassi.mmr.api.client.CoreActionTypeTexts;
+import es.degrassi.mmr.api.client.ExperienceButtonTypeTexts;
+import es.degrassi.mmr.client.screen.widget.buttons.ButtonsTexts;
+import es.degrassi.mmr.client.screen.widget.gauges.GaugesTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
+import es.degrassi.mmr.common.item.StructureCreatorItemMode;
+import es.degrassi.mmr.common.machine.IOType;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.ItemRegistration;
 import es.degrassi.mmr.data.advancements.AdvancementTexts;
@@ -17,6 +26,52 @@ final class ZhCnLocalization extends LocalizationProvider {
   protected void addEnums() {
     addEnum(AdvancementTexts.class, v -> switch (v) {
       default -> v.getEnglishText();
+    });
+    addEnum(MachineStatus.class, v -> switch (v) {
+      case PAUSED -> "暂停";
+      case MISSING_STRUCTURE -> "结构不完整";
+      case IDLE -> "没有相匹配的配方";
+      case RUNNING -> "工作中...";
+      default -> v.getEnglishText();
+    });
+    addEnum(IOType.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(StructureCreatorItemMode.class, v -> switch (v) {
+      case SINGLE -> "单个";
+      case BOX -> "范围";
+      case VEIN -> "Proximity (Vein)";
+    });
+    addEnum(TabTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(EnergyDisplayUtil.EnergyType.class);
+    addEnum(GaugesTexts.class, v -> switch (v) {
+      case fluidHatchEmpty -> "空";
+      default -> v.getEnglishText();
+    });
+    addEnum(ButtonsTexts.class, v -> switch (v) {
+      default -> v.getEnglishText();
+    });
+    addEnum(ExperienceButtonTypeTexts.class, v -> switch (v) {
+      case EXTRACT_1 -> "取出 1 级";
+      case EXTRACT_10 -> "取出 10 级";
+      case EXTRACT_ALL -> "取出所有";
+      case INSERT_1 -> "存入 1 级";
+      case INSERT_10 -> "存入 10 级";
+      case INSERT_ALL -> "存入所有";
+    });
+    addVariantEnum(CoreActionTypeTexts.class, (a, v) -> switch (a) {
+      case ADD -> "启用" + switch (v) {
+        case SINGLE -> " 1 个可用核心";
+        case SHIFT -> " 10 个可用核心";
+        case CONTROL -> "所有可用核心";
+      };
+      case REMOVE -> "禁用" + switch (v) {
+        case SINGLE -> " 1 个可用核心";
+        case SHIFT -> " 10 个可用核心";
+        case CONTROL -> "可用核心数至 1";
+      };
     });
   }
 
@@ -345,23 +400,16 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(tooltip("experiencehatch.tank.levels"), "%s / %s levels");
     add(tooltip("experiencehatch.tank.info"), "可以存储 %s 经验点数");
 
-    add(tooltip("energy.type.fe"), "FE");
-    add(tooltip("energy.type.ic2_eu"), "EU");
-    add(tooltip("energy.type.gt_eu"), "EU");
-
     add(tooltip("constructtool.creative"), "创造模式用机械结构到 JSON 转换工具");
 
     add(tooltip("itembus.slot"), "1 格");
     add(tooltip("itembus.slots"), "%s 格");
 
-    add(tooltip("fluidhatch.empty"), "空");
     add(tooltip("fluidhatch.fluid"), "[流体]");
     add(tooltip("fluidhatch.gas"), "[气体]");
-    add(tooltip("fluidhatch.tank"), "%smB / %smB");
     add(tooltip("fluidhatch.tank.gas"), "%s / %s");
     add(tooltip("fluidhatch.tank.info"), "容积 %s mB");
 
-    add(tooltip("energyhatch.charge"), "%s / %s %s");
     add(tooltip("energyhatch.storage"), "最大存储 %s FE");
     add(tooltip("energyhatch.out.transfer"), "最大输出 %s FE/t");
     add(tooltip("energyhatch.in.accept"), "最大输入 %s FE/t");
@@ -370,7 +418,6 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(tooltip("blueprint"), "右键任意机器控制器以显示结构");
 
     add(tooltip("fueltank.storage"), "Can store %s burntime (ticks)");
-    add(tooltip("fuel_tank.tank"), "%s / %s ticks");
 
     add(tooltip("effectdispenser.interdimensional"), "Gives effects interdimensionally");
     add(tooltip("effectdispenser.radius"), "Gives effects in a radius of %s blocks around this block");
@@ -465,16 +512,9 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(mmr(gui("button.page.next")), "下一页");
     add(mmr(gui("button.page.prev")), "上一页");
     add(mm(gui("core_button")), "显示核心信息");
-    add(mmr(gui("element.experience.tooltip")), "%s / %s");
     add(mmr(gui("element.experience.tooltip.input")), "需要: %s / %s");
     add(mmr(gui("element.experience.tooltip.output")), "产出: %s / %s");
     add(mmr(gui("element.experience.level")), "%s 级");
-    add(mmr(gui(tooltip("experience.button.extract_1"))), "取出 1 级");
-    add(mmr(gui(tooltip("experience.button.extract_10"))), "取出 10 级");
-    add(mmr(gui(tooltip("experience.button.extract_all"))), "取出所有");
-    add(mmr(gui(tooltip("experience.button.insert_1"))), "存入 1 级");
-    add(mmr(gui(tooltip("experience.button.insert_10"))), "存入 10 级");
-    add(mmr(gui(tooltip("experience.button.insert_all"))), "存入所有");
     add(mm(gui("structure_placer_button")), "点击以尝试放置结构");
     add(mm(gui("structure_breaker_button")), "点击以破坏当前结构");
     add(mmr(gui("structure.break")), "你确定要破坏当前的结构吗？");
@@ -512,9 +552,6 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(mmr("no_paper_template"), "No paper or structure template found in inventory");
     add(mm("structure_creator.mode.change.tooltip"), "当手持时,按下[%s]来切换模式");
     add(mm("structure_creator.mode.change"), "模式从 %s 变更到 %s");
-    add(mm("structure_creator.mode.single"), "单个");
-    add(mm("structure_creator.mode.box"), "范围");
-    add(mm("structure_creator.mode.vein"), "Proximity (Vein)");
     add(mm("structure_creator.mode.box.first"), "请选择第一个角");
     add(mm("structure_creator.mode.box.second"), "请选择第二个角");
     add(mm("structure_creator.mode"), "当前模式: %s");
@@ -542,21 +579,10 @@ final class ZhCnLocalization extends LocalizationProvider {
     add(gui("controller.status"), "当前状态: ");
     add(gui("controller.error.info"), "Error Info: ");
     add(gui("controller.status.redstone_stopped"), "机器因红石信号停止工作");
-    add(gui("controller.status.paused"), "暂停");
-    add(gui("controller.status.missing_structure"), "结构不完整");
-    add(gui("controller.status.idle"), "没有相匹配的配方");
-    add(gui("controller.status.errored"), "");
-    add(gui("controller.status.running"), "工作中...");
     add(gui("controller.status.running.progress"), "处理中: %s");
     add(mmr("core.active.true"), "当前核心能为配方工作");
     add(mmr("core.active.false"), "当前核心不能能为配方工作");
     add(mmr("core.number"), "核心编号: %s");
     add(mmr(gui("core.button")), "单击显示 %s 核心的信息");
-    add(mmr(gui(tooltip("core.action.button.single.add"))), "启用 1 个可用核心");
-    add(mmr(gui(tooltip("core.action.button.single.remove"))), "禁用 1 个可用核心");
-    add(mmr(gui(tooltip("core.action.button.shift.add"))), "启用 10 个可用核心");
-    add(mmr(gui(tooltip("core.action.button.shift.remove"))), "禁用 10 个可用核心");
-    add(mmr(gui(tooltip("core.action.button.control.add"))), "启用所有可用核心");
-    add(mmr(gui(tooltip("core.action.button.control.remove"))), "禁用可用核心数至 1");
   }
 }

@@ -12,25 +12,6 @@ import net.minecraft.core.Direction;
 import java.util.EnumMap;
 import java.util.function.Function;
 
-/**
- * Reimplementation of Athena 4.0.6's {@code earth.terrarium.athena.impl.client.models.ctm.ConnectedTextureMap}.
- *
- * <p>Athena 4.7.3 removed the index based API of that class (its {@code ConnectedTextureMap} is now a
- * collection of {@code CtmProvider}s that emit quads directly and exposes no {@code put}, {@code getTexture}
- * or {@code getTextures} methods), so MMR keeps its own map with the exact semantics of the old one,
- * reconstructed from the 4.0.6 bytecode:
- *
- * <ul>
- *   <li>A direction may hold a full index map, or a single material, which behaves like a map holding only
- *       index {@code 0} (the first CTM texture slot).</li>
- *   <li>{@link #getTexture(Direction, int)} returns a <b>global</b> sprite index: it is only valid after
- *       {@link #getTextures(Function)} has been called, which rebuilds the index remapping. Unknown indices
- *       fall back to {@code 0}, which is what the models use to detect a missing overlay texture.</li>
- * </ul>
- *
- * <p>The returned texture map is keyed by those global sprite indices, so {@code quad.sprite()} values
- * produced by {@link #getTexture(Direction, int)} can be looked up directly in it.
- */
 public class MMRMaterialMap {
 
   private final EnumMap<Direction, Int2ObjectMap<Material>> maps = new EnumMap<>(Direction.class);

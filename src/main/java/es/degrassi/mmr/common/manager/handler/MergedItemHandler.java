@@ -12,16 +12,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/**
- * Live view over several {@link ItemHandler}s.
- *
- * <p>The legacy {@code mergeBuild} shared the underlying slot objects between the merged handler and
- * the source block entities, so machine-side mutations always hit the real inventories. A plain copy
- * would desynchronise them (the machine would consume from / produce to a stale snapshot), so every
- * slot operation here is routed to the source handler that owns the index range.</p>
- *
- * <p>Slot addressing: {@code [0, src0.size()) + [src0.size(), src0.size()+src1.size()) + …}</p>
- */
 public class MergedItemHandler extends ItemHandler {
   private final ItemHandler[] sources;
   private final int[] offsets;

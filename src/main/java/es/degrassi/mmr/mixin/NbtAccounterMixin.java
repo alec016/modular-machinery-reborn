@@ -12,4 +12,14 @@ public abstract class NbtAccounterMixin {
   private static void create(long quota, CallbackInfoReturnable<NbtAccounter> cir) {
     cir.setReturnValue(NbtAccounter.unlimitedHeap());
   }
+
+  @Inject(method = "defaultQuota", at = @At("RETURN"), cancellable = true)
+  private static void defaultQuota(CallbackInfoReturnable<NbtAccounter> cir) {
+    cir.setReturnValue(NbtAccounter.unlimitedHeap());
+  }
+
+  @Inject(method = "uncompressedQuota", at = @At("RETURN"), cancellable = true)
+  private static void uncompressedQuota(CallbackInfoReturnable<NbtAccounter> cir) {
+    cir.setReturnValue(NbtAccounter.unlimitedHeap());
+  }
 }

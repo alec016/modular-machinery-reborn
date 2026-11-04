@@ -1,8 +1,13 @@
 package es.degrassi.mmr.common.block;
 
+import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.mojang.serialization.MapCodec;
 import es.degrassi.mmr.client.ModularMachineryRebornClient;
+import es.degrassi.mmr.client.screen.EffectDispenserUI;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
 import es.degrassi.mmr.common.block.base.BlockTickEntity;
+import es.degrassi.mmr.common.block.base.SizedBlockHatch;
 import es.degrassi.mmr.common.block.base.TooltipAppendable;
 import es.degrassi.mmr.common.block.prop.EffectDispenserSize;
 import es.degrassi.mmr.common.entity.EffectDispenserEntity;
@@ -12,7 +17,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,12 +32,27 @@ import java.util.function.Consumer;
 
 import static es.degrassi.mmr.client.ModularMachineryRebornClient.createParticle;
 
-public class BlockEffectDispenser extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable {
+public class BlockEffectDispenser extends BlockMachineComponent implements BlockTickEntity, TooltipAppendable,
+    BlockUIMenuType.BlockUI, SizedBlockHatch<EffectDispenserSize> {
   @Getter
   private final EffectDispenserSize size;
   public BlockEffectDispenser(Properties id, EffectDispenserSize size) {
     super(id);
     this.size = size;
+  }
+
+  @Override
+  protected MapCodec<BlockEffectDispenser> codec() {
+    return BlockCodecs.EFFECT_DISPENSER.mapCodec();
+  }
+
+  @Override
+  @Nullable
+  public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
+    if (holder.player.level().getBlockEntity(holder.pos) instanceof EffectDispenserEntity entity) {
+      return EffectDispenserUI.create(holder, entity);
+    }
+    return null;
   }
 
   @Override

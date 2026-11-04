@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 public record CSetFilterSlotItemPacket(ItemStack stack, BlockPos pos) implements CustomPacketPayload {
 
@@ -27,11 +28,17 @@ public record CSetFilterSlotItemPacket(ItemStack stack, BlockPos pos) implements
     return TYPE;
   }
 
-  public static <T> void handle(CSetFilterSlotItemPacket packet, IPayloadContext context) {
+  public static void handle(CSetFilterSlotItemPacket packet, IPayloadContext context) {
     if(context.player() instanceof ServerPlayer player)
       context.enqueueWork(() -> {
         if(player.level().getBlockEntity(packet.pos) instanceof FiltereableEntity<?, ?> machine) {
-          machine.getFilterInventory().setStack(0, packet.stack);
+          var stack = packet.stack();
+          machine.getFilterInventory()
+              .set(
+                  0,
+                  ItemResource.of(stack),
+                  stack.isEmpty() ? 0 : Math.min(stack.getCount(), machine.getFilterInventory().getCapacity(0, ItemResource.of(stack)))
+              );
         }
       });
   }
