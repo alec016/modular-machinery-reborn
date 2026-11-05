@@ -10,9 +10,11 @@ import es.degrassi.mmr.api.capability.IFuelHandler;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
+import es.degrassi.mmr.api.codec.BigStackCodecs;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
+import es.degrassi.mmr.api.entity.IPickResultEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
 import es.degrassi.mmr.api.entity.TextureableMachineEntity;
@@ -36,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +64,7 @@ import java.util.Map;
 @Setter
 public class FuelTankEntity extends TileInventory implements MachineComponentEntity<FuelComponent>,
     ControllerAccessible, TextureableMachineEntity, IServerTickEntity, ISyncableStuff, IAutoInputEntity<ResourceHandler<ItemResource>>,
-    ISideConfigComponent<IOSideMode>, EntityMenuHolder {
+    ISideConfigComponent<IOSideMode>, EntityMenuHolder, IPickResultEntity {
   @Nullable
   private BlockPos controllerPos;
   private final FuelTankSize size;
@@ -289,5 +292,14 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
       ResourceHandlerUtil.moveStacking(from, to, _ -> true, maxAmount, root);
       root.commit();
     }
+  }
+
+  @Override
+  public void decode(CompoundTag tag) {
+    if (getInventory().isCompiling()) return;
+    var amount = Math.clamp(tag.getLongOr("amount", 0L), 0, Integer.MAX_VALUE);
+    var item = tag.read("item", BigStackCodecs.OPTIONAL.codec()).orElse(ItemStack.EMPTY);
+    if (item.isEmpty()) return;
+    if (getInventory().addToInputs(item, amount) > 0) setChanged();
   }
 }

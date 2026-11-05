@@ -8,8 +8,8 @@ import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.util.UISoundUtils;
 import es.degrassi.mmr.api.client.Icon;
 import es.degrassi.mmr.client.screen.util.MMRMachineUI;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 public final class VisibleRowsButton extends UIElement {
-  public static final int TAB_SPOT_BOTTOM = FillTab.LEFT_TAB_HEIGHT + 1;
+  public static final int TAB_SPOT_BOTTOM = AbstractFillTab.LEFT_TAB_HEIGHT + 1;
 
   private final Consumer<VisibleRows> onChange;
   private final IntSupplier screenMaxRows;
@@ -31,7 +31,7 @@ public final class VisibleRowsButton extends UIElement {
     this.onChange = onChange;
     this.screenMaxRows = screenMaxRows;
     this.state = initialState == null ? VisibleRows.SMALL : initialState;
-    lss("width", FillTab.LEFT_TAB_WIDTH).lss("height", FillTab.LEFT_TAB_HEIGHT);
+    lss("width", AbstractFillTab.LEFT_TAB_WIDTH).lss("height", AbstractFillTab.LEFT_TAB_HEIGHT);
     addEventListener(UIEvents.MOUSE_DOWN, event -> {
       if (event.button == 0) {
         event.stopPropagation();
@@ -73,11 +73,11 @@ public final class VisibleRowsButton extends UIElement {
     int x = (int) getContentX();
     int y = (int) getContentY();
     if (isHover()) {
-      gui.drawTexture(MMRMachineUI.sprite(FillTab.TEX_TAB_LEFT_HOVERED, 0, 0, 29, FillTab.LEFT_TAB_HEIGHT),
-          x, y, 29, FillTab.LEFT_TAB_HEIGHT);
+      gui.drawTexture(MMRMachineUI.sprite(AbstractFillTab.TEX_TAB_LEFT_HOVERED, 0, 0, 29, AbstractFillTab.LEFT_TAB_HEIGHT),
+          x, y, 29, AbstractFillTab.LEFT_TAB_HEIGHT);
     } else {
-      gui.drawTexture(MMRMachineUI.sprite(FillTab.TEX_TAB_LEFT, 0, 0, FillTab.LEFT_TAB_WIDTH, FillTab.LEFT_TAB_HEIGHT),
-          x, y, FillTab.LEFT_TAB_WIDTH, FillTab.LEFT_TAB_HEIGHT);
+      gui.drawTexture(MMRMachineUI.sprite(AbstractFillTab.TEX_TAB_LEFT, 0, 0, AbstractFillTab.LEFT_TAB_WIDTH, AbstractFillTab.LEFT_TAB_HEIGHT),
+          x, y, AbstractFillTab.LEFT_TAB_WIDTH, AbstractFillTab.LEFT_TAB_HEIGHT);
     }
     Icon icon = byState();
     if (icon == null) return;

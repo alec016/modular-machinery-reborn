@@ -1,19 +1,19 @@
 package es.degrassi.mmr.client.screen;
 
-import es.degrassi.mmr.api.uistate.IBlockUIState;
-import es.degrassi.mmr.api.uistate.UIStates;
-import es.degrassi.mmr.client.screen.util.MMRMachineUI;
-import es.degrassi.mmr.client.screen.widget.GridPaneUI;
-import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
-
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
+import es.degrassi.mmr.api.uistate.IBlockUIState;
+import es.degrassi.mmr.api.uistate.UIStates;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.widget.GridPaneUI;
 import es.degrassi.mmr.client.screen.widget.buttons.VisibleRows;
 import es.degrassi.mmr.client.screen.widget.buttons.VisibleRowsButton;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.FillTabs;
 import es.degrassi.mmr.common.data.config.ItemBusConfig;
 import es.degrassi.mmr.common.entity.DurabilityHatchEntity;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
@@ -66,17 +66,16 @@ public final class ItemDurabilityUI {
     }
 
     new AutoIoTab<>(panel, hatch, width - GridPaneUI.TAB_INSET, 0, true);
-    FillTab.fillDurabilityTab(
+    FillTabs.fillDurabilityTab(
         panel,
         holder.player,
         hatch,
-        FillTab.LEFT_TAB_X,
+        AbstractFillTab.LEFT_TAB_X,
         Optional.ofNullable(grid).map(_ -> VisibleRowsButton.TAB_SPOT_BOTTOM).orElse(0),
         hatch::getInventory
     );
 
-    MMRMachineUI.captionLabel(panel,
-        Component.translatable("modular_machinery_reborn.gui.title.durability_hatch"), 8, 6);
+    MMRMachineUI.captionLabel(panel, Component.translatable("modular_machinery_reborn.gui.title.durability_hatch"), 8, 6);
 
     inventoryLabel = MMRMachineUI.inventoryLabel(panel,
         MMRMachineUI.INVENTORY_X, GridPaneUI.playerYAt(gridY, visibleRows) + 15);
@@ -87,7 +86,7 @@ public final class ItemDurabilityUI {
       final GridPaneUI.ScrolledGrid pane = grid;
       final Label invLabel = inventoryLabel;
       final InventorySlots inventory = playerInventory;
-      new VisibleRowsButton(panel, FillTab.LEFT_TAB_X, 0, next -> {
+      new VisibleRowsButton(panel, AbstractFillTab.LEFT_TAB_X, 0, next -> {
         int rows = next.resolve(screenMax);
         pane.resize(rows, rows * MMRMachineUI.SLOT);
         panel.lss("height", GridPaneUI.panelHeightAt(gridY, rows));

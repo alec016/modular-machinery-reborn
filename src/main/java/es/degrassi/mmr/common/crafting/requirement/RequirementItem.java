@@ -77,10 +77,10 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
 
   @Override
   public boolean test(ItemComponent component, ICraftingContext context) {
-    int amount = (int) context.getIntegerModifiedValue(this.ingredient.count(), this);
+    long amount = context.getIntegerModifiedValue(this.ingredient.count(), this);
     var items = ingredient.ingredient().display().resolveForStacks(SlotDisplayContext.fromLevel(context.getMachineTile().getLevel()));
     if (getMode() == IOType.INPUT) {
-      return items.stream().mapToInt(component::getItemAmount).sum() >= amount;
+      return items.stream().mapToLong(component::getItemAmount).sum() >= amount;
     } else if(getMode() == IOType.OUTPUT) {
       if (items.size() == 1)
         return component.getSpaceForItem(items.getFirst()) >= amount;
@@ -99,8 +99,8 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
   }
 
   private CraftingResult processInput(ItemComponent component, ICraftingContext context) {
-    int amount = (int) context.getIntegerModifiedValue(this.ingredient.count(), this);
-    int maxExtract = component.getIngredientAmount(this.ingredient.ingredient());
+    long amount = context.getIntegerModifiedValue(this.ingredient.count(), this);
+    long maxExtract = component.getIngredientAmount(this.ingredient.ingredient());
     if (maxExtract >= amount) {
       component.removeFromInputs(this.ingredient.ingredient(), amount);
       return CraftingResult.success();
@@ -109,11 +109,11 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
   }
 
   private CraftingResult processOutput(ItemComponent component, ICraftingContext context) {
-    int amount = (int) context.getIntegerModifiedValue(this.ingredient.count(), this);
+    long amount = context.getIntegerModifiedValue(this.ingredient.count(), this);
     var items = ingredient.ingredient().display().resolveForStacks(SlotDisplayContext.fromLevel(context.getMachineTile().getLevel()));
     if (items.size() == 1) {
       ItemStack item = items.getFirst();
-      int canInsert = component.getSpaceForItem(item);
+      long canInsert = component.getSpaceForItem(item);
       if (canInsert >= amount) {
         component.addToOutputs(item.copy(), amount);
         return CraftingResult.success();

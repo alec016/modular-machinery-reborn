@@ -1,5 +1,6 @@
 package es.degrassi.mmr.common.integration.kubejs.function;
 
+import com.google.common.primitives.Ints;
 import dev.latvian.mods.kubejs.level.CachedLevelBlock;
 import dev.latvian.mods.rhino.Wrapper;
 import dev.latvian.mods.rhino.util.HideFromJS;
@@ -266,7 +267,7 @@ public class MachineControllerJS {
    * @return items that couldn't be added
    */
   public ItemStack addItem(ItemStack stack) {
-    AtomicInteger toAdd = new AtomicInteger(stack.getCount());
+    AtomicLong toAdd = new AtomicLong(stack.getCount());
     this.internal.getComponentManager()
         .getFoundComponentsList()
         .stream()
@@ -276,11 +277,11 @@ public class MachineControllerJS {
         .forEach(c -> {
           if (toAdd.get() <= 0) return;
           if (c.getSpaceForItem(stack) <= 0) return;
-          int inserted = c.getContainerProvider().addToOutputs(stack, toAdd.get());
+          long inserted = c.getContainerProvider().addToOutputs(stack, toAdd.get());
           toAdd.addAndGet(-inserted);
         });
 
-    return stack.copyWithCount(toAdd.get());
+    return stack.copyWithCount(Ints.saturatedCast(toAdd.get()));
   }
 
   /**
@@ -289,7 +290,6 @@ public class MachineControllerJS {
    */
   public void removeItem(ItemStack stack) {
     AtomicReference<ItemStack> item = new AtomicReference<>(stack);
-    AtomicReference<ItemStack> extracted = new AtomicReference<>(ItemStack.EMPTY);
     this.internal.getComponentManager()
         .getFoundComponentsList()
         .stream()
@@ -299,8 +299,6 @@ public class MachineControllerJS {
         .forEach(c -> {
           if (item.get().isEmpty()) return;
           if (c.getItemAmount(item.get()) <= 0) return;
-          AtomicInteger toRemove = new AtomicInteger(item.get().getCount());
-          AtomicInteger removed = new AtomicInteger(0);
           c.removeFromInputs(Ingredient.of(stack.getItem()), stack.count());
         });
   }

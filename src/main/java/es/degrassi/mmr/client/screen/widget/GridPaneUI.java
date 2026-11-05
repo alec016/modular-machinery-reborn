@@ -19,8 +19,8 @@ import es.degrassi.mmr.api.uistate.IBlockUIState;
 import es.degrassi.mmr.client.container.MMRBusSlot;
 import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.buttons.VisibleRows;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 import es.degrassi.mmr.client.screen.widget.tabs.TabTexts;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
 import es.degrassi.mmr.common.manager.handler.ItemHandler;
 import es.degrassi.mmr.common.network.client.CGridChunkPacket;
 import es.degrassi.mmr.common.util.GridChunkRegistry;
@@ -46,7 +46,7 @@ public final class GridPaneUI {
   public static final int MAX_DEFAULT_ROWS = 5;
   private static final int SCROLL_BORDER_LR = 3;
   private static final int SCROLL_BORDER_TB = 4;
-  private static final int FULL_SCREEN_MARGIN = FillTab.LEFT_TAB_HEIGHT;
+  private static final int FULL_SCREEN_MARGIN = AbstractFillTab.LEFT_TAB_HEIGHT;
 
   public static int defaultRows(int slots, int cols) {
     int realCols = Math.max(1, cols);

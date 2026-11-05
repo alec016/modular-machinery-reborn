@@ -29,8 +29,8 @@ public class ItemComponent extends MachineComponent<ItemHandler> {
     return handler;
   }
 
-  public int getIngredientAmount(Ingredient ingredient) {
-    int amount = 0;
+  public long getIngredientAmount(Ingredient ingredient) {
+    long amount = 0;
     for (int i = 0; i < handler.size(); i++) {
       ItemStack stack = handler.getStack(i);
       if (!stack.isEmpty() && ingredient.test(stack)) amount += stack.getCount();
@@ -38,16 +38,16 @@ public class ItemComponent extends MachineComponent<ItemHandler> {
     return amount;
   }
 
-  public int getItemAmount(ItemStack stack) {
+  public long getItemAmount(ItemStack stack) {
     return this.handler.getItemAmount(stack);
   }
 
-  public int getSpaceForItem(ItemStack stack) {
+  public long getSpaceForItem(ItemStack stack) {
     return handler.getSpaceForItem(stack);
   }
 
-  public void removeFromInputs(Ingredient ingredient, int amount) {
-    int toRemove = amount;
+  public void removeFromInputs(Ingredient ingredient, long amount) {
+    long toRemove = amount;
     for (int i = 0; i < handler.size() && toRemove > 0; i++) {
       ItemStack stack = handler.getStack(i);
       if (stack.isEmpty() || !ingredient.test(stack)) continue;
@@ -55,7 +55,7 @@ public class ItemComponent extends MachineComponent<ItemHandler> {
     }
   }
 
-  public void addToOutputs(ItemStack stack, int amount) {
+  public void addToOutputs(ItemStack stack, long amount) {
     handler.addToOutputs(stack, amount);
   }
 

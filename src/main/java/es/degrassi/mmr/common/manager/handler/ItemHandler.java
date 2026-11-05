@@ -1,5 +1,6 @@
 package es.degrassi.mmr.common.manager.handler;
 
+import com.google.common.primitives.Ints;
 import es.degrassi.experiencelib.api.network.SyncableList;
 import es.degrassi.mmr.api.codec.BigStackCodecs;
 import lombok.Getter;
@@ -23,8 +24,6 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
   private boolean compiling;
 
   public ItemHandler(int size, long capacity, long maxIn, long maxOut, Direction... accessibleSides) {
-    // The big stack codec keeps the amount of a slot above the vanilla limits (a bus with a
-    // capacity of 10k items per slot would not be savable otherwise).
     super(size, capacity, maxIn, maxOut, ItemStack.EMPTY, BigStackCodecs.OPTIONAL.codec(), accessibleSides);
   }
 
@@ -75,45 +74,45 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
     return slotStack.count() < getCapacity(index, resource);
   }
 
-  public int addToOutputs(ItemStack stack, int amount) {
-    int remaining = amount;
+  public long addToOutputs(ItemStack stack, long amount) {
+    long remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
       if (!isOutputSlot(i)) continue;
       if (!canPlaceOutput(i, stack)) continue;
       ItemStack slotStack = getStack(i);
-      int capacity = getCapacity(i, ItemResource.of(stack));
-      int maxInsert = Math.min(capacity - slotStack.count(), remaining);
+      long capacity = getCapacity(i, ItemResource.of(stack));
+      long maxInsert = Math.min(capacity - slotStack.count(), remaining);
       if (maxInsert <= 0) continue;
-      set(i, ItemResource.of(stack), slotStack.count() + maxInsert);
+      set(i, ItemResource.of(stack), Ints.saturatedCast(slotStack.count() + maxInsert));
       remaining -= maxInsert;
     }
     return amount - remaining;
   }
 
-  public int addToInputs(ItemStack stack, int amount) {
-    int remaining = amount;
+  public long addToInputs(ItemStack stack, long amount) {
+    long remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
       if (!isInputSlot(i)) continue;
       if (!canPlaceOutput(i, stack)) continue;
       ItemStack slotStack = getStack(i);
-      int capacity = getCapacity(i, ItemResource.of(stack));
-      int maxInsert = Math.min(capacity - slotStack.count(), remaining);
+      long capacity = getCapacityAsLong(i, ItemResource.of(stack));
+      long maxInsert = Math.min(capacity - slotStack.count(), remaining);
       if (maxInsert <= 0) continue;
-      set(i, ItemResource.of(stack), slotStack.count() + maxInsert);
+      set(i, ItemResource.of(stack), Ints.saturatedCast(slotStack.count() + maxInsert));
       remaining -= maxInsert;
     }
     return amount - remaining;
   }
 
-  public int extractFromInputs(ItemStack stack, int amount) {
-    int remaining = amount;
+  public long extractFromInputs(ItemStack stack, long amount) {
+    long remaining = amount;
     for (int i = 0; i < size() && remaining > 0; i++) {
       if (!isInputSlot(i)) continue;
       ItemStack slotStack = getStack(i);
       if (slotStack.isEmpty() || !ItemStack.isSameItemSameComponents(slotStack, stack)) continue;
-      int maxExtract = Math.min(slotStack.count(), remaining);
+      long maxExtract = Math.min(slotStack.count(), remaining);
       if (maxExtract <= 0) continue;
-      set(i, ItemResource.of(slotStack), slotStack.count() - maxExtract);
+      set(i, ItemResource.of(slotStack), Ints.saturatedCast(slotStack.count() - maxExtract));
       remaining -= maxExtract;
     }
     return amount - remaining;
@@ -122,24 +121,23 @@ public class ItemHandler extends AbstractHandler<ItemStack, ItemResource> {
   public boolean moveToOutputs(int index) {
     ItemStack stack = getStack(index);
     if (stack.isEmpty() || isOutputSlot(index)) return false;
-    int moved = addToOutputs(stack, stack.getCount());
+    long moved = addToOutputs(stack, stack.getCount());
     if (moved <= 0) return false;
     if (moved >= stack.getCount()) {
       set(index, ItemResource.EMPTY, 0);
     } else {
-      set(index, ItemResource.of(stack), stack.getCount() - moved);
+      set(index, ItemResource.of(stack), Ints.saturatedCast(stack.getCount() - moved));
     }
     return true;
   }
 
-  public int getSpaceForItem(ItemStack stack) {
-    int space = 0;
+  public long getSpaceForItem(ItemStack stack) {
+    long space = 0;
     for (int i = 0; i < size(); i++) {
       if (!isInputSlot(i)) continue;
       if (!canPlaceOutput(i, stack)) continue;
       ItemStack slotStack = getStack(i);
-      // The handler's capacity is the limit, not the item's own maximum stack size.
-      int capacity = getCapacity(i, ItemResource.of(stack));
+      long capacity = getCapacityAsLong(i, ItemResource.of(stack));
       space += slotStack.isEmpty() ? capacity : capacity - slotStack.count();
     }
     return Math.max(space, 0);

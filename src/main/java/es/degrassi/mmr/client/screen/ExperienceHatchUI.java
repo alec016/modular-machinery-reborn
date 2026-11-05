@@ -1,16 +1,17 @@
 package es.degrassi.mmr.client.screen;
-import es.degrassi.mmr.client.container.MMRBusSlot;
-import es.degrassi.mmr.client.screen.util.MMRMachineUI;
-import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
-import es.degrassi.mmr.client.screen.widget.gauges.ExperienceBarGauge;
-import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import es.degrassi.experiencelib.api.ExperienceResource;
 import es.degrassi.mmr.api.client.ExperienceButtonType;
+import es.degrassi.mmr.client.container.MMRBusSlot;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.widget.buttons.IconButton;
+import es.degrassi.mmr.client.screen.widget.gauges.ExperienceBarGauge;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.FillTabs;
 import es.degrassi.mmr.common.entity.ExperienceInputHatchEntity;
 import es.degrassi.mmr.common.entity.ExperienceOutputHatchEntity;
 import es.degrassi.mmr.common.entity.base.ExperienceHatchEntity;
@@ -32,7 +33,7 @@ public final class ExperienceHatchUI {
     new AutoIoTab<>(panel, hatch, MMRMachineUI.PANEL_WIDTH, 0, hatch.getMode().isInput());
 
     if (hatch.getMode().isInput()) {
-      FillTab.fillExperienceTab(panel, holder.player, hatch, FillTab.LEFT_TAB_X, 0,
+      FillTabs.fillExperienceTab(panel, holder.player, hatch, AbstractFillTab.LEFT_TAB_X, 0,
           () -> Math.max(0L, hatch.getTank().getCapacityAsLong(0, ExperienceResource.EMPTY)
               - hatch.getTank().getAmountAsLong(0)));
     }

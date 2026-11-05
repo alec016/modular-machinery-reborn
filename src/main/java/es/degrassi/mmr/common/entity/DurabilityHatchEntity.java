@@ -7,9 +7,11 @@ import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.capability.config.IOSideConfig;
 import es.degrassi.mmr.api.capability.config.IOSideMode;
 import es.degrassi.mmr.api.capability.config.ISideConfigComponent;
+import es.degrassi.mmr.api.codec.BigStackCodecs;
 import es.degrassi.mmr.api.controller.ControllerAccessible;
 import es.degrassi.mmr.api.entity.EntityMenuHolder;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
+import es.degrassi.mmr.api.entity.IPickResultEntity;
 import es.degrassi.mmr.api.entity.IServerTickEntity;
 import es.degrassi.mmr.api.entity.ITickEntity;
 import es.degrassi.mmr.api.entity.MachineComponentEntity;
@@ -29,6 +31,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +57,7 @@ import java.util.Map;
 @ParametersAreNonnullByDefault
 public class DurabilityHatchEntity extends TileInventory implements MachineComponentEntity<DurabilityComponent>, ControllerAccessible, TextureableMachineEntity,
     IAutoInputEntity<ResourceHandler<ItemResource>>, ISyncableStuff, ITickEntity, IServerTickEntity,
-    ISideConfigComponent<IOSideMode>, EntityMenuHolder {
+    ISideConfigComponent<IOSideMode>, EntityMenuHolder, IPickResultEntity {
   @Setter
   @Nullable private BlockPos controllerPos;
   private ItemDurabilityHatchSize size;
@@ -238,5 +242,14 @@ public class DurabilityHatchEntity extends TileInventory implements MachineCompo
   @Override
   public void getStuffToSync(SyncableList container) {
     container.sync(IOSideConfig.class, this::getConfig, this.config::set);
+  }
+
+  @Override
+  public void decode(CompoundTag tag) {
+    if (getInventory().isCompiling()) return;
+    var amount = Math.clamp(tag.getLongOr("amount", 0L), 0, Integer.MAX_VALUE);
+    var item = tag.read("item", BigStackCodecs.OPTIONAL.codec()).orElse(ItemStack.EMPTY);
+    if (item.isEmpty()) return;
+    if (getInventory().addToInputs(item, amount) > 0) setChanged();
   }
 }

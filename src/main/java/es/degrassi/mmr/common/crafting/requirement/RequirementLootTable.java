@@ -101,7 +101,7 @@ public class RequirementLootTable implements IRequirement<ItemComponent, ItemHan
     Iterator<ItemStack> iterator = toOutput.iterator();
     while (iterator.hasNext()) {
       ItemStack stack = iterator.next();
-      int space = component.getSpaceForItem(stack);
+      long space = component.getSpaceForItem(stack);
       if (space < stack.getCount()) {
         return CraftingResult.error(Component.translatable("craftcheck.failure.item.output.space"));
       }

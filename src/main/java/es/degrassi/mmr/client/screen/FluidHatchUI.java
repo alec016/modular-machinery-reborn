@@ -8,7 +8,8 @@ import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.gauges.FluidTankGauge;
 import es.degrassi.mmr.client.screen.widget.gauges.Gauge;
 import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.FillTabs;
 import es.degrassi.mmr.common.entity.base.FluidTankEntity;
 import net.minecraft.network.chat.Component;
 
@@ -25,7 +26,7 @@ public final class FluidHatchUI {
 
     new AutoIoTab<>(panel, hatch, MMRMachineUI.PANEL_WIDTH, 0, hatch.getMode().isInput());
     if (hatch.getMode().isInput()) {
-      FillTab.fillFluidTab(panel, holder.player, hatch, FillTab.LEFT_TAB_X, 0, hatch::getTank);
+      FillTabs.fillFluidTab(panel, holder.player, hatch, AbstractFillTab.LEFT_TAB_X, 0, hatch::getTank);
     }
 
     MMRMachineUI.captionLabel(panel,

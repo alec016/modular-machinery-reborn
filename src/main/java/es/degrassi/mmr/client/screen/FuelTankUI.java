@@ -1,13 +1,14 @@
 package es.degrassi.mmr.client.screen;
-import es.degrassi.mmr.client.container.MMRBusSlot;
-import es.degrassi.mmr.client.screen.util.MMRMachineUI;
-import es.degrassi.mmr.client.screen.widget.gauges.FuelGauge;
-import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
-import es.degrassi.mmr.client.screen.widget.tabs.FillTab;
 
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import es.degrassi.mmr.client.container.MMRBusSlot;
+import es.degrassi.mmr.client.screen.util.MMRMachineUI;
+import es.degrassi.mmr.client.screen.widget.gauges.FuelGauge;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIoTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.AbstractFillTab;
+import es.degrassi.mmr.client.screen.widget.tabs.fill.FillTabs;
 import es.degrassi.mmr.common.entity.FuelTankEntity;
 import net.minecraft.network.chat.Component;
 
@@ -22,7 +23,7 @@ public final class FuelTankUI {
         MMRMachineUI.TEX_BACKGROUND, MMRMachineUI.PANEL_WIDTH, MMRMachineUI.PANEL_HEIGHT);
 
     new AutoIoTab<>(panel, tank, MMRMachineUI.PANEL_WIDTH, 0, true);
-    FillTab.fillItemTab(panel, holder.player, tank, FillTab.LEFT_TAB_X, 0, tank::getInventory,
+    FillTabs.fillItemTab(panel, holder.player, tank, AbstractFillTab.LEFT_TAB_X, 0, tank::getInventory,
         stack -> tank.getLevel() != null && tank.getLevel().fuelValues().isFuel(stack));
 
     int left = MMRMachineUI.centeredLeft(64);
