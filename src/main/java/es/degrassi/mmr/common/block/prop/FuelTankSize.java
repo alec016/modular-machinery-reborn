@@ -1,6 +1,8 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.FuelTankConfig;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -36,5 +38,10 @@ public enum FuelTankSize implements ConfigLoaded, EnumRepresentable {
 
   private static long secondsToTicks(long seconds) {
     return seconds * 20;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return FuelTankConfig.getSpec();
   }
 }

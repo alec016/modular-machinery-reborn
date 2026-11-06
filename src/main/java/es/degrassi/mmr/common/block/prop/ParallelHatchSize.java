@@ -2,6 +2,8 @@ package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.ParallelHatchConfig;
+import net.neoforged.fml.config.IConfigSpec;
 
 public enum ParallelHatchSize implements ConfigLoaded, EnumRepresentable {
   BASIC(2),
@@ -25,5 +27,10 @@ public enum ParallelHatchSize implements ConfigLoaded, EnumRepresentable {
 
   ParallelHatchSize(int max) {
     this.defaultMax = max;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return ParallelHatchConfig.getSpec();
   }
 }

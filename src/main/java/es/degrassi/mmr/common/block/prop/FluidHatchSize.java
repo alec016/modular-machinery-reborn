@@ -1,6 +1,7 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.FluidHatchConfig;
 import es.degrassi.mmr.common.entity.base.BlockEntitySynchronized;
 import es.degrassi.mmr.common.manager.handler.FluidHandler;
 import es.degrassi.mmr.common.network.server.component.SUpdateFluidComponentPacket;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Locale;
@@ -59,5 +61,10 @@ public enum FluidHatchSize implements EnumRepresentable, ConfigLoaded {
             new SUpdateFluidComponentPacket(slot, fluidStack, tileEntity.getBlockPos()));
     });
     return handler;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return FluidHatchConfig.getSpec();
   }
 }

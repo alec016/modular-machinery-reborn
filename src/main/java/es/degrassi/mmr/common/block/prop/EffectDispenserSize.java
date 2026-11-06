@@ -1,7 +1,9 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.EffectDispenserConfig;
 import net.minecraft.util.StringRepresentable;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -28,5 +30,10 @@ public enum EffectDispenserSize implements ConfigLoaded, EnumRepresentable {
       case "BIG" -> BIG;
       default -> SMALL;
     };
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return EffectDispenserConfig.getSpec();
   }
 }

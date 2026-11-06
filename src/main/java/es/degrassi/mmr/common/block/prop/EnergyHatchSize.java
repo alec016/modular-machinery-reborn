@@ -1,6 +1,8 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.EnergyHatchConfig;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -36,5 +38,10 @@ public enum EnergyHatchSize implements EnumRepresentable, ConfigLoaded {
   EnergyHatchSize(long maxEnergy, long transferLimit) {
     this.defaultConfigurationEnergy = maxEnergy;
     this.defaultConfigurationTransferLimit = transferLimit;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return EnergyHatchConfig.getSpec();
   }
 }

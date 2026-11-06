@@ -1,6 +1,8 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.ItemBusConfig;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -41,5 +43,10 @@ public enum ItemBusSize implements EnumRepresentable, ConfigLoaded {
 
   public int getSlotCount() {
     return slots;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return ItemBusConfig.getSpec();
   }
 }

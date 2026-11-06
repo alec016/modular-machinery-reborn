@@ -1,6 +1,8 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.DurabilityHatchConfig;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -35,5 +37,10 @@ public enum ItemDurabilityHatchSize implements EnumRepresentable, ConfigLoaded {
 
   public int getSlotCount() {
     return slots;
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return DurabilityHatchConfig.getSpec();
   }
 }

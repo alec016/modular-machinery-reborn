@@ -28,6 +28,7 @@ import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.crafting.modifier.RecipeModifierTargetEvent;
 import es.degrassi.mmr.common.crafting.requirement.RequirementType;
 import es.degrassi.mmr.common.data.Config;
+import es.degrassi.mmr.common.data.MMRClientConfig;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.data.config.DurabilityHatchConfig;
 import es.degrassi.mmr.common.data.config.EffectDispenserConfig;
@@ -91,7 +92,6 @@ import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.resource.ListenerKey;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -142,6 +142,7 @@ public class ModularMachineryReborn {
 
   private static void initConfigs(final ModContainer container) {
     container.registerConfig(ModConfig.Type.STARTUP, MMRConfig.getSpec(), config("common"));
+    container.registerConfig(ModConfig.Type.CLIENT, MMRClientConfig.getSpec(), config("client"));
     container.registerConfig(ModConfig.Type.COMMON, EnergyHatchConfig.getSpec(), config("energy_hatch"));
     container.registerConfig(ModConfig.Type.COMMON, FluidHatchConfig.getSpec(), config("fluid_hatch"));
     container.registerConfig(ModConfig.Type.COMMON, ItemBusConfig.getSpec(), config("item_bus"));
@@ -255,10 +256,12 @@ public class ModularMachineryReborn {
   }
 
   private void reloadConfig(final ModConfigEvent.Reloading event) {
+    ConfigLoaded.load(event.getConfig().getSpec());
     if (event.getConfig().getSpec() == MMRConfig.getSpec()) {
       MMRLogger.setDebugLevel(MMRConfig.get().debugLevel.get().getLevel());
       Config.load();
-      ConfigLoaded.load();
+    }
+    if (event.getConfig().getSpec() == EnergyHatchConfig.getSpec()) {
       EnergyDisplayUtil.loadFromConfig();
     }
   }

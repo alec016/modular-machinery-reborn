@@ -1,7 +1,9 @@
 package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
+import es.degrassi.mmr.common.data.config.ExperienceHatchConfig;
 import lombok.Getter;
+import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
@@ -35,5 +37,10 @@ public enum ExperienceHatchSize implements EnumRepresentable, ConfigLoaded {
       case "VACUUM" -> VACUUM;
       default -> TINY;
     };
+  }
+
+  @Override
+  public IConfigSpec get() {
+    return ExperienceHatchConfig.getSpec();
   }
 }
