@@ -84,16 +84,13 @@ public class RequirementExperience implements IRequirement<ExperienceComponent, 
         long toExtract = 0L;
         try (var tx = Transaction.open(root)) {
           toExtract = handler.extractRecipe(i, amount, tx);
+          tx.commit();
         }
         canExtract += toExtract;
         amount -= toExtract;
       }
       if (canExtract == originAmount) {
         root.commit();
-        /*for (int i = 0; i < handler.getTanks(); i++) {
-          long toExtract = component.getContainerProvider().extractExperienceRecipe(i, canExtract, false);
-          canExtract += toExtract;
-        }*/
         return CraftingResult.success();
       }
     }
@@ -121,6 +118,7 @@ public class RequirementExperience implements IRequirement<ExperienceComponent, 
         for (int i = 0; i < handler.size(); i++) {
           try (var tx = Transaction.open(root)) {
             amount -= handler.insertRecipe(i, amount, tx);
+            tx.commit();
           }
         }
         root.commit();
