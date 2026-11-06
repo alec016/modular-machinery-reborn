@@ -2,15 +2,14 @@ package es.degrassi.mmr.common.block.prop;
 
 import es.degrassi.mmr.api.core.EnumRepresentable;
 import es.degrassi.mmr.common.data.config.EffectDispenserConfig;
-import net.minecraft.util.StringRepresentable;
 import net.neoforged.fml.config.IConfigSpec;
 
 import java.util.Locale;
 
 public enum EffectDispenserSize implements ConfigLoaded, EnumRepresentable {
-  SMALL(5, false, true),
-  MEDIUM(15, false, true),
-  BIG(32, false, true);
+  SMALL(5, false, false),
+  MEDIUM(15, false, false),
+  BIG(32, true, false);
 
   public final int defaultRadius;
   public final boolean defaultDimensional;

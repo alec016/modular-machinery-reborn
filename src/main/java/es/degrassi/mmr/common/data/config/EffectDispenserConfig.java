@@ -24,9 +24,9 @@ public class EffectDispenserConfig {
   public final ModConfigSpec.ConfigValue<Integer> mediumRadius;
   public final ModConfigSpec.ConfigValue<Integer> bigRadius;
 
-  /*public final ModConfigSpec.ConfigValue<Boolean> smallDimensional;
+  public final ModConfigSpec.ConfigValue<Boolean> smallDimensional;
   public final ModConfigSpec.ConfigValue<Boolean> mediumDimensional;
-  public final ModConfigSpec.ConfigValue<Boolean> bigDimensional;*/
+  public final ModConfigSpec.ConfigValue<Boolean> bigDimensional;
 
   public final ModConfigSpec.ConfigValue<Boolean> smallShowParticles;
   public final ModConfigSpec.ConfigValue<Boolean> mediumShowParticles;
@@ -37,9 +37,9 @@ public class EffectDispenserConfig {
     smallRadius = builder
         .comment("Defines the effect area radius in blocks", "This is ignored if the hatch is interdimensional")
         .defineInRange("radius", EffectDispenserSize.SMALL.defaultRadius, 1, Integer.MAX_VALUE);
-    /*smallDimensional = builder
+    smallDimensional = builder
         .comment("Defines if this hatch tier ignores the radius and gives effects interdimensional")
-        .define("interdimensional", EffectDispenserSize.SMALL.defaultDimensional);*/
+        .define("interdimensional", EffectDispenserSize.SMALL.defaultDimensional);
     smallShowParticles = builder
         .comment("Defines if this hatch should show the area effect in form of particles", "This is ignored if the hatch is interdimensional")
         .define("showParticles", EffectDispenserSize.SMALL.defaultShowParticles);
@@ -48,9 +48,9 @@ public class EffectDispenserConfig {
     mediumRadius = builder
         .comment("Defines the effect area radius in blocks", "This is ignored if the hatch is interdimensional")
         .defineInRange("radius", EffectDispenserSize.MEDIUM.defaultRadius, 1, Integer.MAX_VALUE);
-    /*mediumDimensional = builder
+    mediumDimensional = builder
         .comment("Defines if this hatch tier ignores the radius and gives effects interdimensional")
-        .define("interdimensional", EffectDispenserSize.MEDIUM.defaultDimensional);*/
+        .define("interdimensional", EffectDispenserSize.MEDIUM.defaultDimensional);
     mediumShowParticles = builder
         .comment("Defines if this hatch should show the area effect in form of particles", "This is ignored if the hatch is interdimensional")
         .define("showParticles", EffectDispenserSize.MEDIUM.defaultShowParticles);
@@ -59,9 +59,9 @@ public class EffectDispenserConfig {
     bigRadius = builder
         .comment("Defines the effect area radius in blocks", "This is ignored if the hatch is interdimensional")
         .defineInRange("radius", EffectDispenserSize.BIG.defaultRadius, 1, Integer.MAX_VALUE);
-    /*bigDimensional = builder
+    bigDimensional = builder
         .comment("Defines if this hatch tier ignores the radius and gives effects interdimensional")
-        .define("interdimensional", EffectDispenserSize.BIG.defaultDimensional);*/
+        .define("interdimensional", EffectDispenserSize.BIG.defaultDimensional);
     bigShowParticles = builder
         .comment("Defines if this hatch should show the area effect in form of particles.", "This is ignored if the hatch is interdimensional")
         .define("showParticles", EffectDispenserSize.BIG.defaultShowParticles);
@@ -77,12 +77,11 @@ public class EffectDispenserConfig {
   }
 
   public boolean interdimensional(EffectDispenserSize size) {
-    return false;
-    /*return (switch (size) {
+    return (switch (size) {
       case SMALL -> smallDimensional;
       case MEDIUM -> mediumDimensional;
       case BIG -> bigDimensional;
-    }).get();*/
+    }).get();
   }
 
   public boolean showParticles(EffectDispenserSize size) {

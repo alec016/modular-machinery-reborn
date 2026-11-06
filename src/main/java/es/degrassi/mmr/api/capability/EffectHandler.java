@@ -11,14 +11,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.apache.commons.compress.utils.Lists;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class EffectHandler {
   private final EffectDispenserEntity entity;
@@ -49,21 +47,11 @@ public class EffectHandler {
   public void applyEffect(MobEffectInstance effect, Predicate<Entity> filter) {
     this.setData(Optional.of(effect));
     if (getSize().interdimensional) {
-      Stream.Builder<ServerLevel> levels = Stream.builder();
-      entity.getLevel().getServer().getAllLevels().forEach(levels::add);
-      levels
-          .build()
-          .map(level -> {
-            List<LivingEntity> entities = Lists.newArrayList();
-            level.getEntities()
-                .getAll()
-                .forEach(entity -> {
-                  if (entity instanceof LivingEntity) entities.add(entity.asLivingEntity());
-                });
-            return entities;
-          })
-          .flatMap(List::stream)
-          .forEach(entity -> entity.addEffect(effect));
+      entity.getLevel().getServer().getAllLevels()
+              .forEach(level -> {
+                level.getEntities(EntityTypeTest.forClass(LivingEntity.class), filter)
+                    .forEach(entity -> entity.addEffect(effect));
+              });
       setChanged();
       return;
     }
