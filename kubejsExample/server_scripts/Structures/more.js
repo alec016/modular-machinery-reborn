@@ -1,0 +1,127 @@
+//If you need more information you can check the wiki
+//https://wikis.degrassi.es/docs/modular-machinery-reborn
+
+/*
+They follow the following logic for most hatches:
+<modid>:<type like energy or chemical>_<input/output>_hatch_<size>
+Here is a collection of hatches that can change textures:
+
+Hatches textures:
+
+modular_machinery_reborn:parallel_hatch_basic
+modular_machinery_reborn:parallel_hatch_medium
+modular_machinery_reborn:parallel_hatch_advanced
+modular_machinery_reborn:parallel_hatch_ultimate
+modular_machinery_reborn:parallel_hatch_max
+
+Energy:
+modular_machinery_reborn:energy_input_hatch_tiny
+modular_machinery_reborn:energy_input_hatch_small
+modular_machinery_reborn:energy_input_hatch_normal
+modular_machinery_reborn:energy_input_hatch_reinforced
+modular_machinery_reborn:energy_input_hatch_big
+modular_machinery_reborn:energy_input_hatch_huge
+modular_machinery_reborn:energy_input_hatch_ludicrous
+modular_machinery_reborn:energy_input_hatch_ultimate
+modular_machinery_reborn:energy_output_hatch_tiny
+modular_machinery_reborn:energy_output_hatch_small
+modular_machinery_reborn:energy_output_hatch_normal
+modular_machinery_reborn:energy_output_hatch_reinforced
+modular_machinery_reborn:energy_output_hatch_big
+modular_machinery_reborn:energy_output_hatch_huge
+modular_machinery_reborn:energy_output_hatch_ludicrous
+modular_machinery_reborn:energy_output_hatch_ultimate
+
+Experience:
+modular_machinery_reborn:experience_input_hatch_tiny
+modular_machinery_reborn:experience_input_hatch_small
+modular_machinery_reborn:experience_input_hatch_normal
+modular_machinery_reborn:experience_input_hatch_reinforced
+modular_machinery_reborn:experience_input_hatch_big
+modular_machinery_reborn:experience_input_hatch_huge
+modular_machinery_reborn:experience_input_hatch_ludicrous
+modular_machinery_reborn:experience_input_hatch_vacuum
+modular_machinery_reborn:experience_output_hatch_tiny
+modular_machinery_reborn:experience_output_hatch_small
+modular_machinery_reborn:experience_output_hatch_normal
+modular_machinery_reborn:experience_output_hatch_reinforced
+modular_machinery_reborn:experience_output_hatch_big
+modular_machinery_reborn:experience_output_hatch_huge
+modular_machinery_reborn:experience_output_hatch_ludicrous
+modular_machinery_reborn:experience_output_hatch_vacuum
+
+Fluid:
+modular_machinery_reborn:fluid_input_hatch_tiny
+modular_machinery_reborn:fluid_input_hatch_small
+modular_machinery_reborn:fluid_input_hatch_normal
+modular_machinery_reborn:fluid_input_hatch_reinforced
+modular_machinery_reborn:fluid_input_hatch_big
+modular_machinery_reborn:fluid_input_hatch_huge
+modular_machinery_reborn:fluid_input_hatch_ludicrous
+modular_machinery_reborn:fluid_input_hatch_vacuum
+modular_machinery_reborn:fluid_output_hatch_tiny
+modular_machinery_reborn:fluid_output_hatch_small
+modular_machinery_reborn:fluid_output_hatch_normal
+modular_machinery_reborn:fluid_output_hatch_reinforced
+modular_machinery_reborn:fluid_output_hatch_big
+modular_machinery_reborn:fluid_output_hatch_huge
+modular_machinery_reborn:fluid_output_hatch_ludicrous
+modular_machinery_reborn:fluid_output_hatch_vacuum
+
+Item:
+modular_machinery_reborn:item_input_bus_tiny
+modular_machinery_reborn:item_input_bus_small
+modular_machinery_reborn:item_input_bus_normal
+modular_machinery_reborn:item_input_bus_reinforced
+modular_machinery_reborn:item_input_bus_big
+modular_machinery_reborn:item_input_bus_huge
+modular_machinery_reborn:item_input_bus_ludicrous
+modular_machinery_reborn:item_output_bus_tiny
+modular_machinery_reborn:item_output_bus_small
+modular_machinery_reborn:item_output_bus_normal
+modular_machinery_reborn:item_output_bus_reinforced
+modular_machinery_reborn:item_output_bus_big
+modular_machinery_reborn:item_output_bus_huge
+modular_machinery_reborn:item_output_bus_ludicrous
+
+Other:
+modular_machinery_reborn:biome_reader
+modular_machinery_reborn:chunkloader
+modular_machinery_reborn:dimensional_detector
+modular_machinery_reborn:time_counter
+modular_machinery_reborn:weather_sensor
+modular_machinery_reborn:height_meter
+
+Mekanism:
+modular_machinery_reborn_mekanism:chemical_input_hatch_<size>
+modular_machinery_reborn_mekanism:chemical_output_hatch_<size>
+modular_machinery_reborn_mekanism:heat_input_vent
+modular_machinery_reborn_mekanism:heat_output_vent
+
+Ars MMR:
+modular_machinery_reborn_ars:source_input_hatch_<size>
+modular_machinery_reborn_ars:source_output_hatch_<size>
+
+*/
+
+/*
+This is part of the Recipe folder, but it's related to structures.
+It's basically a "better" ways to add "modifiers" (to change structure, not effects)
+It's more like a sort of upgrader on demand
+
+.requireStructure(MMRStructureBuilder.createRequirement()) // Checks if the structure is there
+.destroyStructure(MMRStructureBuilder.createRequirement()) // Break a structure without dropping the blocks
+.breakStructure(MMRStructureBuilder.createRequirement()) // Break a structure dropping the blocks
+
+.placeStructure(MMRStructureBuilder.createRequirement(), drops) //true if it should drops blocks, else nope
+.placeStructure(MMRStructureBuilder.createRequirement()) // Same as above with true
+
+It's similar to the structure on the .structure(), but needs the special hatches, and m (the controller) is changed to $
+You need to use the Structure Creator.
+
+There is also another special key, "_", which basically tells that block is not the controller nor the structure checker block
+Its like " ", but having a small blacklist.
+To summary this special key:
+- On create() -> Blacklists the controller
+- On createRequirement() -> Blacklists the structure checker
+*/

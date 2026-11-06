@@ -1,5 +1,7 @@
-//If you need more information you can check the wiki
-//https://wikis.degrassi.es/docs/modular-machinery-reborn
+/*
+If you need more information you can check the wiki
+https://wikis.degrassi.es/docs/modular-machinery-reborn
+*/
 
 /*
 Now, you want to customize even more your machine?
@@ -29,6 +31,9 @@ MMREvents.machines(event => {
     for Mekanism
 
     Can be on assets/mod/model (example: minecraft:block/grass) or a blockid (modid:blockid)
+    ControllerModel is accesible without adding a Java.loadClass
+
+    There are more functions from .controllerModel on more_complex_structure.js
     */
     .controllerModel(ControllerModel.of('minecraft:stone'))
 })
@@ -61,6 +66,7 @@ MMREvents.machines(event => {
 
     Can be on assets/mod/model (example: minecraft:block/grass) or a blockid (modid:blockid)
     More info for the bus and hatches here: https://wikis.degrassi.es/docs/modular-machinery-reborn/section/misc/article/texture-types
+    Or you can check on the more.js on the same folder than this file
 
     If you have FTB quests and you can edit quests, right click on a chapter
     add image and you can check the textures or you can go to the mod repository
@@ -109,6 +115,28 @@ MMREvents.machines(event => {
     "errored", "idle", "missing_structure", "paused", "running"
     */
     .sound("idle", {
+        ambient: { //You can use with "" or without, since JS will convert automatically to json
+            sound: "actuallyadditions:coffee_machine",
+            volume: 1.0, //From 0 to MAX_VALUE of a Java float (https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Float.html)
+            pitch: 1.0, // From 0 to MAX_VALUE of a Java float
+            source: "BLOCKS", //Where it is played. Possible values: MASTER, MUSIC, RECORDS, WEATHER, BLOCKS, HOSTILE, NEUTRAL, PLAYERS, AMBIENT, VOICE
+            loop: true, //Should the sound be on repeat?
+            attenuation: true, // Should the sound be attenuated?
+            delay: 0, // Should the sound have a delay? From 0 to MAX_VALUE of a Java Integer (https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Integer.html)
+            relative: false // Should be relative?
+        },
+        "interaction": { //all are optionals, but allows for more customization
+            "volume": 100, //a whole number from 0 to 100
+            "pitch": 0,//a number from 0.0 to 2.0
+            "break": "actuallyadditions:coffee_machine",//if you want a custom sound for breaking the machine
+            "step": "actuallyadditions:coffee_machine",//if you want a custom sound when you walk on the machine
+            "place": "actuallyadditions:coffee_machine",//if you want a custom sound for placing the machine
+            "hit": "actuallyadditions:coffee_machine",//if you want a custom sound when you hit the machine
+            "fall": "actuallyadditions:coffee_machine"//if you want a custom sound when you fall on the machine
+        }
+    })
+
+    .sound("errored", {
         "ambient": "actuallyadditions:coffee_machine",
         "interaction": { //all are optionals, but allows for more customization
             "volume": 100, //a whole number from 0 to 100
