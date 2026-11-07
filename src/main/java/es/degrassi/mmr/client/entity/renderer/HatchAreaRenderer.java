@@ -3,6 +3,7 @@ package es.degrassi.mmr.client.entity.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import es.degrassi.mmr.client.util.RenderTypes;
+import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -96,11 +97,11 @@ public final class HatchAreaRenderer {
 
   /** Line + corner colors come from the general config (Rendering section). */
   private static int configLineColor() {
-    return MMRConfig.get().hatchAreaLineColor.get();
+    return Config.toInt(MMRConfig.get().hatchAreaLineColor.get(), 0xffffffff);
   }
 
   private static int configFillColor() {
-    return MMRConfig.get().hatchAreaFillColor.get();
+    return Config.toInt(MMRConfig.get().hatchAreaFillColor.get(), 0x40FFFFFF);
   }
 
   /** Six translucent faces so the preview cube reads as a solid, visible volume. Both windings are

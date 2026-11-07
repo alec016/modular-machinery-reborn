@@ -47,9 +47,9 @@ public class MMRConfig {
 
   public final ConfigValue<Integer> structureRenderTime;
   public final ConfigValue<Integer> blockTagCycleTime;
-  public final ConfigValue<Integer> hatchAreaLineColor;
-  public final ConfigValue<Integer> hatchAreaFillColor;
-  public final ConfigValue<Integer> structureCreatorColor;
+  public final ConfigValue<String> hatchAreaLineColor;
+  public final ConfigValue<String> hatchAreaFillColor;
+  public final ConfigValue<String> structureCreatorColor;
   public final ConfigValue<String> machineDirectory;
   public final ConfigValue<List<String>> modelFolders;
 
@@ -157,30 +157,39 @@ public class MMRConfig {
     {
       builder.push("Rendering");
       this.structureRenderTime = builder
-          .comment("The time in milliseconds the structure requirement\nstructure will render in world when clicking\non the icon in the jei recipe.")
+          .comment("The time in milliseconds the structure requirement")
+          .comment("structure will render in world when clicking")
+          .comment("on the icon in the jei recipe.")
           .defineInRange("structure_render_time", 10000, 1, Integer.MAX_VALUE);
       this.blockTagCycleTime = builder
-          .comment("The time in milliseconds each blocks will be shown\nwhen using a block tag in a structure.")
+          .comment("The time in milliseconds each blocks will be shown")
+          .comment("when using a block tag in a structure.")
           .defineInRange("block_tag_cycle_time", 1000, 1, Integer.MAX_VALUE);
       this.hatchAreaLineColor = builder
-          .comment("ARGB color of the hatch area (radius) outline\nshown by the radio preview button.")
-          .defineInRange("hatch_area_line_color", 0xFFFFFFFF, Integer.MIN_VALUE, Integer.MAX_VALUE);
+          .comment("ARGB color of the hatch area (radius) outline")
+          .comment("shown by the radio preview button.")
+          .define("hatch_area_line_color", "#FFFFFFFF");
       this.hatchAreaFillColor = builder
-          .comment("ARGB color used to fill the hatch area (radius)\ncube faces. Keep the alpha translucent so the\nworld stays visible through the preview.")
-          .defineInRange("hatch_area_fill_color", 0x40FFFFFF, Integer.MIN_VALUE, Integer.MAX_VALUE);
+          .comment("ARGB color used to fill the hatch area (radius)")
+          .comment("cube faces. Keep the alpha translucent so the")
+          .comment("world stays visible through the preview.")
+          .define("hatch_area_fill_color", "#40FFFFFF");
       this.structureCreatorColor = builder
-          .comment("ARGB color of the structure creator/template\nselected block outlines.")
-          .defineInRange("structure_creator_color", 0xFFFF0000, Integer.MIN_VALUE, Integer.MAX_VALUE);
+          .comment("ARGB color of the structure creator/template")
+          .comment("selected block outlines.")
+          .define("structure_creator_color", "#FFFF0000");
       builder.pop();
     }
     // DIRECTORIES
     {
       builder.push("Directories");
       this.machineDirectory = builder
-          .comment("A folder name where MMR will load machine structure json.\nThese folder must be under the \"data/<namespace>\" folder.")
+          .comment("A folder name where MMR will load machine structure json.")
+          .comment("These folder must be under the 'data/<namespace>' folder.")
           .define("machine_directory", "machines");
       this.modelFolders = builder
-          .comment("A list of folder names where MMR will load controller models json. These folders must be under the 'assets/namespace/models' folder.")
+          .comment("A list of folder names where MMR will load controller models json.")
+          .comment("These folders must be under the 'assets/namespace/models' folder.")
           .define("model_folders", Lists.newArrayList("controller", "controllers"));
       builder.pop();
     }

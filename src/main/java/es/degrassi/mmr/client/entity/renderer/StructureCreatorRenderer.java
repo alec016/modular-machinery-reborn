@@ -3,6 +3,7 @@ package es.degrassi.mmr.client.entity.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import es.degrassi.mmr.client.util.RenderTypes;
+import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.item.StructureCreatorItem;
 import es.degrassi.mmr.common.item.StructureTemplateItem;
@@ -49,7 +50,7 @@ public class StructureCreatorRenderer {
     // The level pose stack is world-space (vanilla translates every block entity by
     // blockPos - camera before submitting), so the camera offset goes on here.
     Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().position();
-    int color = MMRConfig.get().structureCreatorColor.get();
+    int color = Config.toInt(MMRConfig.get().structureCreatorColor.get(), 0xFFFF0000);
     float red = ARGB.red(color) / 255F, green = ARGB.green(color) / 255F,
         blue = ARGB.blue(color) / 255F, alpha = ARGB.alpha(color) / 255F;
     pose.pushPose();
