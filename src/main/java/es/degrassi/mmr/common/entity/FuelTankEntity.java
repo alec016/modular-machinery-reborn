@@ -67,7 +67,7 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
     ISideConfigComponent<IOSideMode>, EntityMenuHolder, IPickResultEntity {
   @Nullable
   private BlockPos controllerPos;
-  private final FuelTankSize size;
+  private FuelTankSize size;
 
   private Identifier baseTexture;
   private Identifier overlayTexture;
@@ -170,7 +170,7 @@ public class FuelTankEntity extends TileInventory implements MachineComponentEnt
     super.loadAdditional(input);
     input.readChild("fuelTank", fuelHandler);
     input.getLong("controllerPos").ifPresent(value -> controllerPos = BlockPos.of(value));
-
+    this.size = FuelTankSize.value(input.getString("busSize").orElseThrow());
     this.baseTexture = input.getString("baseTexture").map(Identifier::parse).orElse(defaultBaseTexture);
     this.defaultOverlayTexture = ModularMachineryReborn.rl("block/overlay_fueltank_" + size.getSerializedName());
     this.overlayTexture = input.getString("overlayTexture").map(Identifier::parse).orElse(defaultOverlayTexture);

@@ -35,7 +35,7 @@ public class ParallelHatchEntity extends ColorableMachineComponentEntity impleme
     TextureableMachineEntity, EntityMenuHolder {
   @Nullable
   private BlockPos controllerPos;
-  protected final ParallelHatchSize size;
+  protected ParallelHatchSize size;
   private ParallelComponent component;
   private Identifier baseTexture;
   private Identifier overlayTexture;
@@ -82,6 +82,7 @@ public class ParallelHatchEntity extends ColorableMachineComponentEntity impleme
   @Override
   protected void loadAdditional(ValueInput input) {
     super.loadAdditional(input);
+    this.size = ParallelHatchSize.value(input.getString("size").orElseThrow());
     this.component = new ParallelComponent(size);
     input.getLong("controllerPos").ifPresent(value -> this.controllerPos = BlockPos.of(value));
     input.getInt("cores").ifPresent(this::setCores);
