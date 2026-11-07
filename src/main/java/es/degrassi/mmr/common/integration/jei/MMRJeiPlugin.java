@@ -148,6 +148,7 @@ public class MMRJeiPlugin implements IModPlugin {
   @Override
   public void registerGuiHandlers(IGuiHandlerRegistration registration) {
     registration.addGhostIngredientHandler(AbstractContainerScreen.class, MMRJeiHandlers.GHOST_HANDLER);
+    registration.addGenericGuiContainerHandler(AbstractContainerScreen.class, MMRJeiHandlers.CONTAINER_HANDLER);
   }
 
   private static IGuiClickableArea createBasic(
