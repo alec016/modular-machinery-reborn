@@ -48,6 +48,12 @@ public class MachineProcessor implements IProcessor, ISyncableStuff {
     return Math.min(cores.size(), maxCores.get());
   }
 
+  public int getMaxActiveCores() {
+    AtomicInteger cores = new AtomicInteger(0);
+    this.cores.forEach(core -> cores.getAndAdd(core.isActive() ? 1 : 0));
+    return cores.get();
+  }
+
   @Override
   public ProcessorType<MachineProcessor> getType() {
     return ProcessorTypeRegistration.MACHINE_PROCESSOR.get();

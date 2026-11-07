@@ -20,8 +20,10 @@ import lombok.Setter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 public class RequirementItem implements IRequirement<ItemComponent, ItemHandler> {
@@ -46,12 +48,24 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
   private boolean modified = false;
   @Setter
   private boolean usesDataComponents;
+  private final Component uiComponent;
 
   public RequirementItem(IOType ioType, SizedIngredient ingredient, PositionedRequirement position) {
     this.ingredient = ingredient;
     this.usesDataComponents = ingredient.ingredient().display().resolveForStacks(ContextMap.EMPTY).stream().anyMatch(stack -> !stack.getComponents().isEmpty());
     this.mode = ioType;
     this.position = position;
+    var stackTexts = ingredient.ingredient().display().resolve(
+            ContextMap.EMPTY,
+            SlotDisplay.ItemStackContentsFactory.INSTANCE
+        ).map(ItemStack::getHoverName)
+        .toList();
+    var text = Component.empty();
+    for (int i = 0; i < stackTexts.size(); i++) {
+      text.append(stackTexts.get(i));
+      if (i != stackTexts.size() - 1) text.append(RequirementTexts.or.text());
+    }
+    this.uiComponent = RequirementTexts.item.text(ingredient.count(), text);
   }
 
   public JsonObject asJson(SizedIngredient ingredient) {
@@ -137,5 +151,10 @@ public class RequirementItem implements IRequirement<ItemComponent, ItemHandler>
   @Override
   public boolean isComponentValid(ItemComponent m, ICraftingContext context) {
     return getMode().equals(m.getIOType());
+  }
+
+  @Override
+  public @Nullable Component toControllerUI() {
+    return this.uiComponent;
   }
 }

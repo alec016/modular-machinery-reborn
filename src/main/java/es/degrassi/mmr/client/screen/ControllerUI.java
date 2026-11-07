@@ -2,6 +2,7 @@ package es.degrassi.mmr.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.lowdragmc.lowdraglib2.client.font.LDFonts;
 import com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
@@ -18,11 +19,14 @@ import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.api.BlockIngredient;
 import es.degrassi.mmr.api.client.Icon;
 import es.degrassi.mmr.api.client.machine.TooltipUse;
+import es.degrassi.mmr.api.crafting.requirement.RequirementDisplayInfo;
+import es.degrassi.mmr.client.MMRClientEvents;
 import es.degrassi.mmr.client.item.MMRItemTooltipComponent;
 import es.degrassi.mmr.client.screen.popup.ConfirmationPopup;
 import es.degrassi.mmr.client.screen.popup.CoreGridPopup;
 import es.degrassi.mmr.client.screen.util.MMRMachineUI;
 import es.degrassi.mmr.client.screen.widget.tabs.TopTab;
+import es.degrassi.mmr.common.data.MMRClientConfig;
 import es.degrassi.mmr.common.data.MMRConfig;
 import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.integration.jei.MMRJeiPlugin;
@@ -30,6 +34,7 @@ import es.degrassi.mmr.common.integration.kubejs.KubeJSIntegration;
 import es.degrassi.mmr.common.machine.DynamicMachine;
 import es.degrassi.mmr.common.network.client.CBreakStructurePacket;
 import es.degrassi.mmr.common.network.client.CPlaceStructurePacket;
+import es.degrassi.mmr.common.registration.RecipeRegistration;
 import es.degrassi.mmr.common.util.CycleTimer;
 import es.degrassi.mmr.common.util.Mods;
 import es.degrassi.mmr.common.util.Utils;
@@ -38,9 +43,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -58,8 +65,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-// TODO: if only one core remove the cores tab and add all info inside the screen rendering directly with outputs
-//  like jade/ToP
 public final class ControllerUI {
 
   private ControllerUI() {}
@@ -96,14 +101,14 @@ public final class ControllerUI {
 
   private static void buildTopTabs(UIElement panel, MachineControllerEntity controller) {
     BlockPos pos = controller.getBlockPos();
-    int[] next = {0};
+    int next = 0;
     var blocks = controller.getFoundMachine().getPattern().getBlocks(Direction.NORTH).size();
     int delay = MMRConfig.get().delayOperation.get();
-    new TopTab(panel, TopTab.TOP_TAB_PITCH * next[0]++, -TopTab.TOP_TAB_HEIGHT,
+    new TopTab(panel, next++, -TopTab.TOP_TAB_HEIGHT,
         () -> new ItemStack(Items.STRUCTURE_BLOCK),
         () -> placerTooltips(controller),
         event -> openPlacerPopups(panel, controller, machine(controller), pos));
-    new TopTab(panel, TopTab.TOP_TAB_PITCH * next[0]++, -TopTab.TOP_TAB_HEIGHT,
+    new TopTab(panel, TopTab.TOP_TAB_PITCH * next++, -TopTab.TOP_TAB_HEIGHT,
         () -> new ItemStack(Items.DIAMOND_PICKAXE),
         () -> List.of(Component.translatable("modular_machinery_reborn.gui.structure_breaker_button")),
         event -> new ConfirmationPopup(panel, 180, 84, null,
@@ -118,14 +123,16 @@ public final class ControllerUI {
             () -> ClientPacketDistributor.sendToServer(
                 new CBreakStructurePacket(machine(controller), pos)),
             null, true));
-    new TopTab(panel, TopTab.TOP_TAB_PITCH * next[0]++, -TopTab.TOP_TAB_HEIGHT,
-        Icon.CHECK,
-        () -> List.of(Component.translatable("modular_machinery_reborn.gui.core_button")),
-        event -> new CoreGridPopup(panel, controller));
-    if (addExtraTooltipsTab(panel, controller, next[0])) {
-      next[0]++;
+    if (controller.getProcessor().getMaxActiveCores() > 1) {
+      new TopTab(panel, TopTab.TOP_TAB_PITCH * next++, -TopTab.TOP_TAB_HEIGHT,
+          Icon.CHECK,
+          () -> List.of(Component.translatable("modular_machinery_reborn.gui.core_button")),
+          event -> new CoreGridPopup(panel, controller));
     }
-    addRecipesTab(panel, controller, next[0]);
+    if (addExtraTooltipsTab(panel, controller, next)) {
+      next++;
+    }
+    addRecipesTab(panel, controller, next);
   }
 
   private static Identifier machine(MachineControllerEntity controller) {
@@ -343,50 +350,128 @@ public final class ControllerUI {
       int x0 = (int) getContentX();
       int y0 = (int) getContentY();
       int wrapWidth = Mth.floor((STATUS_AREA_WIDTH - 4) / SCALE);
-      float y;
+      AtomicDouble y = new AtomicDouble(0);
       DynamicMachine machine = controller.getFoundMachine();
       if (machine != null) {
-        y = 0;
         for (var line : font.split(Component.literal(machine.getLocalizedName()), wrapWidth)) {
-          y += 5;
-          drawStatusLine(gui, font, line, x0, y0 + y);
-          y += 7;
+          y.addAndGet(5);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
+          y.addAndGet(7);
         }
-        y -= 5;
+        y.addAndGet(-5);
       } else {
-        y = 5;
+        y.set(5);
         drawStatusLine(gui, font,
             Component.translatable("gui.controller.structure",
                 Component.translatable("gui.controller.structure.none")).getVisualOrderText(),
-            x0, y0 + y);
+            x0, y0 + (float) y.get());
       }
-      y += 2;
+      y.addAndGet(2);
       if (controller.isPaused()) {
         for (var line : font.split(Component.translatable("gui.controller.status.redstone_stopped"), wrapWidth)) {
-          y += 5;
-          drawStatusLine(gui, font, line, x0, y0 + y);
-          y += 7;
+          y.addAndGet(5);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
+          y.addAndGet(7);
         }
-        updateHeight(y);
+        updateHeight((float) y.get());
         return;
       }
       var error = controller.getErrorMessage();
       if (!error.getString().isEmpty()) {
         var errorInfo = Component.translatable("gui.controller.error.info").append(error);
         for (var line : font.split(errorInfo, wrapWidth)) {
-          y += 5;
-          drawStatusLine(gui, font, line, x0, y0 + y);
-          y += 7;
+          y.addAndGet(5);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
+          y.addAndGet(7);
         }
       }
-      var status = Component.translatable("gui.controller.status")
-          .append(controller.getStatus().text());
+      var status = Component.translatable("gui.controller.status").append(controller.getStatus().text());
       for (var line : font.split(status, wrapWidth)) {
-        y += 5;
-        drawStatusLine(gui, font, line, x0, y0 + y);
-        y += 7;
+        y.addAndGet(5);
+        drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
+        y.addAndGet(7);
       }
-      updateHeight(y);
+      var runningCores = controller.getProcessor()
+          .cores()
+          .stream()
+          .filter(core -> core.isActive() && core.isHasActiveRecipe())
+          .toList();
+      if (runningCores.size() == 1) {
+        runningCores.stream()
+            .findFirst()
+            .ifPresent(core -> MMRClientEvents.getClientRecipes()
+                .byType(RecipeRegistration.RECIPE_TYPE.get())
+                .stream()
+                .filter(holder -> holder.id().equals(ResourceKey.create(Registries.RECIPE, core.getFutureRecipeID())))
+                .findFirst()
+                .ifPresent(holder -> {
+                  y.addAndGet(5);
+                  drawStatusLine(gui, font, UITexts.recipeProgress.text(
+                    core.getRecipeProgressTime(),
+                    core.getRecipeTotalTime(),
+                    Utils.decimalFormatWithPercentage(core.getRecipeProgressTime() * 100 / core.getRecipeTotalTime())
+                  ).getVisualOrderText(), x0, y0 + (float) y.getAndAdd(2));
+                  if (MMRClientConfig.get().showRecipeId.getAsBoolean()) {
+                    for (var line : font.split(UITexts.recipeId.text(holder.id().identifier().toString()), wrapWidth)) {
+                      y.getAndAdd(5);
+                      drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
+                    }
+                  }
+                  y.getAndAdd(5);
+                  var outputs = holder.value()
+                      .getRequirements()
+                      .stream()
+                      .filter(req -> {
+                        if (!req.requirement().getMode().isOutput() && !req.requirement().getMode().isNone()) return false;
+                        if (!MMRClientConfig.get().get(Objects.requireNonNull(req.getType().getId()))) return false;
+                        var info = new RequirementDisplayInfo();
+                        req.getDisplayInfo(info);
+                        var template = req.info;
+                        if (template != null) {
+                          if (!template.getTooltips().isEmpty()) info.getTooltips().clear();
+                          template.build(info);
+                        }
+                        return req.hasControllerText() || !info.getTooltips().isEmpty();
+                      })
+                      .toList();
+                  if (outputs.isEmpty()) return;
+                  drawStatusLine(gui, font, UITexts.recipeProductions.text().getVisualOrderText(), x0, y0 + (float) y.getAndAdd(2));
+                  outputs.forEach(req -> {
+                    var info = new RequirementDisplayInfo();
+                    req.getDisplayInfo(info);
+                    var template = req.info;
+                    if (template != null) {
+                      if(!template.getTooltips().isEmpty())
+                        info.getTooltips().clear();
+                      template.build(info);
+                    }
+                    if (req.hasControllerText()) {
+                      for (var line : font.split(UITexts.recipeListItem.text(req.toUI()), wrapWidth)) {
+                        y.getAndAdd(5);
+                        drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
+                      }
+                      return;
+                    }
+                    if (!info.getTooltips().isEmpty()) {
+                      boolean first = true;
+                      for (var x : info.getTooltips()) {
+                        if (!x.getSecond().shouldDisplay(gui.mc.player, gui.mc.options.advancedItemTooltips)) continue;
+                        var text = first
+                            ? UITexts.recipeListItem.text(x.getFirst())
+                            : UITexts.recipeListItemExtra.text(x.getFirst());
+                        first = false;
+                        var lines = font.split(text, wrapWidth);
+                        for (var line : lines) {
+                          y.addAndGet(5);
+                          drawStatusLine(gui, font, line, x0, y0 + (float) y.addAndGet(2));
+                        }
+                      }
+                    }
+                  });
+                })
+            );
+      }
+      updateHeight((float) y.addAndGet(5));
     }
 
     private static void drawStatusLine(GUIContext gui, Font font,

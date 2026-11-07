@@ -65,6 +65,28 @@ public class MMRClientConfig {
         .comment(coreText)
         .define("effect", true);
     requirements.put(mmr("effect"), effect);
+    var experience = builder
+        .comment("Defines if should add to ControllerUI all producing experience requirements")
+        .comment(coreText)
+        .define("experience", true);
+    requirements.put(mmr("experience"), experience);
+    requirements.put(mmr("experience_per_tick"), experience);
+    var energy = builder
+        .comment("Defines if should add to ControllerUI all producing energy requirements")
+        .comment(coreText)
+        .define("energy", true);
+    requirements.put(mmr("energy"), energy);
+    requirements.put(mmr("energy_per_tick"), energy);
+    var redstone = builder
+        .comment("Defines if should add to ControllerUI all producing redstone requirements")
+        .comment(coreText)
+        .define("redstone", true);
+    requirements.put(mmr("redstone"), redstone);
+    var lootTable = builder
+        .comment("Defines if should add to ControllerUI all loot table output requirements")
+        .comment(coreText)
+        .define("loot_table", true);
+    requirements.put(mmr("loot_table"), lootTable);
     builder.pop();
     builder.pop();
   }
@@ -74,6 +96,6 @@ public class MMRClientConfig {
   }
 
   public boolean get(Identifier requirement) {
-    return Optional.ofNullable(requirements.get(requirement)).map(BooleanValue::getAsBoolean).orElse(true);
+    return Optional.ofNullable(requirements.get(requirement)).map(BooleanValue::getAsBoolean).orElse(false);
   }
 }

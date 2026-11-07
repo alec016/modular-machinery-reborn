@@ -273,7 +273,7 @@ public class MachineControllerJS {
         .stream()
         .filter(c -> c instanceof ItemComponent)
         .map(c -> (ItemComponent) c)
-        .filter(c -> !c.getIOType().isInput())
+        .filter(c -> c.getIOType().isOutput())
         .forEach(c -> {
           if (toAdd.get() <= 0) return;
           if (c.getSpaceForItem(stack) <= 0) return;

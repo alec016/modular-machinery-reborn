@@ -20,12 +20,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Function;
 
 @Getter
-@SuppressWarnings("UnstableApiUsage")
 public class RequirementDurability implements IRequirement<DurabilityComponent, ItemHandler> {
   public static final NamedCodec<RequirementDurability> CODEC = NamedCodec.record(instance -> instance.group(
           NamedCodec.of(Ingredient.CODEC).fieldOf("ingredient").aliases("item").forGetter(req -> req.ingredient),
@@ -39,12 +40,24 @@ public class RequirementDurability implements IRequirement<DurabilityComponent, 
   private final IOType mode;
   private final PositionedRequirement position;
   private final int amount;
+  private final Component uiComponent;
 
   public RequirementDurability(IOType ioType, Ingredient ingredient, int amount, PositionedRequirement position) {
     this.amount = amount;
     this.ingredient = ingredient;
     this.mode = ioType;
     this.position = position;
+    var stackTexts = ingredient.display().resolve(
+        ContextMap.EMPTY,
+        SlotDisplay.ItemStackContentsFactory.INSTANCE
+    ).map(ItemStack::getHoverName)
+    .toList();
+    var text = Component.empty();
+    for (int i = 0; i < stackTexts.size(); i++) {
+      text.append(stackTexts.get(i));
+      if (i != stackTexts.size() - 1) text.append(RequirementTexts.or.text());
+    }
+    this.uiComponent = RequirementTexts.durability.text(amount, text);
   }
 
   @Override
@@ -143,5 +156,10 @@ public class RequirementDurability implements IRequirement<DurabilityComponent, 
   @Override
   public boolean isComponentValid(DurabilityComponent m, ICraftingContext context) {
     return true;
+  }
+
+  @Override
+  public @Nullable Component toControllerUI() {
+    return uiComponent;
   }
 }

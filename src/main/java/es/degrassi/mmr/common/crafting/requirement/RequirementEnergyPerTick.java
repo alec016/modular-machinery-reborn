@@ -7,6 +7,8 @@ import es.degrassi.mmr.api.crafting.CraftingResult;
 import es.degrassi.mmr.api.crafting.ICraftingContext;
 import es.degrassi.mmr.api.crafting.requirement.IRequirement;
 import es.degrassi.mmr.api.crafting.requirement.IRequirementList;
+import es.degrassi.mmr.client.screen.util.NumberFormats;
+import es.degrassi.mmr.client.util.EnergyDisplayUtil;
 import es.degrassi.mmr.common.crafting.ComponentType;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.machine.component.EnergyComponent;
@@ -17,6 +19,7 @@ import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.jspecify.annotations.Nullable;
 
 public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, SimpleEnergyHandler> {
   public static final NamedMapCodec<RequirementEnergyPerTick> CODEC = NamedCodec.record(instance -> instance.group(
@@ -129,5 +132,15 @@ public class RequirementEnergyPerTick implements IRequirement<EnergyComponent, S
   @Override
   public boolean isComponentValid(EnergyComponent m, ICraftingContext context) {
     return getMode().equals(m.getIOType());
+  }
+
+  @Override
+  public @Nullable Component toControllerUI() {
+    var amount = Component.empty();
+    amount.append(Component.literal(NumberFormats.compact(requirementPerTick)))
+        .append(" (")
+        .append(Component.literal(NumberFormats.grouped(requirementPerTick)))
+        .append(") ");
+    return RequirementTexts.energyTick.text(amount, EnergyDisplayUtil.type.text());
   }
 }

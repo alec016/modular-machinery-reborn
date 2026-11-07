@@ -21,6 +21,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 public class RequirementFluidPerTick implements IRequirement<FluidComponent, FluidHandler> {
@@ -33,11 +34,23 @@ public class RequirementFluidPerTick implements IRequirement<FluidComponent, Flu
   private final PositionedRequirement position;
   private final IOType mode;
   private final SizedFluidIngredient ingredient;
+  private final Component uiComponent;
 
   public RequirementFluidPerTick(IOType ioType, SizedFluidIngredient fluid, PositionedRequirement position) {
     this.ingredient = fluid;
     this.position = position;
     this.mode = ioType;
+    var stackTexts = ingredient.ingredient().display().resolve(
+            ContextMap.EMPTY,
+            FluidStackContentsFactory.INSTANCE
+        ).map(FluidStack::getHoverName)
+        .toList();
+    var text = Component.empty();
+    for (int i = 0; i < stackTexts.size(); i++) {
+      text.append(stackTexts.get(i));
+      if (i != stackTexts.size() - 1) text.append(RequirementTexts.or.text());
+    }
+    this.uiComponent = RequirementTexts.fluidTick.text(ingredient.amount(), text);
   }
 
   @Override
@@ -165,5 +178,10 @@ public class RequirementFluidPerTick implements IRequirement<FluidComponent, Flu
       if (m.getContainerProvider().isEmpty()) return true;
     }
     return m.getContainerProvider().contains(ingredient.ingredient());
+  }
+
+  @Override
+  public @Nullable Component toControllerUI() {
+    return this.uiComponent;
   }
 }

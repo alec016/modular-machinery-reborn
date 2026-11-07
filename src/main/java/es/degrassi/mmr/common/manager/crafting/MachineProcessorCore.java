@@ -11,7 +11,6 @@ import es.degrassi.mmr.common.entity.MachineControllerEntity;
 import es.degrassi.mmr.common.machine.MachineComponent;
 import es.degrassi.mmr.common.manager.crafting.RequirementList.RequirementWithFunction;
 import es.degrassi.mmr.common.util.Utils;
-import es.degrassi.mmr.ModularMachineryReborn;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.registries.Registries;
@@ -43,6 +42,7 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
   @Nullable
   @Getter
   private RecipeHolder<MachineRecipe> currentRecipe;
+  @Getter
   private Identifier futureRecipeID;
   private CraftingContext context;
   @Getter
@@ -122,6 +122,7 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
     }
 
     if (this.currentRecipe != null) {
+      recipeId = currentRecipe.id().identifier();
       if (this.phase == Phase.CONDITIONS)
         this.checkConditions();
 
@@ -233,6 +234,7 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
       requirement.requirement().gatherRequirements((RequirementList) this.requirementList);
     });
     this.phase = Phase.CONDITIONS;
+    this.recipeId = recipe.id().identifier();
   }
 
   private void setRunning() {
@@ -254,6 +256,7 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
     this.context = null;
     this.phase = Phase.CONDITIONS;
     this.currentProcessRequirements.clear();
+    this.recipeId = null;
   }
 
   public void setSearchImmediately() {
@@ -295,6 +298,9 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
     this.recipeProgressTime = nbt.getFloatOr("recipeProgressTime", 0f);
   }
 
+  @Setter
+  public Identifier recipeId;
+
   @Override
   public void getStuffToSync(SyncableList container) {
     container.syncBool(() -> active, active -> this.active = active);
@@ -302,6 +308,8 @@ public class MachineProcessorCore implements ISyncableStuff, ValueIOSerializable
     container.syncFloat(() -> this.recipeProgressTime, recipeProgressTime -> this.recipeProgressTime = recipeProgressTime);
     container.syncInt(() -> this.recipeTotalTime, recipeTotalTime -> this.recipeTotalTime = recipeTotalTime);
     container.syncBool(() -> getCurrentRecipe() != null, hasActiveRecipe -> this.hasActiveRecipe = hasActiveRecipe);
+    if (recipeId != null)
+      container.syncId(() -> recipeId, this::setRecipeId);
   }
 
   public float getCurrentActiveRecipeProgress() {

@@ -51,7 +51,12 @@ public enum UITexts implements LocalizationEnum {
   actionAddHealth("Heal entities"),
   actionSpawn("Spawn entities"),
   actionKill("Kill entities"),
-  breakPlaceTime("It will take up to %s ticks (%s seconds)")
+  breakPlaceTime("It will take up to %s ticks (%s seconds)"),
+  recipeId("Recipe id: %s"),
+  recipeProgress("%s/%s (%s)"),
+  recipeProductions("Produces: "),
+  recipeListItem("- %s"),
+  recipeListItemExtra("  %s")
   ;
 
   private final String englishText;

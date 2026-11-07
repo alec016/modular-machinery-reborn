@@ -16,6 +16,8 @@ import es.degrassi.mmr.common.machine.MachineComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
+import javax.annotation.Nullable;
+
 public interface IRequirement<C extends MachineComponent<T>, T> {
 
   /**
@@ -91,5 +93,14 @@ public interface IRequirement<C extends MachineComponent<T>, T> {
 
   default void getDefaultDisplayInfo(IDisplayInfo info, RecipeRequirement<?, ?, ?> requirement) {
 
+  }
+
+  default boolean hasControllerText() {
+    return toControllerUI() != null && !toControllerUI().equals(Component.empty());
+  }
+
+  @Nullable
+  default Component toControllerUI() {
+    return null;
   }
 }

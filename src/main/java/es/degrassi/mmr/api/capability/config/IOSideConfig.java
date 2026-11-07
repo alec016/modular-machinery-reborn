@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import es.degrassi.experiencelib.api.codec.EnumMapCodec;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.common.util.Color;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
