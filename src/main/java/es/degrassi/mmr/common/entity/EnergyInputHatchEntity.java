@@ -1,6 +1,5 @@
 package es.degrassi.mmr.common.entity;
 
-import com.google.common.primitives.Ints;
 import es.degrassi.mmr.api.entity.IAutoInputEntity;
 import es.degrassi.mmr.api.entity.IPickResultEntity;
 import es.degrassi.mmr.common.block.prop.EnergyHatchSize;
@@ -13,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class EnergyInputHatchEntity extends EnergyHatchEntity implements IAutoInputEntity<EnergyHandler>, IPickResultEntity {
 
@@ -45,16 +43,6 @@ public class EnergyInputHatchEntity extends EnergyHatchEntity implements IAutoIn
   @Override
   public void decode(CompoundTag tag) {
     var amount = tag.getLongOr("amount", 0L);
-    try (Transaction root = Transaction.openRoot()) {
-      while (amount > 0) {
-        int subAmount = Ints.saturatedCast(Math.min(amount, Integer.MAX_VALUE));
-        amount -= subAmount;
-        try (var subtx = Transaction.open(root)) {
-          getEnergyHandler().insert(subAmount, subtx);
-          subtx.commit();
-        }
-      }
-      root.commit();
-    }
+    getEnergyHandler().set(amount);
   }
 }

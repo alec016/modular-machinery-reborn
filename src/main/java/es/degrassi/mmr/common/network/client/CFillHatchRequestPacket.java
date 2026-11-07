@@ -13,9 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record CFillHatchRequestPacket(BlockPos pos, CompoundTag data) implements CustomPacketPayload {
-
-  public static final int DURABILITY_UNUSED = -1;
-
   public static final Type<CFillHatchRequestPacket> TYPE = new Type<>(ModularMachineryReborn.rl("fill_hatch_request"));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, CFillHatchRequestPacket> CODEC = StreamCodec.composite(
@@ -38,6 +35,7 @@ public record CFillHatchRequestPacket(BlockPos pos, CompoundTag data) implements
         var entity = player.level().getBlockEntity(packet.pos);
         if (entity instanceof IPickResultEntity pickEntity) {
           pickEntity.decode(packet.data);
+          entity.setChanged();
         }
       });
     }
