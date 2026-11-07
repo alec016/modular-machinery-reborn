@@ -48,8 +48,8 @@ public final class ExperienceHatchUI {
         .lss("width", 160)
         .lss("height", 16), 8, 20);
 
-    MMRMachineUI.inputSlotAt(panel, 80, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 0));
-    MMRMachineUI.outputSlotAt(panel, 98, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 1));
+    MMRMachineUI.inputSlotAt(panel, 71, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 0));
+    MMRMachineUI.outputSlotAt(panel, 89, 47).bind(new MMRBusSlot(hatch.getCapabilityInventory(), 1));
 
     if (hatch instanceof ExperienceInputHatchEntity input) {
       int x = 8;
