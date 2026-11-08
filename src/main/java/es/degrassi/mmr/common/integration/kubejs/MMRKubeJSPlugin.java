@@ -28,8 +28,8 @@ import es.degrassi.mmr.common.integration.kubejs.components.ProgressDataComponen
 import es.degrassi.mmr.common.integration.kubejs.components.RecipeRequirementComponent;
 import es.degrassi.mmr.common.integration.kubejs.events.DynamicTooltipKubeEvent;
 import es.degrassi.mmr.common.integration.kubejs.events.ExtraTooltipsKubeEvent;
-import es.degrassi.mmr.common.integration.kubejs.events.MachineKubeEvent;
 import es.degrassi.mmr.common.integration.kubejs.events.FunctionKubeEvent;
+import es.degrassi.mmr.common.integration.kubejs.events.MachineKubeEvent;
 import es.degrassi.mmr.common.integration.kubejs.function.MachineControllerJS;
 import es.degrassi.mmr.common.machine.IOType;
 import es.degrassi.mmr.common.util.IntRange;

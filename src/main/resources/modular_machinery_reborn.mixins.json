@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "LevelMixin",
-    "NbtAccounterMixin"
+    "NbtAccounterMixin",
+    "ServerAdvancementManagerMixin"
   ],
   "client": [
     "AthenaFactoryManagerMixin",

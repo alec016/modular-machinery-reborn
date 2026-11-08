@@ -1,6 +1,5 @@
 package es.degrassi.mmr.common.registration;
 
-import es.degrassi.mmr.api.uistate.UIState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.util.context.ContextKeySet;

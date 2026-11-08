@@ -94,6 +94,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.resource.ListenerKey;
+import net.neoforged.neoforge.resource.VanillaServerListeners;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.apache.logging.log4j.LogManager;
@@ -320,10 +321,12 @@ public class ModularMachineryReborn {
   }
 
   private void registerReloadListener(final AddServerReloadListenersEvent event) {
+    var machineKey = ListenerKey.create(ModularMachineryReborn.rl("machine_reload"));
     event.addRetainedListener(
-        ListenerKey.create(ModularMachineryReborn.rl("machine_reload")),
+        machineKey,
         new MachineJsonReloadListener()
     );
+    event.addDependency(machineKey.getListenerId(), VanillaServerListeners.ADVANCEMENTS);
   }
 
   @Contract("_ -> new")
