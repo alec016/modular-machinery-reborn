@@ -86,6 +86,7 @@ final class EnUsLocalization extends LocalizationProvider {
   @Override
   protected void addItemGroups() {
     add("itemgroup." + mm("group"), "Modular Machinery Reborn");
+    add("itemgroup." + mm("group.controller"), "Controllers");
   }
 
   @Override

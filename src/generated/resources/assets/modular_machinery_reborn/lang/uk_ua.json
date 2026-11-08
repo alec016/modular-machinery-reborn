@@ -190,6 +190,7 @@
   "item.modular_machinery_reborn.structure_template_item": "Шаблон структури (Незавершений)",
   "item.modular_machinery_reborn.wrench": "Гайковий ключ",
   "itemgroup.modular_machinery_reborn.group": "Modular Machinery Reborn",
+  "itemgroup.modular_machinery_reborn.group.controller": "Controllers",
   "mmr.config.tooltip.info": "Відносно %s",
   "mmr.controller.exactly": " (Рівно %s)",
   "mmr.controller.max": " (Макс: %s)",

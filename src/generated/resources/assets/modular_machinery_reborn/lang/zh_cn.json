@@ -190,6 +190,7 @@
   "item.modular_machinery_reborn.structure_template_item": "Structure Template (Incomplete)",
   "item.modular_machinery_reborn.wrench": "Wrench",
   "itemgroup.modular_machinery_reborn.group": "模块化机械:重生",
+  "itemgroup.modular_machinery_reborn.group.controller": "Controllers",
   "key.categories.modular_machinery_reborn": "模块化机械:重置",
   "key.modular_machinery_reborn.structure_mode_change": "结构创建器模式",
   "mmr.config.tooltip.info": "Relative to %s",

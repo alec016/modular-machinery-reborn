@@ -190,6 +190,7 @@
   "item.modular_machinery_reborn.structure_template_item": "Structure Template (Incomplete)",
   "item.modular_machinery_reborn.wrench": "Wrench",
   "itemgroup.modular_machinery_reborn.group": "Modular Machinery Reborn",
+  "itemgroup.modular_machinery_reborn.group.controller": "Controllers",
   "key.categories.modular_machinery_reborn": "Modular Machinery Reborn",
   "key.modular_machinery_reborn.structure_mode_change": "Structure Creator Mode",
   "mmr.config.tooltip.info": "Relative to %s",

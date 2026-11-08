@@ -142,6 +142,7 @@ final class ZhCnLocalization extends LocalizationProvider {
   @Override
   protected void addItemGroups() {
     add("itemgroup." + mm("group"), "模块化机械:重生");
+    add("itemgroup." + mm("group.controller"), "Controllers");
   }
 
   @Override
