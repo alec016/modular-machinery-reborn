@@ -22,7 +22,7 @@ public record SRemoveControllerRenderer(BlockPos controllerPos) implements Custo
 
   public static void handle(SRemoveControllerRenderer packet, IPayloadContext context) {
     if (context.flow().isClientbound()) {
-      ControllerRenderer.renderers.remove(packet.controllerPos);
+      ControllerRenderer.remove(packet.controllerPos);
     }
   }
 }

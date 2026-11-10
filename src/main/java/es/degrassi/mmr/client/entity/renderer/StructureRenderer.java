@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class StructureRenderer {
+public final class StructureRenderer {
   private final int time;
   private final long start;
   private final Map<Direction, Map<BlockPos, BlockIngredient>> blocksGetter = new HashMap<>();
@@ -57,7 +57,7 @@ public class StructureRenderer {
     this.time = maxTime.get();
   }
 
-  public void render(BlockEntityRendererProvider.Context context, PoseStack matrix, SubmitNodeCollector collector, Direction direction, Level world, BlockPos machinePos) {
+  public void render(PoseStack matrix, SubmitNodeCollector collector, Direction direction, Level world, BlockPos machinePos) {
     Map<BlockPos, BlockIngredient> blocks = this.blocksGetter.get(direction);
     CycleTimer timer = this.timers.get(blocks);
     if (timer == null) {
@@ -78,7 +78,7 @@ public class StructureRenderer {
             matrix.pushPose();
             matrix.translate(0.1F, 0.1F, 0.1F);
             matrix.scale(0.8f, 0.8f, 0.8f);
-            renderTransparentBlock(context, world, blockPos, state, matrix, collector);
+            renderTransparentBlock(world, blockPos, state, matrix, collector);
             if (isNot) renderNope(world, blockPos, matrix, collector);
             matrix.popPose();
           } else if (!ingredient.test(new BlockInWorld(world, blockPos, false))) {
@@ -94,7 +94,7 @@ public class StructureRenderer {
     });
   }
 
-  private void renderTransparentBlock(BlockEntityRendererProvider.Context context, Level level, BlockPos pos, PartialBlockState state,
+  private void renderTransparentBlock(Level level, BlockPos pos, PartialBlockState state,
                                       PoseStack poseStack,
                                       SubmitNodeCollector collector) {
     if (!(level instanceof ClientLevel cl)) return;

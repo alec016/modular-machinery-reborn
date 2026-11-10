@@ -17,8 +17,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.Set;
 
-public class StructureCreatorRenderer {
-  private StructureCreatorRenderer() {}
+public final class StructureCreatorRenderer {
 
   /**
    * Called from {@code SubmitCustomGeometryEvent}: geometry goes into the level's own collector

@@ -9,9 +9,7 @@ import es.degrassi.mmr.api.IWrenchable;
 import es.degrassi.mmr.api.entity.ColorableMachineEntity;
 import es.degrassi.mmr.api.handler.FilterRendererRegistry;
 import es.degrassi.mmr.api.handler.RegisterFilterRendererEvent;
-import es.degrassi.mmr.client.entity.renderer.ControllerRenderer;
 import es.degrassi.mmr.client.entity.renderer.IWrenchableRenderer;
-import es.degrassi.mmr.client.entity.renderer.StructureCheckerRenderer;
 import es.degrassi.mmr.client.integration.athena.MMRAthenaModels;
 import es.degrassi.mmr.client.integration.jei.MMRJeiClientIntegration;
 import es.degrassi.mmr.client.item.MMRItemTintSource;
@@ -102,8 +100,6 @@ public class ModularMachineryRebornClient {
           holder.value().getValidBlocks().iterator().next().defaultBlockState()) instanceof IWrenchable aw && aw.shouldAddRender())
         event.registerBlockEntityRenderer(holder.get(), IWrenchableRenderer::new);
     });
-    event.registerBlockEntityRenderer(EntityRegistration.CONTROLLER.get(), ControllerRenderer::new);
-    event.registerBlockEntityRenderer(EntityRegistration.STRUCTURE_CHECKER.get(), StructureCheckerRenderer::new);
   }
 
   @SubscribeEvent

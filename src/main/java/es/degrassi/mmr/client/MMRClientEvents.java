@@ -1,7 +1,9 @@
 package es.degrassi.mmr.client;
 
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.client.entity.renderer.ControllerRenderer;
 import es.degrassi.mmr.client.entity.renderer.HatchAreaRenderer;
+import es.degrassi.mmr.client.entity.renderer.StructureCheckerRenderer;
 import es.degrassi.mmr.client.entity.renderer.StructureCreatorRenderer;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,6 +26,8 @@ public final class MMRClientEvents {
   public static void submitGeometry(final SubmitCustomGeometryEvent event) {
     StructureCreatorRenderer.submitSelectedBlocks(event.getSubmitNodeCollector(), event.getPoseStack());
     HatchAreaRenderer.submit(event.getSubmitNodeCollector(), event.getPoseStack());
+    ControllerRenderer.submit(event.getPoseStack(), event.getSubmitNodeCollector());
+    StructureCheckerRenderer.submit(event.getPoseStack(), event.getSubmitNodeCollector());
   }
 
   @SubscribeEvent

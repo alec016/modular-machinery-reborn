@@ -23,10 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class IWrenchableRenderer implements BlockEntityRenderer<BlockEntity, IWrenchableRenderState> {
-  private final BlockEntityRendererProvider.Context context;
-
   public IWrenchableRenderer(BlockEntityRendererProvider.Context context) {
-    this.context = context;
   }
 
   @Override
@@ -42,8 +39,7 @@ public class IWrenchableRenderer implements BlockEntityRenderer<BlockEntity, IWr
   }
 
   @Override
-  public void submit(IWrenchableRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
-                     CameraRenderState cameraState) {
+  public void submit(IWrenchableRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraState) {
     var player = Minecraft.getInstance().player;
     if (player == null) return;
     if (!player.getItemInHand(InteractionHand.MAIN_HAND).is(ItemRegistration.WRENCH.holder())) return;
