@@ -3,6 +3,8 @@ package es.degrassi.mmr.client.model.controller;
 import es.degrassi.mmr.ModularMachineryReborn;
 import es.degrassi.mmr.client.ModularMachineryRebornClient;
 import es.degrassi.mmr.client.integration.athena.model.controller.ControllerData;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
+import es.degrassi.mmr.common.util.ControllerOverlays;
 import es.degrassi.mmr.common.util.MachineModelLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
@@ -42,16 +44,21 @@ public class ControllerBakedModel implements DynamicBlockStateModel {
         : null;
     MachineModelLocation loc = data != null ? data.modelLocation() : MachineModelLocation.DEFAULT;
     if (loc == null) loc = MachineModelLocation.DEFAULT;
+    MachineStatus status = data != null ? data.status() : MachineStatus.MISSING_STRUCTURE;
 
     if (loc.getState() != null) {
       return Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(loc.getState());
     }
 
-    Identifier modelRL = loc.getLoc() != null ? loc.getLoc() : DEFAULT_CONTROLLER_RL;
+    Identifier modelRL = loc.getLoc() != null ? loc.getLoc() : ControllerOverlays.model(status);
     Direction facing = state != null && state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
         ? state.getValue(BlockStateProperties.HORIZONTAL_FACING)
         : null;
     BlockStateModel delegate = ModularMachineryRebornClient.standaloneModel(modelRL, facing);
+    if (delegate == null) {
+      // the model of the machine is missing: the default model of the state is used
+      delegate = ModularMachineryRebornClient.standaloneModel(ControllerOverlays.model(status), facing);
+    }
     if (delegate == null) {
       delegate = ModularMachineryRebornClient.standaloneModel(DEFAULT_CONTROLLER_RL, facing);
     }

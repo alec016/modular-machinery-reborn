@@ -135,8 +135,6 @@ public class AdvancementGenerator implements AdvancementSubProvider {
         .addCriterion("output_vacuum", InventoryChangeTrigger.TriggerInstance.hasItems(BlockRegistration.FLUID_OUTPUT_HATCH_VACUUM))
         .requirements(AdvancementRequirements.Strategy.OR)
         .save(consumer, idString("main/fluid_hatch"));
-
-    // TODO: Add criterion for crafting each multiblock independently
   }
 
   private String idString(String path) {

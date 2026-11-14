@@ -6,32 +6,68 @@
         "down": {
           "cullface": "down",
           "texture": "#bg_down",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "east": {
           "cullface": "east",
           "texture": "#bg_east",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "north": {
           "cullface": "north",
           "texture": "#bg_north",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "south": {
           "cullface": "south",
           "texture": "#bg_south",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "up": {
           "cullface": "up",
           "texture": "#bg_up",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "west": {
           "cullface": "west",
           "texture": "#bg_west",
-          "tintindex": 1
+          "tintindex": 1,
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         }
       },
       "from": [
@@ -49,27 +85,63 @@
       "faces": {
         "down": {
           "cullface": "down",
-          "texture": "#ov_r_down"
+          "texture": "#ov_r_down",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "east": {
           "cullface": "east",
-          "texture": "#ov_r_east"
+          "texture": "#ov_r_east",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "north": {
           "cullface": "north",
-          "texture": "#ov_r_north"
+          "texture": "#ov_r_north",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "south": {
           "cullface": "south",
-          "texture": "#ov_r_south"
+          "texture": "#ov_r_south",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "up": {
           "cullface": "up",
-          "texture": "#ov_r_up"
+          "texture": "#ov_r_up",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "west": {
           "cullface": "west",
-          "texture": "#ov_r_west"
+          "texture": "#ov_r_west",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         }
       },
       "from": [
@@ -87,27 +159,63 @@
       "faces": {
         "down": {
           "cullface": "down",
-          "texture": "#ov_down"
+          "texture": "#ov_down",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "east": {
           "cullface": "east",
-          "texture": "#ov_east"
+          "texture": "#ov_east",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "north": {
           "cullface": "north",
-          "texture": "#ov_north"
+          "texture": "#ov_north",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "south": {
           "cullface": "south",
-          "texture": "#ov_south"
+          "texture": "#ov_south",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "up": {
           "cullface": "up",
-          "texture": "#ov_up"
+          "texture": "#ov_up",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         },
         "west": {
           "cullface": "west",
-          "texture": "#ov_west"
+          "texture": "#ov_west",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ]
         }
       },
       "from": [

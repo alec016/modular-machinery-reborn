@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public final class ControllerUI {
@@ -150,7 +151,7 @@ public final class ControllerUI {
     }
     List<Object> tooltips = new ArrayList<>();
     long[] lastResolve = {-1};
-    java.util.function.Supplier<List<Object>> supplier = () -> {
+    Supplier<List<Object>> supplier = () -> {
       long now = System.currentTimeMillis();
       if (lastResolve[0] < 0 || now - lastResolve[0] >= MMRConfig.get().dynamicTooltipTicks.get() * 50L) {
         lastResolve[0] = now;
@@ -355,10 +356,8 @@ public final class ControllerUI {
       if (machine != null) {
         for (var line : font.split(Component.literal(machine.getLocalizedName()), wrapWidth)) {
           y.addAndGet(5);
-          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
-          y.addAndGet(7);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
         }
-        y.addAndGet(-5);
       } else {
         y.set(5);
         drawStatusLine(gui, font,
@@ -370,8 +369,7 @@ public final class ControllerUI {
       if (controller.isPaused()) {
         for (var line : font.split(Component.translatable("gui.controller.status.redstone_stopped"), wrapWidth)) {
           y.addAndGet(5);
-          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
-          y.addAndGet(7);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
         }
         updateHeight((float) y.get());
         return;
@@ -381,15 +379,13 @@ public final class ControllerUI {
         var errorInfo = Component.translatable("gui.controller.error.info").append(error);
         for (var line : font.split(errorInfo, wrapWidth)) {
           y.addAndGet(5);
-          drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
-          y.addAndGet(7);
+          drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
         }
       }
       var status = Component.translatable("gui.controller.status").append(controller.getStatus().text());
       for (var line : font.split(status, wrapWidth)) {
         y.addAndGet(5);
-        drawStatusLine(gui, font, line, x0, y0 + (float) y.get());
-        y.addAndGet(7);
+        drawStatusLine(gui, font, line, x0, y0 + (float) y.getAndAdd(2));
       }
       var runningCores = controller.getProcessor()
           .cores()

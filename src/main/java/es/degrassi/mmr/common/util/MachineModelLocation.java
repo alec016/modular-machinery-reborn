@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import es.degrassi.experiencelib.api.codec.NamedCodec;
 import es.degrassi.mmr.ModularMachineryReborn;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import net.minecraft.IdentifierException;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,6 +14,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MachineModelLocation {
   public static final MachineModelLocation DEFAULT = new MachineModelLocation(
@@ -22,6 +27,37 @@ public class MachineModelLocation {
       ModularMachineryReborn.rl("default/controller"),
       null
   );
+
+  /**
+   * The default model of the controller for a state of the machine. They are the ones
+   * the controller uses when the machine does not define a model of its own.
+   */
+  private static final Map<MachineStatus, MachineModelLocation> DEFAULTS = Stream.of(MachineStatus.values())
+      .collect(Collectors.toMap(
+          status -> status,
+          status -> new MachineModelLocation(
+              ControllerOverlays.model(status).toString(),
+              null,
+              null,
+              ControllerOverlays.model(status),
+              null
+          )
+      ));
+
+  /**
+   * The default model of the controller for a state of the machine.
+   */
+  public static MachineModelLocation defaultFor(MachineStatus status) {
+    return DEFAULTS.getOrDefault(status, DEFAULT);
+  }
+
+  /**
+   * Whether this is one of the default models of the controller (and not a model the
+   * machine brought with it).
+   */
+  public boolean isDefault() {
+    return this == DEFAULT || DEFAULTS.containsValue(this);
+  }
 
   @HideFromJS
   public static final NamedCodec<MachineModelLocation> CODEC = NamedCodec.STRING.comapFlatMap(s -> {

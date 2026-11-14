@@ -21,8 +21,10 @@ import es.degrassi.mmr.client.model.hatch.HatchModelLoader;
 import es.degrassi.mmr.common.block.base.BlockDynamicColor;
 import es.degrassi.mmr.common.data.Config;
 import es.degrassi.mmr.common.data.MMRConfig;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
 import es.degrassi.mmr.common.registration.BlockRegistration;
 import es.degrassi.mmr.common.registration.EntityRegistration;
+import es.degrassi.mmr.common.util.ControllerOverlays;
 import es.degrassi.mmr.common.util.Mods;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
@@ -79,6 +81,7 @@ public class ModularMachineryRebornClient {
 
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> hatchModelKeys = new HashMap<>();
   private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> configModelKeys = new HashMap<>();
+  private static final Map<Identifier, StandaloneModelKey<BlockStateModel>> controllerModelKeys = new HashMap<>();
   private static final Map<Identifier, Map<Direction, StandaloneModelKey<BlockStateModel>>> rotatedModelKeys = new HashMap<>();
 
   private static final List<Block> blockModelsToRegister = Lists.newLinkedList();
@@ -157,8 +160,10 @@ public class ModularMachineryRebornClient {
     if (ModularMachineryReborn.rl("default/hatch_all").equals(modelRL)) return DEFAULT_HATCH_ALL_KEY;
     if (ModularMachineryReborn.rl("default/hatch_orientable").equals(modelRL)) return DEFAULT_HATCH_ORIENTABLE_KEY;
     if (ModularMachineryReborn.rl("default/controller").equals(modelRL)) return DEFAULT_CONTROLLER_KEY;
-    StandaloneModelKey<BlockStateModel> key = hatchModelKeys.get(modelRL);
+    StandaloneModelKey<BlockStateModel> key = controllerModelKeys.get(modelRL);
     if (key != null) return key;
+    StandaloneModelKey<BlockStateModel> key2 = hatchModelKeys.get(modelRL);
+    if (key2 != null) return key2;
     return configModelKeys.get(modelRL);
   }
 
@@ -245,6 +250,16 @@ public class ModularMachineryRebornClient {
     Identifier defaultControllerRl = ModularMachineryReborn.rl("default/controller");
     event.register(DEFAULT_CONTROLLER_KEY, SimpleUnbakedStandaloneModel.blockStateModel(defaultControllerRl));
     registerRotated(event, defaultControllerRl);
+
+    // the default model of the controller of every state of the machine
+    for (MachineStatus status : MachineStatus.values()) {
+      Identifier modelRL = ControllerOverlays.model(status);
+      if (modelRL.equals(defaultControllerRl)) continue;
+      StandaloneModelKey<BlockStateModel> key = new StandaloneModelKey<>(() -> "mmr_default_controller_" + status.getSerializedName());
+      controllerModelKeys.put(modelRL, key);
+      event.register(key, SimpleUnbakedStandaloneModel.blockStateModel(modelRL));
+      registerRotated(event, modelRL);
+    }
 
     Identifier defaultHatchAllRl = ModularMachineryReborn.rl("default/hatch_all");
     event.register(DEFAULT_HATCH_ALL_KEY, SimpleUnbakedStandaloneModel.blockStateModel(defaultHatchAllRl));

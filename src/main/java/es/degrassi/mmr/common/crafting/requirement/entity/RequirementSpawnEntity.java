@@ -15,6 +15,7 @@ import lombok.Getter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 @Getter
 public class RequirementSpawnEntity extends RequirementEntity {
@@ -57,6 +58,7 @@ public class RequirementSpawnEntity extends RequirementEntity {
   @Override
   public void getDefaultDisplayInfo(IDisplayInfo info, RecipeRequirement<?, ?, ?> requirement) {
     super.getDefaultDisplayInfo(info, requirement);
-    info.setItemIcon(Items.SLIME_SPAWN_EGG);
+    info.addTooltip(entityType.getDescription());
+    info.setItemIcon(Blocks.SPAWNER.asItem());
   }
 }

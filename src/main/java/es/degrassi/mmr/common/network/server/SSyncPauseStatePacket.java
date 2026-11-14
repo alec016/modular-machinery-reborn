@@ -27,8 +27,13 @@ public record SSyncPauseStatePacket(boolean isPaused, BlockPos pos) implements C
   }
 
   public static void handle(SSyncPauseStatePacket packet, IPayloadContext context) {
-    if (context.flow().isClientbound() && context.player().level().getBlockEntity(packet.pos) instanceof MachineControllerEntity entity) {
-      entity.setPaused(packet.isPaused());
-    }
+    if (context.flow().isClientbound())
+      context.enqueueWork(() -> {
+        if (context.player().level().getBlockEntity(packet.pos) instanceof MachineControllerEntity entity) {
+          entity.setPaused(packet.isPaused());
+          // the paused machine has its own model: the model data has to be rebuilt
+          entity.refreshClientData();
+        }
+      });
   }
 }

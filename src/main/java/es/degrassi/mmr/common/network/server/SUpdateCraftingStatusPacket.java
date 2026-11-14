@@ -35,10 +35,14 @@ public record SUpdateCraftingStatusPacket(MachineStatus status, BlockPos pos) im
       context.enqueueWork(() -> {
         if (Minecraft.getInstance().level != null) {
           BlockEntity tile = Minecraft.getInstance().level.getBlockEntity(packet.pos);
-          if (tile instanceof MachineControllerEntity machineTile && packet.status != machineTile.getStatus()) {
-            machineTile.setStatus(packet.status);
+          if (tile instanceof MachineControllerEntity machineTile) {
+            if (packet.status != machineTile.getStatus()) {
+              machineTile.setStatus(packet.status);
+              Minecraft.getInstance().level.sendBlockUpdated(packet.pos, tile.getBlockState(), tile.getBlockState(), Block.UPDATE_ALL);
+            }
+            // the model of the controller is the one of its status: the model data has
+            // to be rebuilt even when the status was already synced by another way
             machineTile.refreshClientData();
-            Minecraft.getInstance().level.sendBlockUpdated(packet.pos, tile.getBlockState(), tile.getBlockState(), Block.UPDATE_ALL);
           }
         }
       });

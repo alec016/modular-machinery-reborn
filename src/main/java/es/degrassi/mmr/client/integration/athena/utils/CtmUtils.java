@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.FaceInfo;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.cuboid.CuboidFace;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
@@ -325,6 +326,21 @@ public class CtmUtils {
         0,
         true
     );
+    // The layers of a face (the plate of the casing, its reinforcement and the overlay of
+    // the component) are coplanar and the depth buffer cannot tell them apart. They are
+    // therefore drawn in the same buffer, in order: the last one drawn always wins the
+    // depth test. Moving them forward instead would fight the depth buffer from a
+    // certain distance and would show a seam along the edges of the overlay.
+    final ChunkSectionLayer layer = transparency.hasTranslucent() ? ChunkSectionLayer.TRANSLUCENT : ChunkSectionLayer.CUTOUT;
+    final BakedQuad.MaterialInfo layerInfo = new BakedQuad.MaterialInfo(
+        materialInfo.sprite(),
+        layer,
+        materialInfo.itemRenderType(),
+        materialInfo.tintIndex(),
+        materialInfo.shade(),
+        materialInfo.lightEmission(),
+        materialInfo.ambientOcclusion()
+    );
     final BakedColors colors = tint instanceof TintProvider.Static(var color) ? new BakedColors.PerQuad(color) : BakedColors.DEFAULT;
 
     final BakedQuad bakedQuad = new BakedQuad(
@@ -334,7 +350,7 @@ public class CtmUtils {
         packUV(cuboidUVs, quadrant, sprite, 2),
         packUV(cuboidUVs, quadrant, sprite, 3),
         Objects.requireNonNullElse(normalDirection, Direction.UP),
-        materialInfo,
+        layerInfo,
         BakedNormals.UNSPECIFIED,
         colors
     );

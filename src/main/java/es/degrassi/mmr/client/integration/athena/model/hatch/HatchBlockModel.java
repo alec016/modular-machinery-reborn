@@ -52,7 +52,12 @@ public class HatchBlockModel implements MMRAthenaBlockModel {
     final CtmState ctm = CtmState.from(level, state, pos, direction, CtmUtils.check(level, state, pos, direction,
         (other, self) -> connectTo.test(other, self) && BlockMachineComponent.connectsTextures(other) && BlockMachineComponent.connectsTextures(self)));
 
-    if (ctm.allTrue()) return List.of(MMRAthenaQuad.withSprite(materials.getTexture(direction, 1), 4));
+    if (ctm.allTrue()) {
+      // the same four quadrants as the overlay: both layers of the face then share
+      // their geometry, so their depths are the same and the depth buffer never has to
+      // choose between them
+      return MMRAthenaQuad.quadrants(materials.getTexture(direction, 1), 0f, 4);
+    }
 
     List<MMRAthenaQuad> quads = Lists.newArrayList();
 
@@ -67,16 +72,16 @@ public class HatchBlockModel implements MMRAthenaBlockModel {
         materials.getTexture(direction, 8) != 0 &&
         materials.getTexture(direction, 9) != 0
     ) {
-      var quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.up(), ctm.left(), ctm.upLeft(), 0, 0.5f, 1f, 0.5f, -1);
+      var quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.up(), ctm.left(), ctm.upLeft(), 0, 0.5f, 1f, 0.5f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.up(), ctm.right(), ctm.upRight(), 0.5f, 1f, 1f, 0.5f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.up(), ctm.right(), ctm.upRight(), 0.5f, 1f, 1f, 0.5f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.down(), ctm.left(), ctm.downLeft(), 0, 0.5f, 0.5f, 0f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.down(), ctm.left(), ctm.downLeft(), 0, 0.5f, 0.5f, 0f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.down(), ctm.right(), ctm.downRight(), 0.5f, 1f, 0.5f, 0f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, ctm.down(), ctm.right(), ctm.downRight(), 0.5f, 1f, 0.5f, 0f, 0f, -1);
       quads.add(quad);
     }
 
@@ -100,16 +105,16 @@ public class HatchBlockModel implements MMRAthenaBlockModel {
         materials.getTexture(direction, 8) != 0 &&
         materials.getTexture(direction, 9) != 0
     ) {
-      var quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0, 0.5f, 1f, 0.5f, -1);
+      var quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0, 0.5f, 1f, 0.5f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0.5f, 1f, 1f, 0.5f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0.5f, 1f, 1f, 0.5f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0, 0.5f, 0.5f, 0f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0, 0.5f, 0.5f, 0f, 0f, -1);
       quads.add(quad);
 
-      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0.5f, 1f, 0.5f, 0f, -1);
+      quad = CtmUtils.athenaQuadWithState(5, materials, direction, false, false, false, 0.5f, 1f, 0.5f, 0f, 0f, -1);
       quads.add(quad);
     }
 

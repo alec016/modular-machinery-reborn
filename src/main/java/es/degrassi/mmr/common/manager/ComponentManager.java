@@ -35,6 +35,7 @@ import es.degrassi.mmr.common.registration.RequirementTypeRegistration;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.storage.ValueInput;
@@ -89,6 +90,7 @@ public class ComponentManager implements ISyncableStuff, ValueIOSerializable {
             if (controller.getLevel().getBlockEntity(key) instanceof MachineComponentEntity<?> e) {
               if (e instanceof ControllerAccessible ca && ca.getControllerPos() == null) {
                 ca.setControllerPos(controller.getBlockPos());
+                ((BlockEntity) e).setChanged();
               } else if (e instanceof ControllerAccessible ca && !ca.getControllerPos().equals(controller.getBlockPos())) {
                 return Optional.empty();
               }

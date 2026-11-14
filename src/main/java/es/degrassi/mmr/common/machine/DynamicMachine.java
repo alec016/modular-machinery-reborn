@@ -90,7 +90,7 @@ public class DynamicMachine {
   }
 
   public MachineModelLocation getControllerModel(MachineStatus status) {
-    return Optional.ofNullable(this.controllerModels.get(status)).orElse(MachineModelLocation.DEFAULT);
+    return Optional.ofNullable(this.controllerModels.get(status)).orElseGet(() -> MachineModelLocation.defaultFor(status));
   }
 
   public List<ModifierReplacement> getModifiers() {

@@ -29,6 +29,10 @@ import java.util.Map;
 
 public interface MMRBakedModel extends BlockStateModel {
   Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
+  /**
+   * The sprite of the overlay of the connected textures (the ctm material 5).
+   */
+  int OVERLAY_SPRITE = 5;
 
   Int2ObjectMap<Material.Baked> getTextures();
 
@@ -125,12 +129,19 @@ public interface MMRBakedModel extends BlockStateModel {
     private final Map<Direction, List<BakedQuad>> cache = new HashMap<>();
     private final NullableEnumMap<Direction, Map<Direction, List<MMRAthenaQuad>>> geometry;
     private final BlockState state;
+    private final int overlaySprite;
 
     public CTMPart(MMRBakedModel model, BlockState state,
                    NullableEnumMap<Direction, Map<Direction, List<MMRAthenaQuad>>> geometry) {
+      this(model, state, geometry, OVERLAY_SPRITE);
+    }
+
+    public CTMPart(MMRBakedModel model, BlockState state,
+                   NullableEnumMap<Direction, Map<Direction, List<MMRAthenaQuad>>> geometry, int overlaySprite) {
       this.model = model;
       this.geometry = geometry;
       this.state = state;
+      this.overlaySprite = overlaySprite;
     }
 
     @Override
@@ -143,7 +154,7 @@ public interface MMRBakedModel extends BlockStateModel {
       values.forEach((dir, quadList) -> {
         baked.addAll(model.bakeQuads(quadList, dir));
         if (model.addOverlay(dir, state)) {
-          baked.addAll(model.bakeQuads(List.of(MMRAthenaQuad.withSprite(5, -0.0001F, -1)), dir));
+          baked.addAll(model.bakeQuads(MMRAthenaQuad.quadrants(overlaySprite, 0f, -1), dir));
         }
       });
       cache.put(side, baked);
@@ -183,7 +194,7 @@ public interface MMRBakedModel extends BlockStateModel {
       model.getModel().getDefaultQuads(side, null).forEach((dir, quadList) -> {
         baked.addAll(model.bakeQuads(quadList, dir));
         if (model.addOverlay(dir, null)) {
-          baked.addAll(model.bakeQuads(List.of(MMRAthenaQuad.withSprite(5, -0.0001F, -1)), dir));
+          baked.addAll(model.bakeQuads(MMRAthenaQuad.quadrants(OVERLAY_SPRITE, 0f, -1), dir));
         }
       });
       cache.put(side, baked);

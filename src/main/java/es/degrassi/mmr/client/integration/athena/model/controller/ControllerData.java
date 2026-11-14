@@ -17,7 +17,8 @@ public record ControllerData(
     MachineStatus status
 ) {
   public boolean hasCustomModel() {
-    return modelLocation() != MachineModelLocation.DEFAULT;
+    MachineModelLocation location = modelLocation();
+    return location != null && !location.isDefault();
   }
 
   public MachineModelLocation modelLocation() {

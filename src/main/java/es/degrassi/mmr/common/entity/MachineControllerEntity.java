@@ -54,6 +54,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -159,13 +160,16 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
       else if (!status.isErrored()) this.errorMessage = message;
       clearInfoErrors();
       getErrorInfo().add(message);
+      broadcastChanges();
+      refreshClientData();
       setChanged();
       if (this.getLevel() instanceof ServerLevel sl) {
         BlockPos pos = this.getBlockPos();
         sl.updateNeighborsAt(pos, this.getBlockState().getBlock());
         PacketDistributor.sendToPlayersTrackingChunk(sl, ChunkPos.containing(pos), new SUpdateCraftingStatusPacket(this.status, pos));
+      } else if (this.getLevel() != null && this.getLevel().isClientSide()) {
+        this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
       }
-      broadcastChanges();
     }
   }
 
@@ -273,6 +277,7 @@ public class MachineControllerEntity extends BlockEntityRestrictedTick implement
     this.id = machine;
     this.formed = false;
     tryColorize(getBlockPos());
+    setStatus(MachineStatus.MISSING_STRUCTURE);
     if (getLevel() instanceof ServerLevel l) {
       PacketDistributor.sendToPlayersTrackingChunk(l, ChunkPos.containing(getBlockPos()), new SMachineUpdatePacket(machine, getBlockPos()));
       CONTROLLERS.add(this);

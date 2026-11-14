@@ -10,6 +10,8 @@ import es.degrassi.mmr.client.item.MMRItemTintSource;
 import es.degrassi.mmr.common.block.BlockCasing;
 import es.degrassi.mmr.common.block.BlockController;
 import es.degrassi.mmr.common.block.base.BlockMachineComponent;
+import es.degrassi.mmr.common.manager.crafting.MachineStatus;
+import es.degrassi.mmr.common.util.ControllerOverlays;
 import es.degrassi.mmr.data.blockstate.builder.StateCasingBuilder;
 import es.degrassi.mmr.data.blockstate.builder.StateControllerBuilder;
 import es.degrassi.mmr.data.blockstate.builder.StateHatchBuilder;
@@ -126,27 +128,33 @@ public abstract class BaseMMRBlockStateProvider implements DataProvider {
         .vertical(plainVertical)
         .particle(plainParticle)
         .overlay(overlay);
-    var defaultControllerBuilder = modelBuilder(this.key(block).withPrefix("default/"))
-        .parent(modLoc("block/blockmodel_overlay_orientable_all"))
-        .texture("bg_all", plainParticle)
-        .texture("ov_front", overlay)
-        .texture("ov_side", modLoc("block/overlay_transparent"))
-        .texture("ov_top", modLoc("block/overlay_transparent"));
     if (isReinforced) {
       builder = builder.connectToReinforced()
           .ovCenter(reinforcedCenter)
           .ovHorizontal(reinforcedHorizontal)
           .ovVertical(reinforcedVertical)
           .ovParticle(reinforcedParticle);
-      defaultControllerBuilder = defaultControllerBuilder
-          .texture("ov_r_all", reinforcedParticle);
     } else {
       builder = builder.connectToPlain();
+    }
+    // one default model per state of the machine: the terminal of the controller shows
+    // the screen and the lamp of the state
+    for (MachineStatus status : MachineStatus.values()) {
+      var defaultControllerBuilder = modelBuilder(ControllerOverlays.model(status))
+          .parent(modLoc("block/blockmodel_overlay_orientable_all"))
+          .texture("bg_all", plainParticle)
+          .texture("ov_front", ControllerOverlays.overlay(status))
+          .texture("ov_side", modLoc("block/overlay_transparent"))
+          .texture("ov_top", modLoc("block/overlay_transparent"));
+      if (isReinforced) {
+        defaultControllerBuilder = defaultControllerBuilder
+            .texture("ov_r_all", reinforcedParticle);
+      }
+      generatedModels.put(ControllerOverlays.model(status), defaultControllerBuilder.build());
     }
     builder.variantModel(this.key(block).withPrefix("default/"));
     this.registeredBlocks.put(block, builder);
     item(block, true, true, null);
-    generatedModels.put(this.key(block).withPrefix("default/"), defaultControllerBuilder.build());
   }
   protected void addHatch(BlockMachineComponent block, boolean isReinforced, Identifier overlay, boolean orientable) {
     var builder = new StateHatchBuilder()
@@ -344,12 +352,14 @@ public abstract class BaseMMRBlockStateProvider implements DataProvider {
   }
 
   /**
-   * Legacy parity of the {@code blockmodel_overlay} root model: three coplanar full-block boxes in
-   * draw order — the base texture layer first (every face carrying tintindex 4, the dynamic
-   * machine-color index used by both the item and block tint pipelines), the reinforced overlay
-   * second, and the normal overlay last so it stays drawn on top of the reinforcement. Cutout
-   * discards transparent pixels, so models whose {@code ov_r} resolves to
-   * {@code overlay_transparent} render identically without any conditional.
+   * The three layers of a face: the base texture, the reinforcement and the normal
+   * overlay, in draw order.
+   *
+   * <p>The three boxes share the same geometry on purpose: they are drawn one over the
+   * other and the depth buffer cannot tell two coplanar quads apart, but with the same
+   * geometry their depths are the same and the box drawn last always wins the depth
+   * test. Moving a box forward instead fights the depth buffer from a certain distance,
+   * and shows a seam along the edges of the overlay.
    */
   protected static JsonArray bgOverlayCubeElements() {
     JsonArray elements = new JsonArray();
@@ -378,6 +388,12 @@ public abstract class BaseMMRBlockStateProvider implements DataProvider {
     JsonObject face = new JsonObject();
     face.addProperty("texture", texture);
     face.addProperty("cullface", cullface);
+    JsonArray uv = new JsonArray();
+    uv.add(0.0f);
+    uv.add(0.0f);
+    uv.add(16.0f);
+    uv.add(16.0f);
+    face.add("uv", uv);
     if (tintIndex != -1) {
       face.addProperty("tintindex", tintIndex);
     }
