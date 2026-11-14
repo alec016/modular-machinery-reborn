@@ -12,6 +12,7 @@ import es.degrassi.mmr.api.handler.FilterConverterRegistry;
 import es.degrassi.mmr.api.handler.RegisterFilterConversionEvent;
 import es.degrassi.mmr.api.uistate.UIStateType;
 import es.degrassi.mmr.api.uistate.UIStates;
+import es.degrassi.mmr.client.screen.widget.tabs.AutoIOConfig;
 import es.degrassi.mmr.client.util.EnergyDisplayUtil;
 import es.degrassi.mmr.common.block.BlockController;
 import es.degrassi.mmr.common.block.prop.ConfigLoaded;
@@ -186,6 +187,11 @@ public class ModularMachineryReborn {
       size.radius = EffectDispenserConfig.get().radius(size);
       size.interdimensional = EffectDispenserConfig.get().interdimensional(size);
       size.showParticles = EffectDispenserConfig.get().showParticles(size);
+    });
+    ConfigLoaded.add(AutoIOConfig.class, config -> {
+      config.ms = MMRClientConfig.get().openMs.get();
+      config.width = MMRClientConfig.get().autoIOWidth.get();
+      config.height = MMRClientConfig.get().autoIOHeight.get();
     });
   }
 

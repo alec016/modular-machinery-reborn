@@ -21,18 +21,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> & IAutoEntity<?>> extends UIElement {
-  public static final int AUTOIO_OPEN_WIDTH = 74;
-  public static final int AUTOIO_OPEN_HEIGHT = 124;
   private static final int SCENE_X = 4;
   private static final int SCENE_Y = 32;
   private static final int SCENE_SIZE = 66;
-  private static final int BUTTON_Y = AUTOIO_OPEN_HEIGHT - 16;
+  private static final Supplier<Integer> BUTTON_Y = () -> AutoIOConfig.CONFIG.height() - 16;
   private static final int CLOSE_X = 4;
   private static final int CLOSE_Y = 3;
-  private static final int SMALL_MINUS_X = (AUTOIO_OPEN_WIDTH - (3 * 8 + 2 * 4)) / 2;
-  private static final long OPEN_MS = 240L;
+  private static final Supplier<Integer> SMALL_MINUS_X = () -> (AutoIOConfig.CONFIG.width() - (3 * 8 + 2 * 4)) / 2;
 
   final T entity;
   final boolean input;
@@ -131,7 +129,7 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
     if (animStart < 0L) {
       return opened ? 1f : 0f;
     }
-    float t = (System.currentTimeMillis() - animStart) / (float) OPEN_MS;
+    float t = (System.currentTimeMillis() - animStart) / (float) AutoIOConfig.CONFIG.ms;
     return opened ? Math.min(1f, t) : 1f - Math.min(1f, t);
   }
 
@@ -154,8 +152,8 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
       return;
     }
     float progress = currentProgress();
-    int width = Math.round(RightTab.RIGHT_TAB_WIDTH + (AUTOIO_OPEN_WIDTH - RightTab.RIGHT_TAB_WIDTH) * progress);
-    int height = Math.round(RightTab.RIGHT_TAB_HEIGHT + (AUTOIO_OPEN_HEIGHT - RightTab.RIGHT_TAB_HEIGHT) * progress);
+    int width = Math.round(RightTab.RIGHT_TAB_WIDTH + (AutoIOConfig.CONFIG.width() - RightTab.RIGHT_TAB_WIDTH) * progress);
+    int height = Math.round(RightTab.RIGHT_TAB_HEIGHT + (AutoIOConfig.CONFIG.height() - RightTab.RIGHT_TAB_HEIGHT) * progress);
     if (animStart >= 0L && ((opened && progress >= 1f) || (!opened && progress <= 0f))) {
       animStart = -1L;
       if (!opened) {
@@ -180,16 +178,16 @@ public class AutoIoTab<T extends BlockEntity & ISideConfigComponent<IOSideMode> 
       IconButton.smallIconButton(this, Icon.CLEAR, CLOSE_X, CLOSE_Y, event -> close(),
           () -> List.of(TabTexts.tooltipCloseSideConfig.text()));
       IconButton.smallIconButton(this, Icon.HELP,
-          SMALL_MINUS_X + 12, BUTTON_Y, null,
+          SMALL_MINUS_X.get() + 12, BUTTON_Y.get(), null,
           () -> List.of(
               TabTexts.autoioHintSelect.text(),
               TabTexts.autoioHintToggle.text()
           ));
     }
-    IconButton.smallIconButton(this, Icon.MINUS, SMALL_MINUS_X, BUTTON_Y,
+    IconButton.smallIconButton(this, Icon.MINUS, SMALL_MINUS_X.get(), BUTTON_Y.get(),
         event -> sendEvent(disableAllRpc),
         () -> List.of(TabTexts.autoioDisableAll.text()));
-    IconButton.smallIconButton(this, Icon.PLUS, SMALL_MINUS_X + 24, BUTTON_Y,
+    IconButton.smallIconButton(this, Icon.PLUS, SMALL_MINUS_X.get() + 24, BUTTON_Y.get(),
         event -> sendEvent(enableAllRpc),
         () -> List.of(TabTexts.autoioEnableAll.text()));
   }
