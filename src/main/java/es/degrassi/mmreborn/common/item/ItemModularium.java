@@ -13,7 +13,7 @@ public class ItemModularium extends Item implements ItemDynamicColor {
   @Override
   public int getColorFromItemstack(ItemStack stack, int tintIndex) {
     if(stack.isEmpty()) {
-      return 0;
+      return -1;
     }
     return Config.machineColor;
   }

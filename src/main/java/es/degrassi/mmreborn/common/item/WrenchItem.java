@@ -6,6 +6,7 @@ package es.degrassi.mmreborn.common.item;
 
 import es.degrassi.mmreborn.api.IWrenchable;
 import es.degrassi.mmreborn.api.capability.config.RelativeSide;
+import es.degrassi.mmreborn.common.data.Config;
 import es.degrassi.mmreborn.common.registration.SoundRegistration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,15 +14,24 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class WrenchItem extends Item {;
+public class WrenchItem extends Item implements ItemDynamicColor {;
 
   public WrenchItem() {
     super(new Properties().stacksTo(1));
+  }
+
+  @Override
+  public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+    if(stack.isEmpty()) {
+      return -1;
+    }
+    return Config.machineColor;
   }
 
   @Override

@@ -14,6 +14,7 @@ import es.degrassi.mmreborn.api.PartialBlockState;
 import es.degrassi.mmreborn.api.codec.DefaultCodecs;
 import es.degrassi.mmreborn.api.codec.NamedCodec;
 import es.degrassi.mmreborn.common.block.BlockController;
+import es.degrassi.mmreborn.common.data.Config;
 import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.registration.DataComponentRegistration;
 import net.minecraft.ChatFormatting;
@@ -44,7 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class StructureTemplateItem extends Item {
+public class StructureTemplateItem extends Item implements ItemDynamicColor {
   private static final NamedCodec<List<List<String>>> PATTERN_CODEC = NamedCodec.STRING.listOf().listOf();
   private static final NamedCodec<Map<Character, BlockIngredient>> KEYS_CODEC = NamedCodec.unboundedMap(DefaultCodecs.CHARACTER, BlockIngredient.STRING_CODEC, "Map<Character, Block>");
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -53,6 +54,14 @@ public class StructureTemplateItem extends Item {
         new Item.Properties().stacksTo(1)
             .component(DataComponentRegistration.STRUCTURE_CREATOR_DATA, new ArrayList<>())
     );
+  }
+
+  @Override
+  public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+    if(stack.isEmpty() || tintIndex != 4) {
+      return -1;
+    }
+    return Config.machineColor;
   }
 
   @Override
