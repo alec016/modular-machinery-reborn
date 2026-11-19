@@ -211,6 +211,8 @@
   "mmr.gui.structure.place.modifier": "Вы хотите разместить мульти-структуру?",
   "mmr.gui.structure.place.modifier.false": "Вы хотите разместить мульти-структуру без модификаций?",
   "mmr.gui.structure.place.modifier.true": "Вы хотите разместить мульти-структуру с модификациями?",
+  "mmr.gui.structure.time": "This will take up to %s seconds (%s ticks)",
+  "mmr.gui.structure.time.tooltip": "This will take %s tick(s) per operation",
   "mmr.gui.tooltip.auto_input": "Auto Input",
   "mmr.gui.tooltip.auto_input.change": "Actual Mode: %s, Change to: %s",
   "mmr.gui.tooltip.auto_output": "Auto Output",

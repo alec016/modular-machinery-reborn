@@ -10,13 +10,16 @@ import es.degrassi.mmreborn.client.item.MMRItemTooltipComponent;
 import es.degrassi.mmreborn.client.screen.ControllerScreen;
 import es.degrassi.mmreborn.client.screen.popup.ConfirmationPopup;
 import es.degrassi.mmreborn.client.screen.widget.ItemOrIconButton;
+import es.degrassi.mmreborn.common.data.MMRConfig;
 import es.degrassi.mmreborn.common.network.client.CPlaceStructurePacket;
 import es.degrassi.mmreborn.common.util.CycleTimer;
+import es.degrassi.mmreborn.common.util.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -44,12 +47,18 @@ public class StructurePlacerWidget extends TopTabWidget {
   private static final CycleTimer timer = new CycleTimer(() -> 1000, true);
 
   public final Component component = Component.translatable("modular_machinery_reborn.gui.structure_placer_button");
+  private final Component tooltipTime, time, timeWithout;
 
   public StructurePlacerWidget(ControllerScreen parentScreen, ResourceLocation machine, BlockPos controllerPos) {
     super(0, 0, new ItemOrIconButton(5, 5, Blocks.STRUCTURE_BLOCK.asItem(), button -> {}));
     this.parentScreen = parentScreen;
     this.machine = machine;
     this.controllerPos = controllerPos;
+    int positions = parentScreen.getMenu().getEntity().getFoundMachine().getPattern().getBlocks(Direction.NORTH).size();
+    int positionsWithout = parentScreen.getMenu().getEntity().getFoundMachine().getPattern().getBlocksFiltered(Direction.NORTH).size();
+    this.tooltipTime = Component.translatable("mmr.gui.structure.time.tooltip", MMRConfig.get().delayOperation.get());
+    this.time = Component.translatable("mmr.gui.structure.time", Utils.decimalFormat(positions / 20f), positions);
+    this.timeWithout = Component.translatable("mmr.gui.structure.time", Utils.decimalFormat(positionsWithout / 20f), positionsWithout);
   }
 
   @Override
@@ -74,7 +83,10 @@ public class StructurePlacerWidget extends TopTabWidget {
                 () -> PacketDistributor.sendToServer(new CPlaceStructurePacket(machine, controllerPos, true))
             )
                 .cancelCallback(() -> onClick(mouseX, mouseY, button))
-                .text(Component.translatable("mmr.gui.structure.place.modifier.true"))
+                .text(
+                    Component.translatable("mmr.gui.structure.place.modifier.true"),
+                    time
+                )
         )
     )
         .confirmText(Component.translatable("mmr.gui.structure.place.confirm.modifier"))
@@ -89,7 +101,10 @@ public class StructurePlacerWidget extends TopTabWidget {
                     () -> PacketDistributor.sendToServer(new CPlaceStructurePacket(machine, controllerPos, false))
                 )
                     .cancelCallback(() -> onClick(mouseX, mouseY, button))
-                    .text(Component.translatable("mmr.gui.structure.place.modifier.false"))
+                    .text(
+                        Component.translatable("mmr.gui.structure.place.modifier.false"),
+                        timeWithout
+                    )
             )
         ), "popup");
   }
@@ -110,6 +125,7 @@ public class StructurePlacerWidget extends TopTabWidget {
 
   public void gatherComponents(List<Either<FormattedText, TooltipComponent>> components) {
     components.add(Either.left(component));
+    components.add(Either.left(tooltipTime));
     Optional.of(parentScreen.getMenu().getEntity().getFoundMachine())
         .ifPresentOrElse(machine -> {
               if (Screen.hasShiftDown() && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_N)) {

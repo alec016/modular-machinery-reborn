@@ -516,6 +516,8 @@ final class EsEsLang extends Lang {
     add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Remove 10 active cores");
     add(mmr(gui(tooltip("core.action.button.control.add"))), "Add all active cores");
     add(mmr(gui(tooltip("core.action.button.control.remove"))), "Remove all active cores");
+    add(mmr(gui("structure.time.tooltip")), "This will take %s tick(s) per operation");
+    add(mmr(gui("structure.time")), "This will take up to %s seconds (%s ticks)");
   }
 
   @Override

@@ -211,6 +211,8 @@
   "mmr.gui.structure.place.modifier": "调节器是否与结构一同放置？",
   "mmr.gui.structure.place.modifier.false": "你确定仅放置结构吗？",
   "mmr.gui.structure.place.modifier.true": "你确定放置结构和调节器吗？",
+  "mmr.gui.structure.time": "This will take up to %s seconds (%s ticks)",
+  "mmr.gui.structure.time.tooltip": "This will take %s tick(s) per operation",
   "mmr.gui.tooltip.auto_input": "Auto Input",
   "mmr.gui.tooltip.auto_input.change": "Actual Mode: %s, Change to: %s",
   "mmr.gui.tooltip.auto_output": "Auto Output",

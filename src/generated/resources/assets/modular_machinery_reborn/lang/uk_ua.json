@@ -209,6 +209,8 @@
   "mmr.gui.structure.place.modifier": "Бажаєте встановити структуру з модифікаторами чи без?",
   "mmr.gui.structure.place.modifier.false": "Ви впевнені, що хочете встановити структуру без модифікаторів?",
   "mmr.gui.structure.place.modifier.true": "Ви впевнені, що хочете встановити структуру з модифікаторами?",
+  "mmr.gui.structure.time": "This will take up to %s seconds (%s ticks)",
+  "mmr.gui.structure.time.tooltip": "This will take %s tick(s) per operation",
   "mmr.gui.tooltip.auto_input": "Авто-вхід",
   "mmr.gui.tooltip.auto_input.change": "Поточний режим: %s, змінити на: %s",
   "mmr.gui.tooltip.auto_output": "Авто-вихід",

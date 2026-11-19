@@ -538,5 +538,7 @@ final class RuRuLang extends Lang {
     add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Удалить 10 потоков");
     add(mmr(gui(tooltip("core.action.button.control.add"))), "Добавить все потоки");
     add(mmr(gui(tooltip("core.action.button.control.remove"))), "Удалить все потоки, кроме последнего");
+    add(mmr(gui("structure.time.tooltip")), "This will take %s tick(s) per operation");
+    add(mmr(gui("structure.time")), "This will take up to %s seconds (%s ticks)");
   }
 }

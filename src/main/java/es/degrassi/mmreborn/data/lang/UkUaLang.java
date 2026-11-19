@@ -581,5 +581,7 @@ final class UkUaLang extends Lang {
     add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Видалити 10 активних ядер");
     add(mmr(gui(tooltip("core.action.button.control.add"))), "Додати всі активні ядра");
     add(mmr(gui(tooltip("core.action.button.control.remove"))), "Видалити всі активні ядра");
+    add(mmr(gui("structure.time.tooltip")), "This will take %s tick(s) per operation");
+    add(mmr(gui("structure.time")), "This will take up to %s seconds (%s ticks)");
   }
 }

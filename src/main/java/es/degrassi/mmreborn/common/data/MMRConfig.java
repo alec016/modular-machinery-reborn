@@ -38,6 +38,7 @@ public class MMRConfig {
   public final ConfigValue<Boolean> sendReplaceMessage;
   public final ConfigValue<Boolean> sendMissingBlockMessage;
   public final ConfigValue<Boolean> sendErrorMessage;
+  public final ConfigValue<Integer> delayOperation;
   public final ConfigValue<Integer> maxVeinNumber;
   public final ConfigValue<Boolean> forceAir;
 
@@ -98,6 +99,10 @@ public class MMRConfig {
     // STRUCTURE
     {
       builder.push("Structure");
+      this.delayOperation = builder
+          .comment("Defines the amount in ticks between a place or break operation (block)")
+          .comment("for the auto placer and auto breaker. Default: 5 ticks (1/4 s)")
+          .defineInRange("delay", 5, 1, Integer.MAX_VALUE);
       this.shouldReplace = builder
           .comment("Defines if it should break and place the non-matching blocks on trying to place structure. Default: true")
           .define("should_replace", true);

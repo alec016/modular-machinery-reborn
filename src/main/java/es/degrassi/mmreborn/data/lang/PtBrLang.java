@@ -537,5 +537,7 @@ final class PtBrLang extends Lang {
     add(mmr(gui(tooltip("core.action.button.shift.remove"))), "Remover 10 núcleos ativos");
     add(mmr(gui(tooltip("core.action.button.control.add"))), "Adicionar todos os núcleos ativos");
     add(mmr(gui(tooltip("core.action.button.control.remove"))), "Remover todos os núcleos ativos menos 1");
+    add(mmr(gui("structure.time.tooltip")), "This will take %s tick(s) per operation");
+    add(mmr(gui("structure.time")), "This will take up to %s seconds (%s ticks)");
   }
 }

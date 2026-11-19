@@ -211,6 +211,8 @@
   "mmr.gui.structure.place.modifier": "Você quer posicionar a estrutura com ou sem modificadores?",
   "mmr.gui.structure.place.modifier.false": "Você tem certeza de que deseja posicionar a estrutura sem modificadores?",
   "mmr.gui.structure.place.modifier.true": "Você tem certeza de que deseja posicionar a estrutura com modificadores?",
+  "mmr.gui.structure.time": "This will take up to %s seconds (%s ticks)",
+  "mmr.gui.structure.time.tooltip": "This will take %s tick(s) per operation",
   "mmr.gui.tooltip.auto_input": "Auto Input",
   "mmr.gui.tooltip.auto_input.change": "Actual Mode: %s, Change to: %s",
   "mmr.gui.tooltip.auto_output": "Auto Output",

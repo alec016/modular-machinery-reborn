@@ -211,6 +211,8 @@
   "mmr.gui.structure.place.modifier": "Do you want to place the structure with ot without modifiers?",
   "mmr.gui.structure.place.modifier.false": "Are you sure you want to place the structure without modifiers?",
   "mmr.gui.structure.place.modifier.true": "Are you sure you want to place the structure with modifiers?",
+  "mmr.gui.structure.time": "This will take up to %s seconds (%s ticks)",
+  "mmr.gui.structure.time.tooltip": "This will take %s tick(s) per operation",
   "mmr.gui.tooltip.auto_input": "Auto Input",
   "mmr.gui.tooltip.auto_input.change": "Actual Mode: %s, Change to: %s",
   "mmr.gui.tooltip.auto_output": "Auto Output",

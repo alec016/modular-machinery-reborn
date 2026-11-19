@@ -539,5 +539,7 @@ final class ZhCnLang extends Lang {
     add(mmr(gui(tooltip("core.action.button.shift.remove"))), "禁用 10 个可用核心");
     add(mmr(gui(tooltip("core.action.button.control.add"))), "启用所有可用核心");
     add(mmr(gui(tooltip("core.action.button.control.remove"))), "禁用可用核心数至 1");
+    add(mmr(gui("structure.time.tooltip")), "This will take %s tick(s) per operation");
+    add(mmr(gui("structure.time")), "This will take up to %s seconds (%s ticks)");
   }
 }
